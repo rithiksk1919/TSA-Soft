@@ -97,14 +97,72 @@
     }
   };
 
+  /* ---------- Mistakes index, history, worked examples, learned ---------- */
+
+  // A mistake with its index extras (times made, last seen, explanation, examples).
+  store.mistakeInfo = function (id) {
+    var m = store.mistake(id);
+    var x = store.data.mistakes && store.data.mistakes.mistakes[id];
+    return m ? Object.assign({}, m, x || {}, { subjectObj: store.subject(m.subject) }) : null;
+  };
+  store.mistakeInfos = function (subjectId) { return store.mistakes(subjectId).map(function (m) { return store.mistakeInfo(m.id); }); };
+  store.attempts = function () {
+    return (store.data.history ? store.data.history.attempts : []).map(function (a) {
+      return Object.assign({}, a, { score: L.outcomeScore(a.solved, a.attempts, a.hints), subjectObj: store.subject(a.subject) });
+    });
+  };
+  store.examples = function () { return store.data.worked ? store.data.worked.examples : []; };
+  store.example = function (id) { return store.examples().filter(function (e) { return e.id === id; })[0]; };
+  // Skills mastered on the shelf: mastery >= 0.8 with the transfer check passed.
+  store.masteredSkills = function () {
+    var out = [];
+    (store.data.shelf ? store.data.shelf.subjects : []).forEach(function (s) {
+      s.skills.forEach(function (k) { if (k.mastered && k.mastery >= 0.8) out.push({ subject: store.subject(s.id) || s, name: k.name, mastery: k.mastery }); });
+    });
+    return out;
+  };
+  // Ink stamps press in once, the first time they are seen.
+  store.stampSeen = function (key) { return !!(store.review.stamped && store.review.stamped[key]); };
+  store.markStamp = function (key) {
+    store.review.stamped = store.review.stamped || {};
+    if (store.review.stamped[key]) return;
+    store.review.stamped[key] = true;
+    write(KEY, store.review);
+  };
+
+  /* ---------- Diagnostic (localStorage "sb_diagnostic", mock only) ---------- */
+
+  var DKEY = "sb_diagnostic";
+  store.diagnostic = read(DKEY) || { v: 1, results: {} };
+  if (store.diagnostic.v !== 1 || typeof store.diagnostic.results !== "object") store.diagnostic = { v: 1, results: {} };
+  store.questions = function (subjectId) {
+    var q = store.data.diagnostic ? store.data.diagnostic.questions : [];
+    return subjectId ? q.filter(function (x) { return x.subject === subjectId; }) : q;
+  };
+  store.saveDiagnostic = function (subjectId, answers) {
+    var result = { date: new Date().toISOString().slice(0, 10), answers: answers, mastery: L.diagnosticMastery(answers) };
+    store.diagnostic.results[subjectId] = result;
+    write(DKEY, store.diagnostic);
+    emit("diagnostic");
+    return result;
+  };
+
   /* ---------- Boot ---------- */
 
   var saved = read(KEY);
   if (saved && saved.v === 1 && saved.boxes && typeof saved.boxes === "object") store.review = saved;
 
-  store.ready = Promise.all([getJSON("data/cards.json"), getJSON("data/drawers.json")]).then(function (r) {
+  store.ready = Promise.all([
+    getJSON("data/cards.json"), getJSON("data/drawers.json"), getJSON("data/mistakes.json"),
+    getJSON("data/worked.json"), getJSON("data/diagnostic.json"), getJSON("data/history.json"), getJSON("data/subjects.json")
+  ]).then(function (r) {
     store.data.cards = r[0];
     store.data.drawers = r[1].drawers;
+    store.data.mistakes = r[2];
+    store.data.worked = r[3];
+    store.data.diagnostic = r[4];
+    store.data.history = r[5];
+    store.data.shelf = r[6];
     // Drop saved boxes for cards that no longer exist.
     var ids = store.cards().map(function (c) { return c.id; });
     Object.keys(store.review.boxes).forEach(function (id) { if (ids.indexOf(id) < 0) delete store.review.boxes[id]; });

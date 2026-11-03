@@ -25,7 +25,9 @@ async function installSampler(page) {
           t: Math.round(performance.now() - t0),
           x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height),
           opacity: +cs.opacity, visibility: cs.visibility, display: cs.display,
-          painted: !!hit && (slot.contains(hit) || (!!sheet && sheet.contains(hit))),
+          // While a panel is open the scene is inert (focus trap), and elementFromPoint skips inert
+          // content; the hit test cannot speak then, so only the depth/box/opacity checks apply.
+          painted: (!!hit && (slot.contains(hit) || (!!sheet && sheet.contains(hit)))) || !!slot.closest("[inert]"),
           z: zm ? +zm[1] : null,
           hit: hit ? (hit.id || hit.className || hit.tagName) : null
         });
@@ -58,22 +60,25 @@ function save(name, data) {
 }
 
 test.describe("drawer flicker regression (desktop 3D)", () => {
-  test("open then close: drawer face visible every frame", async ({ page }) => {
-    await gotoApp(page);
-    await toCabinet(page);
-    await installSampler(page);
-    const opening = page.evaluate(() => window.__sample(0, 2600));
-    await page.locator('.dslot[data-i="0"] .drawer').click();
-    const openFrames = await opening;
-    await settle(page);
-    const closing = page.evaluate(() => window.__sample(0, 3000));
-    await page.keyboard.press("Escape");
-    const closeFrames = await closing;
-    save("flicker-open", openFrames);
-    save("flicker-close", closeFrames);
-    const problems = [...check(openFrames, "open"), ...check(closeFrames, "close")];
-    expect(problems.slice(0, 12), problems.length + " problems").toEqual([]);
-  });
+  for (const [i, id] of [[0, "flashcards"], [1, "index"], [2, "worked"], [3, "diagnostic"], [4, "history"], [5, "learned"]]) {
+    test(`${id}: open then close, drawer face visible every frame`, async ({ page }) => {
+      await gotoApp(page);
+      await toCabinet(page);
+      await installSampler(page);
+      const opening = page.evaluate((i) => window.__sample(i, 2600), i);
+      await page.locator(`.dslot[data-i="${i}"] .drawer`).click();
+      const openFrames = await opening;
+      await settle(page);
+      const closing = page.evaluate((i) => window.__sample(i, 3000), i);
+      await page.keyboard.press("Escape");
+      const closeFrames = await closing;
+      if (i === 0) { save("flicker-open", openFrames); save("flicker-close", closeFrames); }
+      const problems = [...check(openFrames, "open"), ...check(closeFrames, "close")];
+      expect(problems.slice(0, 12), problems.length + " problems").toEqual([]);
+      await settle(page);
+      await expect(page.locator(`.dslot[data-i="${i}"] .drawer`)).toBeFocused();
+    });
+  }
 
   test("rapid open / close / open, and Esc during the open", async ({ page }) => {
     await gotoApp(page);

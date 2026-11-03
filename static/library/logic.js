@@ -93,7 +93,79 @@
     return out;
   }
 
+  /* ---------- Mistakes index ---------- */
+
+  // mode "frequent": most times made first (ties: most recent first); "recent": most recent first.
+  function sortMistakes(list, mode) {
+    return list.slice().sort(function (a, b) {
+      if (mode === "recent") return (a.lastSeenDays - b.lastSeenDays) || (b.timesMade - a.timesMade);
+      return (b.timesMade - a.timesMade) || (a.lastSeenDays - b.lastSeenDays);
+    });
+  }
+  // A mistake's frequency relative to the most frequent mistake in its subject (0..1).
+  function frequencyShare(times, maxTimes) { return maxTimes > 0 ? clamp(times / maxTimes, 0, 1) : 0; }
+  function relativeDays(n) {
+    if (n <= 0) return "today";
+    if (n === 1) return "yesterday";
+    if (n < 7) return n + " days ago";
+    if (n < 14) return "1 week ago";
+    return Math.floor(n / 7) + " weeks ago";
+  }
+
+  /* ---------- History ---------- */
+
+  // Outcome score for one attempt: solved => max(0.4, 1 - 0.2 (attempts - 1) - 0.15 hints), else 0.
+  function outcomeScore(solved, attempts, hints) {
+    if (!solved) return 0;
+    var a = Math.max(1, Math.round(attempts || 1)), h = Math.max(0, Math.round(hints || 0));
+    return Math.min(1, Math.max(0.4, 1 - 0.2 * (a - 1) - 0.15 * h));
+  }
+  function historySummary(list) {
+    var n = list.length;
+    var solved = list.filter(function (x) { return x.solved; });
+    var hints = list.reduce(function (s, x) { return s + (x.hints || 0); }, 0);
+    return {
+      attempts: n,
+      solvedPct: n ? Math.round((solved.length / n) * 100) : 0,
+      avgHints: n ? round2(hints / n) : 0,
+      solvedNoHints: solved.filter(function (x) { return !x.hints; }).length
+    };
+  }
+
+  /* ---------- Diagnostic ---------- */
+
+  // answers: [{ skill, difficulty (0..1), correct }]. Per skill: weightedCorrect = sum(d * correct) /
+  // sum(d); starting mastery = clamp(0.3 + 0.7 * weightedCorrect, 0, 1). If every difficulty on a
+  // skill is 0, the plain share of correct answers is used instead.
+  function diagnosticMastery(answers) {
+    var by = {};
+    (answers || []).forEach(function (a) {
+      var s = by[a.skill] || (by[a.skill] = { w: 0, wc: 0, n: 0, c: 0 });
+      var d = clamp(+a.difficulty || 0, 0, 1);
+      s.w += d; s.wc += a.correct ? d : 0; s.n++; s.c += a.correct ? 1 : 0;
+    });
+    var out = {};
+    Object.keys(by).forEach(function (k) {
+      var s = by[k];
+      var weighted = s.w > 0 ? s.wc / s.w : (s.n ? s.c / s.n : 0);
+      out[k] = { mastery: clamp(0.3 + 0.7 * weighted, 0, 1), weightedCorrect: weighted, questions: s.n, correct: s.c };
+    });
+    return out;
+  }
+  function weakestSkill(result) {
+    var keys = Object.keys(result || {});
+    if (!keys.length) return null;
+    return keys.reduce(function (a, b) { return result[b].mastery < result[a].mastery ? b : a; });
+  }
+
   return {
+    sortMistakes: sortMistakes,
+    frequencyShare: frequencyShare,
+    relativeDays: relativeDays,
+    outcomeScore: outcomeScore,
+    historySummary: historySummary,
+    diagnosticMastery: diagnosticMastery,
+    weakestSkill: weakestSkill,
     stepSpring: stepSpring,
     atRest: atRest,
     simulateSpring: simulateSpring,

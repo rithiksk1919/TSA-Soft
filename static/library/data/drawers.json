@@ -15,7 +15,7 @@
       "title": "Mistakes index",
       "sub": "What you got wrong",
       "count": "mistakes",
-      "active": false
+      "active": true
     },
     {
       "id": "worked",
@@ -23,7 +23,7 @@
       "title": "Worked examples",
       "sub": "Solved step by step",
       "count": "examples",
-      "active": false
+      "active": true
     },
     {
       "id": "diagnostic",
@@ -31,7 +31,7 @@
       "title": "Diagnostic",
       "sub": "Find your starting point",
       "count": "questions",
-      "active": false
+      "active": true
     },
     {
       "id": "history",
@@ -39,7 +39,7 @@
       "title": "History",
       "sub": "Past attempts",
       "count": "attempts",
-      "active": false
+      "active": true
     },
     {
       "id": "learned",
@@ -47,7 +47,7 @@
       "title": "Learned",
       "sub": "Cards you have mastered",
       "count": "learned",
-      "active": false
+      "active": true
     }
   ]
 }

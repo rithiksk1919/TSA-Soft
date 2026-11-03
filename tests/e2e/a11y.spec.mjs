@@ -137,3 +137,23 @@ test("keyboard only: shelf -> book -> back -> cabinet -> drawer -> review -> ans
   await page.keyboard.press("Enter"); await settle(page);
   await expect(page.locator("#h-a")).toBeFocused();
 });
+
+for (const [name, size] of [["desktop", WIDTHS.desktop], ["phone", WIDTHS.phone]]) {
+  test(`axe and contrast in every drawer and its detail view (${name})`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await gotoApp(page);
+    await page.evaluate(() => { const s = window.SkillBridge.store; ["phy-normal-1"].forEach((id) => { s.answer(id, true); s.answer(id, true); }); });
+    await toCabinet(page);
+    const problems = [];
+    for (const [i, id, open] of [[1, "index", ".icard"], [2, "worked", ".icard"], [3, "diagnostic", ".dg-subject"], [4, "history", ".icard"], [5, "learned", ".icard"]]) {
+      await openDrawer(page, i);
+      problems.push(...await axe(page, id), ...await contrast(page, "#sheet"));
+      await page.locator("#sheet " + open).first().click();
+      await settle(page);
+      if (id === "worked") { for (let k = 0; k < 6 && await page.locator("#sheet [data-next]").count(); k++) await page.locator("#sheet [data-next]").click(); await settle(page); }
+      problems.push(...await axe(page, id + "-detail"), ...await contrast(page, "#sheet"));
+      for (let k = 0; k < 3 && (await page.evaluate(() => window.SkillBridge.debug.drawer())) !== "closed"; k++) { await page.keyboard.press("Escape"); await settle(page); }
+    }
+    expect(problems).toEqual([]);
+  });
+}

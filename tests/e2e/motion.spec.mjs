@@ -67,3 +67,22 @@ test("reduced motion: opening a book is a 150ms crossfade straight to flat pages
   await settle(page);
   await expect(page.locator("#reader")).toHaveClass(/is-open/);
 });
+
+test("reduced motion: every drawer opens without springs; the stamp appears without the press", async ({ page }) => {
+  await gotoApp(page);
+  await page.locator("#to-cabinet").click();
+  await settle(page);
+  for (const i of [1, 2, 3, 4, 5]) {
+    const watching = springFrames(page, 700);
+    await page.locator(`.dslot[data-i="${i}"] .drawer`).click();
+    expect(await watching).toBe(0);
+    await settle(page);
+    if (i === 5) {
+      const st = await page.evaluate(() => [...document.querySelectorAll("#sheet .stamp")].map((n) => [n.style.opacity, n.style.transform]));
+      expect(st.length).toBe(2);
+      for (const [o, t] of st) { expect(o).toBe(""); expect(t).toBe(""); }
+    }
+    await page.keyboard.press("Escape");
+    await settle(page);
+  }
+});

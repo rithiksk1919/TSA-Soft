@@ -34,6 +34,7 @@
 
 .world {
   position: relative;
+  z-index: 1;   /* a pulled-out drawer can pass over the footer; the footer never paints over it */
   height: var(--world-h);
   margin-top: 8px;
   overflow-x: clip;

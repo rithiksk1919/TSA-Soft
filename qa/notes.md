@@ -56,3 +56,9 @@
   820px and with reduced motion; focus traps for the book, the drawer, the sheet and the review.
 - Data: flashcards moved to data/cards.json (6 mistakes x 2 cards) to match Phase 3's "6 mistakes
   from data/cards.json"; drawer labels moved to data/drawers.json.
+
+## Phase 3
+- Bottom-row drawers opened partly below the fold and under the footer (cabinet.js, cabinet.css):
+  the open pose now lifts any row to the top row's height, and .world stacks above the footer.
+- Flicker sampler: while a panel is open the scene is inert, and elementFromPoint skips inert
+  content, so the hit test is skipped in that state; depth / opacity / box checks still apply.

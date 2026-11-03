@@ -219,7 +219,9 @@
     if (v) {
       var r = drawerRect(v.i);
       tx = -((r.x + r.w / 2) - G.W / 2) * q * G.fit;
-      ty = -64 * q;   // the pitch carries the pulled drawer downward; lift it back
+      // The pitch carries the pulled drawer downward; lift it back, and lift lower rows to the
+      // height of the top row so every drawer opens in view (not below the fold or the footer).
+      ty = (-64 - (r.y - G.pad) * G.fit) * q;
     }
     el.rig.style.transform =
       "translate3d(" + tx.toFixed(2) + "px," + ty.toFixed(2) + "px,0) scale3d(" + G.fit.toFixed(4) + "," + G.fit.toFixed(4) + "," + G.fit.toFixed(4) + ") " +
@@ -430,11 +432,12 @@
     var moves = staggerMoves(sinking.reverse(), function (it) { return it.home; }, 18, 0)
       .concat(staggerMoves(gr.cards, subjectPose, 35, -14));
     setItemsReachable(gr.cards);
-    choreograph(moves).then(function (current) {
-      if (!current || chosen !== g || drawer.state !== "subject") return;
-      gr.cards[0].el.focus({ preventScroll: true });
-    });
     announce(gr.s.name + ": " + ui.plural(gr.cards.length, "mistake") + ". Choose one to review.");
+    return choreograph(moves).then(function (current) {
+      if (!current || chosen !== g || drawer.state !== "subject") return false;
+      gr.cards[0].el.focus({ preventScroll: true });
+      return true;
+    });
   }
 
   function backToGroups() {
@@ -536,9 +539,19 @@
           setItemsReachable(dividers(), groupItems());
           if (releaseTrap) releaseTrap();
           releaseTrap = ui.isolate([v.slot, el.bar, el.hint]);
+          announce("Flashcards drawer open. " + store.countLabel("cards") + " in " + groups.length + " subjects. Choose a subject.");
+          // Arrived from another drawer with a mistake in hand: go straight to its cards.
+          if (opts.mistake) {
+            var mm = store.mistake(opts.mistake);
+            var g = groups.map(function (x) { return x.s.id; }).indexOf(mm.subject);
+            return chooseSubject(g).then(function (ok) {
+              if (!ok || my !== seq) return;
+              var it = items.filter(function (x) { return x.m && x.m.id === mm.id; })[0];
+              reviewMistake(mm, it ? it.el : null);
+            });
+          }
           var first = $(".chip-btn", el.subjects);
           if (first) first.focus({ preventScroll: true });
-          announce("Flashcards drawer open. " + store.countLabel("cards") + " in " + groups.length + " subjects. Choose a subject.");
         });
       }
       var contents = SB.drawerContents && SB.drawerContents[v.d.id];
@@ -551,6 +564,10 @@
       }).then(function () {
         if (my !== seq) return;
         announce(v.d.title + " drawer open.");
+        if (opts.mistake && v.d.id === "flashcards") {
+          var mm = store.mistake(opts.mistake);
+          reviewCards(store.cards({ mistake: mm.id }), mm.title, $('#sheet [data-review="' + mm.id + '"]'));
+        }
       });
     });
   }
