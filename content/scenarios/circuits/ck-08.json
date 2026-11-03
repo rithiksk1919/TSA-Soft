@@ -1,0 +1,117 @@
+{
+  "id": "ck-08",
+  "domain": "circuits",
+  "title": "Collapsed node",
+  "skills": [
+    "ck_parallel",
+    "ck_short"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "mixed-short",
+  "scaffold": 0,
+  "estimated_minutes": 8,
+  "prompt": "R1 (1 kΩ) feeds two 2 kΩ resistors in parallel (R2 and R3) from 12 V. Node B should sit at 6 V but reads 0 V. Find the faulty part. There is no ohmmeter.",
+  "starter": null,
+  "hints": [
+    "If node B is at 0 V, something is connecting it straight to the bottom rail.",
+    "R2 and R3 both show 0 V, so voltage alone cannot tell them apart. Compare their currents.",
+    "A shorted branch carries all the current. A healthy branch with 0 V across it carries none."
+  ],
+  "explanation": "R3 is shorted. B is pulled to 0 V, R1 takes all 12 V (12 mA), R3 carries all 12 mA and R2 carries none.",
+  "evaluator": {
+    "type": "circuit_fault",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "C": [
+          4,
+          0
+        ],
+        "G": [
+          0,
+          2
+        ],
+        "E": [
+          2,
+          2
+        ],
+        "F": [
+          4,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 12
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "A",
+          "b": "B",
+          "value": 1000
+        },
+        {
+          "id": "R2",
+          "type": "resistor",
+          "a": "B",
+          "b": "E",
+          "value": 2000
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "B",
+          "b": "C",
+          "value": 0
+        },
+        {
+          "id": "R3",
+          "type": "resistor",
+          "a": "C",
+          "b": "F",
+          "value": 2000
+        },
+        {
+          "id": "W2",
+          "type": "wire",
+          "a": "F",
+          "b": "E",
+          "value": 0
+        },
+        {
+          "id": "W3",
+          "type": "wire",
+          "a": "E",
+          "b": "G",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [
+      "voltage",
+      "current"
+    ],
+    "fault": {
+      "component": "R3",
+      "kind": "short"
+    },
+    "value_tolerance": 0.1
+  },
+  "solution": {
+    "component": "R3",
+    "kind": "short"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "id": "ck-04",
+  "domain": "circuits",
+  "title": "Dead series loop",
+  "skills": [
+    "ck_series",
+    "ck_open"
+  ],
+  "difficulty": 0.3,
+  "surface_form": "series-open",
+  "scaffold": 2,
+  "estimated_minutes": 4,
+  "prompt": "This series loop (9 V, R1 = 1 kΩ, R2 = 2 kΩ) should carry 3 mA, but nothing works. Use the multimeter to find the faulty part and say what is wrong with it.",
+  "starter": null,
+  "hints": [
+    "Start with the current. Is any current flowing?",
+    "With no current, a healthy resistor has 0 V across it. Measure across each part.",
+    "The part with the full 9 V across it is the break."
+  ],
+  "explanation": "R2 is open. With no current, R1 drops 0 V and the open R2 takes the full 9 V.",
+  "evaluator": {
+    "type": "circuit_fault",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "C": [
+          4,
+          0
+        ],
+        "D": [
+          4,
+          2
+        ],
+        "G": [
+          0,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 9
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "A",
+          "b": "B",
+          "value": 1000
+        },
+        {
+          "id": "R2",
+          "type": "resistor",
+          "a": "B",
+          "b": "C",
+          "value": 2000
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "C",
+          "b": "D",
+          "value": 0
+        },
+        {
+          "id": "W2",
+          "type": "wire",
+          "a": "D",
+          "b": "G",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [
+      "voltage",
+      "current",
+      "resistance"
+    ],
+    "fault": {
+      "component": "R2",
+      "kind": "open"
+    },
+    "value_tolerance": 0.1
+  },
+  "solution": {
+    "component": "R2",
+    "kind": "open"
+  }
+}

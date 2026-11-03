@@ -1,0 +1,120 @@
+{
+  "id": "ck-12",
+  "domain": "circuits",
+  "title": "Weak supply to the load",
+  "skills": [
+    "ck_value",
+    "ck_parallel",
+    "ck_ohms"
+  ],
+  "difficulty": 0.85,
+  "surface_form": "mixed-value",
+  "scaffold": 0,
+  "estimated_minutes": 9,
+  "prompt": "R1 (labelled 1 kΩ) feeds R2 and R3 (1 kΩ each, in parallel) from 12 V. Node B should be at 4 V but is much lower. Find the wrong part and calculate its real value.",
+  "starter": null,
+  "hints": [
+    "Healthy: R2 || R3 = 500 Ω, total 1.5 kΩ, 8 mA, B at 4 V.",
+    "If B is low, either R1 is too big or the parallel pair is too small. Check the branch currents.",
+    "Measure the voltage across R1 and the current through it: R1 = V / I."
+  ],
+  "explanation": "R1 is really 2.2 kΩ: it drops 9.78 V at 4.44 mA, so B sits at 2.22 V.",
+  "evaluator": {
+    "type": "circuit_fault",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "C": [
+          4,
+          0
+        ],
+        "G": [
+          0,
+          2
+        ],
+        "E": [
+          2,
+          2
+        ],
+        "F": [
+          4,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 12
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "A",
+          "b": "B",
+          "value": 1000
+        },
+        {
+          "id": "R2",
+          "type": "resistor",
+          "a": "B",
+          "b": "E",
+          "value": 1000
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "B",
+          "b": "C",
+          "value": 0
+        },
+        {
+          "id": "R3",
+          "type": "resistor",
+          "a": "C",
+          "b": "F",
+          "value": 1000
+        },
+        {
+          "id": "W2",
+          "type": "wire",
+          "a": "F",
+          "b": "E",
+          "value": 0
+        },
+        {
+          "id": "W3",
+          "type": "wire",
+          "a": "E",
+          "b": "G",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [
+      "voltage",
+      "current"
+    ],
+    "fault": {
+      "component": "R1",
+      "kind": "wrong_value",
+      "actual": 2200
+    },
+    "value_tolerance": 0.1
+  },
+  "solution": {
+    "component": "R1",
+    "kind": "wrong_value",
+    "actual": 2200
+  }
+}

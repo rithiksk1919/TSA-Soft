@@ -1,0 +1,97 @@
+{
+  "id": "ck-02",
+  "domain": "circuits",
+  "title": "Voltage divider",
+  "skills": [
+    "ck_ohms",
+    "ck_series"
+  ],
+  "difficulty": 0.4,
+  "surface_form": "divider-calc",
+  "scaffold": 1,
+  "estimated_minutes": 4,
+  "prompt": "A 12 V battery feeds R1 (1 kΩ) and R2 (2 kΩ) in series. What voltage should appear across R2? Answer in volts.",
+  "starter": null,
+  "hints": [
+    "In series, resistances add: find the total first.",
+    "The same current flows through both resistors: I = 12 V / total.",
+    "V across R2 = I × R2."
+  ],
+  "explanation": "Total 3 kΩ, I = 4 mA, V_R2 = 4 mA × 2 kΩ = 8 V.",
+  "evaluator": {
+    "type": "circuit_calc",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "C": [
+          4,
+          0
+        ],
+        "D": [
+          4,
+          2
+        ],
+        "G": [
+          0,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 12
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "A",
+          "b": "B",
+          "value": 1000
+        },
+        {
+          "id": "R2",
+          "type": "resistor",
+          "a": "B",
+          "b": "C",
+          "value": 2000
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "C",
+          "b": "D",
+          "value": 0
+        },
+        {
+          "id": "W2",
+          "type": "wire",
+          "a": "D",
+          "b": "G",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [],
+    "question": {
+      "text": "Voltage across R2",
+      "unit": "V",
+      "answer": 8.0,
+      "tolerance": 0.02
+    }
+  },
+  "solution": {
+    "answer": 8.0,
+    "unit": "V"
+  }
+}

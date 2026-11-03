@@ -1,0 +1,49 @@
+{
+  "id": "py-scope-01",
+  "domain": "python",
+  "title": "Click counter",
+  "skills": [
+    "py_scope"
+  ],
+  "difficulty": 0.3,
+  "surface_form": "global-state",
+  "scaffold": 2,
+  "estimated_minutes": 4,
+  "prompt": "click() should add 1 to the module-level count and return the new value. It raises UnboundLocalError.",
+  "starter": "count = 0\n\ndef click():\n    # add 1 to the module-level count and return it\n    # Tip: an assignment inside a function creates a local variable unless told otherwise.\n    count += 1\n    return count\n",
+  "hints": [
+    "Read the error: local variable 'count' referenced before assignment.",
+    "'count += 1' assigns to count, so Python treats count as local to click().",
+    "Declare 'global count' at the top of the function."
+  ],
+  "explanation": "Assigning to count inside click() made it a local variable, so reading it first raised UnboundLocalError. 'global count' fixes it.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "click",
+    "sample": "print(click(), click())",
+    "tests": [
+      {
+        "name": "three clicks",
+        "expected": [
+          1,
+          2,
+          3
+        ],
+        "code": "result = [click(), click(), click()]",
+        "visible": true
+      },
+      {
+        "name": "updates the module variable",
+        "expected": 1,
+        "code": "click()\nresult = count",
+        "visible": true
+      },
+      {
+        "name": "first click returns 1",
+        "expected": 1,
+        "code": "result = click()"
+      }
+    ]
+  },
+  "solution": "count = 0\n\ndef click():\n    global count\n    count += 1\n    return count\n"
+}

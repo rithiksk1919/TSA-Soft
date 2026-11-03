@@ -1,0 +1,147 @@
+{
+  "id": "ck-07",
+  "domain": "circuits",
+  "title": "A branch went dark",
+  "skills": [
+    "ck_parallel",
+    "ck_open"
+  ],
+  "difficulty": 0.55,
+  "surface_form": "parallel-open",
+  "scaffold": 1,
+  "estimated_minutes": 6,
+  "prompt": "Three branches (R1 = 1 kΩ, R2 = 2 kΩ, R3 = 500 Ω) are connected in parallel across 12 V. The battery should supply 42 mA but supplies less. Find the fault.",
+  "starter": null,
+  "hints": [
+    "Every branch should still have 12 V across it. Check that first.",
+    "Measure the current through each branch and compare it with 12 V / R.",
+    "A branch carrying 0 mA with 12 V across it is open."
+  ],
+  "explanation": "R2 is open: it carries 0 mA (expected 6 mA), so the total drops from 42 mA to 36 mA.",
+  "evaluator": {
+    "type": "circuit_fault",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "C": [
+          4,
+          0
+        ],
+        "D": [
+          6,
+          0
+        ],
+        "G": [
+          0,
+          2
+        ],
+        "E": [
+          2,
+          2
+        ],
+        "F": [
+          4,
+          2
+        ],
+        "H": [
+          6,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 12
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "A",
+          "b": "B",
+          "value": 0
+        },
+        {
+          "id": "W2",
+          "type": "wire",
+          "a": "B",
+          "b": "C",
+          "value": 0
+        },
+        {
+          "id": "W3",
+          "type": "wire",
+          "a": "C",
+          "b": "D",
+          "value": 0
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "B",
+          "b": "E",
+          "value": 1000
+        },
+        {
+          "id": "R2",
+          "type": "resistor",
+          "a": "C",
+          "b": "F",
+          "value": 2000
+        },
+        {
+          "id": "R3",
+          "type": "resistor",
+          "a": "D",
+          "b": "H",
+          "value": 500
+        },
+        {
+          "id": "W4",
+          "type": "wire",
+          "a": "E",
+          "b": "G",
+          "value": 0
+        },
+        {
+          "id": "W5",
+          "type": "wire",
+          "a": "F",
+          "b": "E",
+          "value": 0
+        },
+        {
+          "id": "W6",
+          "type": "wire",
+          "a": "H",
+          "b": "F",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [
+      "voltage",
+      "current",
+      "resistance"
+    ],
+    "fault": {
+      "component": "R2",
+      "kind": "open"
+    },
+    "value_tolerance": 0.1
+  },
+  "solution": {
+    "component": "R2",
+    "kind": "open"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "id": "py-scope-03",
+  "domain": "python",
+  "title": "Longest word",
+  "skills": [
+    "py_scope"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "loop-variable",
+  "scaffold": 0,
+  "estimated_minutes": 6,
+  "prompt": "longest_word(words) returns the longest word (the first one on a tie), or \"\" if there are no words. It returns the wrong word, and crashes on an empty list.",
+  "starter": "def longest_word(words):\n    # first longest word, or \"\" for an empty list\n    longest = \"\"\n    for word in words:\n        if len(word) > len(longest):\n            longest = word\n    return word\n",
+  "hints": [
+    "Which variable holds the answer, and which one is returned?",
+    "After the loop, 'word' still holds the last item it saw. If the loop never ran, 'word' was never created at all.",
+    "Return 'longest'."
+  ],
+  "explanation": "The function returned the loop variable 'word', which still held the last item after the loop and did not exist at all for an empty list. It should return 'longest'.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "longest_word",
+    "sample": "print(longest_word([\"hi\", \"hello\", \"yo\"]))",
+    "tests": [
+      {
+        "name": "longest in the middle",
+        "expected": "hello",
+        "args": [
+          [
+            "hi",
+            "hello",
+            "yo"
+          ]
+        ]
+      },
+      {
+        "name": "tie keeps the first",
+        "expected": "abc",
+        "args": [
+          [
+            "abc",
+            "xyz",
+            "a"
+          ]
+        ]
+      },
+      {
+        "name": "empty list",
+        "expected": "",
+        "args": [
+          []
+        ]
+      },
+      {
+        "name": "single word",
+        "expected": "solo",
+        "args": [
+          [
+            "solo"
+          ]
+        ]
+      }
+    ]
+  },
+  "solution": "def longest_word(words):\n    longest = \"\"\n    for word in words:\n        if len(word) > len(longest):\n            longest = word\n    return longest\n"
+}
