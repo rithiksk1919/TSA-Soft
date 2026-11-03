@@ -57,6 +57,14 @@
 
   SB.atShelf = function () { return cameraTarget === 0 && !cam.moving(); };
 
+  // Read-only view of the page state, for tests and debugging.
+  SB.debug = {
+    scene: function () { return cameraTarget; },
+    p: function () { return cam.x; },
+    drawer: function () { return drawer.state; },
+    idle: function () { return SB.activeSprings() === 0; }
+  };
+
   function go(target) {
     if (SB.bookOpen && SB.bookOpen()) return;
     if (drawer.state !== "closed") return;

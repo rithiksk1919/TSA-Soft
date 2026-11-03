@@ -44,16 +44,9 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  function average(s) {
-    return s.skills.reduce(function (a, k) { return a + k.mastery; }, 0) / s.skills.length;
-  }
-  function level(k) {
-    if (k.mastered) return "Mastered · transfer check passed";
-    if (k.mastery < 0.4) return "Beginning";
-    if (k.mastery < 0.6) return "Developing";
-    if (k.mastery < 0.8) return "Proficient";
-    return "Near mastery";
-  }
+  // Pure logic lives in logic.js so it can be unit tested.
+  function average(s) { return SBLogic.averageMastery(s.skills); }
+  function level(k) { return SBLogic.levelLabel(k); }
   function depthOf(s) { return Math.round(s.book.height * 0.66); }
 
   /* ---------- Logos (inline SVG, currentColor) ---------- */

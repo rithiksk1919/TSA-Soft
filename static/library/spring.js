@@ -15,6 +15,7 @@
   };
 
   var REST_V = 0.001, REST_X = 0.0005;
+  var active = 0;   // springs currently running a frame loop
 
   // One-shot form, as specified.
   function spring(from, to, cfg, onUpdate) {
@@ -22,12 +23,13 @@
     return new Promise(function (resolve) {
       if (reduce.matches) { onUpdate(to, 0); resolve(); return; }
       var x = from, v = cfg.velocity || 0, last = performance.now();
+      active++;
       function frame(now) {
         var dt = Math.min((now - last) / 1000, 1 / 30); last = now;
         var a = (-stiffness * (x - to) - damping * v) / mass;
         v += a * dt; x += v * dt;
         onUpdate(x, v);
-        if (Math.abs(v) < REST_V && Math.abs(x - to) < REST_X) { onUpdate(to, 0); resolve(); return; }
+        if (Math.abs(v) < REST_V && Math.abs(x - to) < REST_X) { onUpdate(to, 0); active--; resolve(); return; }
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
@@ -41,6 +43,7 @@
     var mass = cfg.mass || 1;
 
     function finish() {
+      if (s.raf) active--;
       s.x = s.target; s.v = 0; s.raf = 0;
       onUpdate(s.x, 0);
       var w = s.waiting; s.waiting = [];
@@ -56,7 +59,7 @@
     }
     function run() {
       if (reduce.matches) { if (s.raf) cancelAnimationFrame(s.raf); finish(); return; }
-      if (!s.raf) { s.last = performance.now(); s.raf = requestAnimationFrame(frame); }
+      if (!s.raf) { s.last = performance.now(); active++; s.raf = requestAnimationFrame(frame); }
     }
 
     s.to = function (target, opts) {
@@ -73,10 +76,13 @@
       run();
       return p;
     };
+    // Set the value with no motion. Anything awaiting the old motion is released, not left hanging.
     s.jump = function (x) {
-      if (s.raf) cancelAnimationFrame(s.raf);
+      if (s.raf) { cancelAnimationFrame(s.raf); active--; }
       s.raf = 0; s.x = s.target = x; s.v = 0;
       onUpdate(x, 0);
+      var w = s.waiting; s.waiting = [];
+      w.forEach(function (r) { r(); });
     };
     s.moving = function () { return !!s.raf; };
     return s;
@@ -87,4 +93,5 @@
   window.SkillBridge.createSpring = createSpring;
   window.SkillBridge.PRESETS = PRESETS;
   window.SkillBridge.reducedMotion = function () { return reduce.matches; };
+  window.SkillBridge.activeSprings = function () { return active; };
 })();
