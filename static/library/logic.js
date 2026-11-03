@@ -61,7 +61,42 @@
     return b ? b.name : BOXES[0].name;
   }
 
+  /* ---------- Spring integration (shared by spring.js and the tests) ---------- */
+
+  // One semi-implicit Euler step. cfg: stiffness, damping, mass, and optional hard stops
+  // min / max with restitution (0 = dead stop, 1 = perfect bounce). A stop is a wall the
+  // value cannot pass: a drawer cannot travel into the cabinet past its closed position.
+  function stepSpring(st, cfg, dt) {
+    var mass = cfg.mass || 1;
+    var a = (-cfg.stiffness * (st.x - st.target) - cfg.damping * st.v) / mass;
+    var v = st.v + a * dt;
+    var x = st.x + v * dt;
+    var e = typeof cfg.restitution === "number" ? cfg.restitution : 0.2;
+    if (typeof cfg.min === "number" && x < cfg.min) { x = cfg.min; v = v < 0 ? -v * e : v; }
+    if (typeof cfg.max === "number" && x > cfg.max) { x = cfg.max; v = v > 0 ? -v * e : v; }
+    return { x: x, v: v, target: st.target };
+  }
+
+  var REST_V = 0.001, REST_X = 0.0005;
+  function atRest(st) { return Math.abs(st.v) < REST_V && Math.abs(st.x - st.target) < REST_X; }
+
+  // Run a spring to rest at a fixed frame rate; returns the trace (for tests).
+  function simulateSpring(from, to, cfg, fps, maxSeconds) {
+    var st = { x: from, v: cfg.velocity || 0, target: to }, dt = 1 / fps, out = [], t = 0;
+    var limit = (maxSeconds || 5) * fps;
+    for (var i = 0; i < limit; i++) {
+      st = stepSpring(st, cfg, Math.min(dt, 1 / 30));
+      t += dt;
+      out.push({ t: t, x: st.x, v: st.v });
+      if (atRest(st)) break;
+    }
+    return out;
+  }
+
   return {
+    stepSpring: stepSpring,
+    atRest: atRest,
+    simulateSpring: simulateSpring,
     clamp: clamp,
     round2: round2,
     averageMastery: averageMastery,

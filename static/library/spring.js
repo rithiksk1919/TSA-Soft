@@ -13,6 +13,9 @@
     flip:   { stiffness: 200, damping: 24 },  // 0.85: nearly no overshoot
     stuck:  { stiffness: 400, damping: 12 }   // 0.30: a short shake
   };
+  // A drawer's travel: the drawer spring with a stop at closed (0). Without the stop the
+  // close undershoots past 0 and the face slips behind the cabinet front (the close flicker).
+  PRESETS.drawerTravel = { stiffness: 170, damping: 20, min: 0, restitution: 0.18 };
 
   var REST_V = 0.001, REST_X = 0.0005;
   var active = 0;   // springs currently running a frame loop
@@ -40,8 +43,6 @@
   // so a move that reverses mid-flight bends smoothly instead of restarting.
   function createSpring(cfg, onUpdate, initial) {
     var s = { x: initial || 0, v: 0, target: initial || 0, raf: 0, last: 0, waiting: [] };
-    var mass = cfg.mass || 1;
-
     function finish() {
       if (s.raf) active--;
       s.x = s.target; s.v = 0; s.raf = 0;
@@ -51,9 +52,9 @@
     }
     function frame(now) {
       var dt = Math.min((now - s.last) / 1000, 1 / 30); s.last = now;
-      var a = (-cfg.stiffness * (s.x - s.target) - cfg.damping * s.v) / mass;
-      s.v += a * dt; s.x += s.v * dt;
-      if (Math.abs(s.v) < REST_V && Math.abs(s.x - s.target) < REST_X) { finish(); return; }
+      var next = window.SBLogic.stepSpring(s, cfg, dt);   // same integrator the unit tests run
+      s.x = next.x; s.v = next.v;
+      if (window.SBLogic.atRest(s)) { finish(); return; }
       onUpdate(s.x, s.v);
       s.raf = requestAnimationFrame(frame);
     }
@@ -85,6 +86,16 @@
       w.forEach(function (r) { r(); });
     };
     s.moving = function () { return !!s.raf; };
+    // Resolves once the value is within eps of the target and slow: close enough to start the next motion.
+    s.near = function (eps) {
+      eps = eps || 0.02;
+      return new Promise(function (resolve) {
+        (function check() {
+          if (!s.raf || (Math.abs(s.x - s.target) < eps && Math.abs(s.v) < 0.5)) { resolve(); return; }
+          requestAnimationFrame(check);
+        })();
+      });
+    };
     return s;
   }
 

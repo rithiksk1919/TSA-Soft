@@ -200,9 +200,9 @@
         slot.style.transform = "translate3d(" + (v.shake * 3).toFixed(2) + "px,0," + (1 + v.hover * 10 + v.open * G.openZ).toFixed(2) + "px)";
         slot.classList.toggle("is-hover", v.hover > 0.5 && drawer.state === "closed");
       };
-      v.hoverS = SB.createSpring(P.drawer, function (x) { v.hover = x; v.render(); }, 0);
+      v.hoverS = SB.createSpring(P.drawerTravel, function (x) { v.hover = x; v.render(); }, 0);
       v.shakeS = SB.createSpring(P.stuck, function (x) { v.shake = x; v.render(); }, 0);
-      v.openS = SB.createSpring(P.drawer, function (x) { v.open = x; v.render(); renderRig(v); }, 0);
+      v.openS = SB.createSpring(P.drawerTravel, function (x) { v.open = x; v.render(); renderRig(v); }, 0);
       v.render();
       bindDrawer(v);
       return v;
@@ -238,7 +238,7 @@
     b.addEventListener("blur", off);
     b.addEventListener("click", function () {
       if (!v.d.active) { stuck(v); return; }
-      if (drawer.state === "closed") openDrawer(v);
+      if (drawer.state === "closed" || (drawer.state === "closing" && drawer.view === v)) openDrawer(v);
     });
   }
 
@@ -385,10 +385,22 @@
     };
   }
 
-  function staggered(list, fn, gap) {
-    return Promise.all(list.map(function (it, i) {
-      return wait(i * gap).then(function () { return fn(it); });
-    }));
+  // Card choreography. moves: [{ it, pose, bump, delay }]. A new choreography supersedes any
+  // starts still pending from the previous one (re-target, never stack). Resolves when every
+  // moved card is near its pose, so the next motion can begin without waiting on the long tail.
+  var chorSeq = 0;
+  function choreograph(moves) {
+    var my = ++chorSeq;
+    return Promise.all(moves.map(function (mv) {
+      return wait(mv.delay || 0).then(function () {
+        if (my !== chorSeq) return;
+        moveItem(mv.it, mv.pose, mv.bump || 0);
+        return mv.it.sp.near(0.03);
+      });
+    })).then(function () { return my === chorSeq; });
+  }
+  function staggerMoves(list, poseFn, gap, bump) {
+    return list.map(function (it, i) { return { it: it, pose: poseFn(it), bump: bump, delay: i * gap }; });
   }
 
   // focusable: in the Tab order. clickable: reachable by pointer (a superset).
@@ -423,26 +435,36 @@
     return out;
   }
 
+  // Open and close are sequences on one token: starting either supersedes the other, and the
+  // springs are re-targeted from where they are (keeping velocity), never restarted or stacked.
+  var seq = 0;
+
+  function lockOthers(v, locked) {
+    drawerViews.forEach(function (o) { if (o !== v) o.btn.tabIndex = locked ? -1 : 0; });
+    el.toShelf.inert = locked;
+    el.toShelf.style.opacity = locked ? "0" : "";
+  }
+
   function openDrawer(v) {
+    if (drawer.view && drawer.view !== v) return;                    // another drawer is in use
+    if (drawer.state !== "closed" && drawer.state !== "closing") return;
+    var my = ++seq;
+    var reopening = drawer.state === "closing";
     drawer.state = "opening";
     drawer.view = v;
-    chosen = -1;
+    if (!reopening) chosen = -1;
     v.btn.setAttribute("aria-expanded", "true");
     v.hoverS.to(0);
-    drawerViews.forEach(function (o) { if (o !== v) o.btn.tabIndex = -1; });
-    el.toShelf.inert = true;
-    el.toShelf.style.opacity = "0";
-
-    var reached = false, pop;
-    pop = new Promise(function (resolve) {
-      var check = setInterval(function () {
-        if (v.open > 0.97 || SB.reducedMotion()) { clearInterval(check); resolve(); }
-      }, 16);
-    });
+    lockOthers(v, true);
     v.openS.to(1);
-    return pop.then(function () { return wait(250); }).then(function () {
-      return staggered(popOrder(), function (it) { return moveItem(it, groupsPose(it), -26); }, 35);
+    return v.openS.near(0.03).then(function () {
+      if (my !== seq) return;
+      return wait(250);
     }).then(function () {
+      if (my !== seq) return;
+      return choreograph(staggerMoves(popOrder(), groupsPose, 35, -26));
+    }).then(function () {
+      if (my !== seq) return;
       drawer.state = "groups";
       renderBar();
       el.bar.hidden = false;
@@ -451,7 +473,6 @@
       var first = $(".subj", el.subjects);
       if (first) first.focus({ preventScroll: true });
       announce("Flashcards drawer open. " + data.total + " cards in " + groups.length + " subjects. Choose a subject.");
-      reached = true;
     });
   }
 
@@ -464,9 +485,10 @@
     setHint("Choose a mistake to review");
     // Others sink back into the drawer; the chosen subject's cards spread out.
     var sinking = items.filter(function (it) { return it.g !== g && it.kind !== "filler"; }).concat([gr.divider]);
-    staggered(sinking.reverse(), function (it) { return moveItem(it, it.home, 0); }, 18);
-    staggered(gr.cards, function (it) { return moveItem(it, subjectPose(it), -14); }, 35).then(function () {
-      if (chosen !== g) return;
+    var moves = staggerMoves(sinking.reverse(), function (it) { return it.home; }, 18, 0)
+      .concat(staggerMoves(gr.cards, subjectPose, 35, -14));
+    choreograph(moves).then(function (current) {
+      if (!current || chosen !== g || drawer.state !== "subject") return;
       setItemsReachable(gr.cards);
       gr.cards[0].el.focus({ preventScroll: true });
     });
@@ -479,30 +501,32 @@
     chosen = -1;
     renderBar();
     setHint("Choose a subject");
-    staggered(popOrder(), function (it) { return moveItem(it, groupsPose(it), 0); }, 20);
+    choreograph(staggerMoves(popOrder(), groupsPose, 20, 0));
     setItemsReachable(dividers(), groupItems());
     var first = $(".subj", el.subjects);
     if (first) first.focus({ preventScroll: true });
   }
 
+  // Close: cards drop back in (reverse stagger), then the drawer springs home against its stop,
+  // and only then do the state flags change. Nothing is hidden or re-rendered during the motion.
   function closeDrawer() {
     var v = drawer.view;
-    if (!v || drawer.state === "opening" || drawer.state === "closing" || drawer.state === "review") return;
+    if (!v || drawer.state === "closing" || drawer.state === "review" || drawer.state === "closed") return;
+    var my = ++seq;
     drawer.state = "closing";
     el.bar.hidden = true;
     setHint("");
     setItemsReachable([]);
-    var up = popOrder().reverse();
-    staggered(up, function (it) { return moveItem(it, it.home, 0); }, 22).then(function () {
+    return choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0)).then(function () {
+      if (my !== seq) return;
       return v.openS.to(0);
     }).then(function () {
+      if (my !== seq) return;
       drawer.state = "closed";
       drawer.view = null;
       chosen = -1;
       v.btn.setAttribute("aria-expanded", "false");
-      drawerViews.forEach(function (o) { o.btn.tabIndex = 0; });
-      el.toShelf.inert = false;
-      el.toShelf.style.opacity = "";
+      lockOthers(v, false);
       v.btn.focus({ preventScroll: true });
       announce("Flashcards drawer closed.");
     });
@@ -689,7 +713,7 @@
     if (SB.bookOpen && SB.bookOpen()) return;
     if (drawer.state === "review") { e.preventDefault(); exitReview(); }
     else if (drawer.state === "subject") { e.preventDefault(); backToGroups(); }
-    else if (drawer.state === "groups") { e.preventDefault(); closeDrawer(); }
+    else if (drawer.state === "groups" || drawer.state === "opening") { e.preventDefault(); closeDrawer(); }
   });
 
   var resizeTimer = 0;
