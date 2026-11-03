@@ -1,0 +1,92 @@
+{
+  "_note": "Mock data for the Practice your mistakes cabinet.",
+  "drawers": [
+    { "id": "flashcards", "call": "FC 01", "title": "Flashcards", "sub": "Mistakes to review", "active": true },
+    { "id": "index", "call": "MI 02", "title": "Mistakes index", "sub": "What you got wrong" },
+    { "id": "worked", "call": "WE 03", "title": "Worked examples", "sub": "Solved step by step" },
+    { "id": "diagnostic", "call": "DG 04", "title": "Diagnostic", "sub": "Find your starting point" },
+    { "id": "history", "call": "HI 05", "title": "History", "sub": "Past attempts" },
+    { "id": "learned", "call": "LE 06", "title": "Learned", "sub": "Cards you have mastered" }
+  ],
+  "subjects": [
+    {
+      "id": "physics", "name": "Physics", "accent": "#2D4A6E",
+      "mistakes": [
+        {
+          "id": "phy-normal", "call": "PHY 1.1", "title": "Normal force on an incline",
+          "cards": [
+            { "front": "A block rests on a 30° incline. A student writes N = mg. What did they miss?",
+              "back": "The normal force only balances the part of gravity that pushes into the surface: N = mg cos 30° ≈ 0.87 mg. Writing mg overstates it by about 15%." },
+            { "front": "Which part of the weight pulls the block down the slope?",
+              "back": "mg sin θ, along the slope. The other part, mg cos θ, presses into the surface and is the one the normal force cancels." }
+          ]
+        },
+        {
+          "id": "phy-friction", "call": "PHY 1.2", "title": "Friction left out of the net force",
+          "cards": [
+            { "front": "A box is pushed with 40 N across a floor; kinetic friction is 12 N. A student uses 40 N for the net force. What is wrong?",
+              "back": "Friction acts against the motion, so the net force is 40 N − 12 N = 28 N. Use the net force in F = ma, not the applied force." },
+            { "front": "Which way does kinetic friction point?",
+              "back": "Opposite to the direction the surfaces slide past each other, whatever direction the push is." }
+          ]
+        },
+        {
+          "id": "phy-series", "call": "PHY 3.1", "title": "Current in a series circuit",
+          "cards": [
+            { "front": "Two resistors are in series. A student says the current is larger through the smaller one. Why is that wrong?",
+              "back": "A series circuit has one path, so the same current flows through every part of it. The smaller resistor has a smaller voltage across it, not a larger current." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chemistry", "name": "Chemistry", "accent": "#7B3F36",
+      "mistakes": [
+        {
+          "id": "chem-molar", "call": "CHE 2.1", "title": "Moles back to grams",
+          "cards": [
+            { "front": "0.50 mol of water. A student divides by 18 g/mol to get grams. What went wrong?",
+              "back": "Going from moles to grams, multiply by the molar mass: 0.50 mol × 18 g/mol = 9.0 g. Divide only when going from grams to moles." },
+            { "front": "How can the units tell you whether to multiply or divide?",
+              "back": "Write the units in. mol × g/mol leaves grams; mol ÷ g/mol leaves mol²/g, which is not a mass." }
+          ]
+        },
+        {
+          "id": "chem-diatomic", "call": "CHE 2.2", "title": "O versus O₂",
+          "cards": [
+            { "front": "A student uses 16 g/mol for oxygen gas. Why is the answer off by a factor of 2?",
+              "back": "Oxygen gas is O₂, so its molar mass is 2 × 16 = 32 g/mol." }
+          ]
+        },
+        {
+          "id": "chem-limiting", "call": "CHE 2.4", "title": "Picking the limiting reagent",
+          "cards": [
+            { "front": "2H₂ + O₂ → 2H₂O with 3 mol H₂ and 2 mol O₂. A student picks O₂ as limiting because there is less of it. Check it.",
+              "back": "Compare against the ratio. 3 mol H₂ needs 1.5 mol O₂, and there are 2 mol, so H₂ runs out first. H₂ is limiting." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "biology", "name": "Biology", "accent": "#2F5B47",
+      "mistakes": [
+        {
+          "id": "bio-template", "call": "BIO 4.1", "title": "Reading the template strand",
+          "cards": [
+            { "front": "A student reads codons straight off the DNA template strand. What should they read instead?",
+              "back": "Transcribe first. The mRNA is complementary to the template, with U in place of T, and codons are read from the mRNA, 5′ to 3′." },
+            { "front": "Template 3′-TAC-5′. What is the mRNA codon?",
+              "back": "5′-AUG-3′, the start codon, which codes for methionine." }
+          ]
+        },
+        {
+          "id": "bio-stop", "call": "BIO 4.2", "title": "Translating past a stop codon",
+          "cards": [
+            { "front": "mRNA: AUG GCU UAA GGC. A student lists four amino acids. How many are there?",
+              "back": "Two. UAA is a stop codon, so translation ends there: Met, then Ala." }
+          ]
+        }
+      ]
+    }
+  ]
+}

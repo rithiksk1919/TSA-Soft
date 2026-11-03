@@ -1,0 +1,114 @@
+{
+  "learner": { "name": "Priya Nair", "initials": "PN" },
+  "subjects": [
+    {
+      "id": "physics",
+      "name": "Physics",
+      "accent": "#2D4A6E",
+      "logo": "atom",
+      "book": { "width": 78, "height": 214 },
+      "skills": [
+        { "name": "Kinematics", "mastery": 0.66 },
+        { "name": "Newton’s laws", "mastery": 0.41, "note": "Next up" },
+        { "name": "Energy and work", "mastery": 0.58 },
+        { "name": "Ohm’s law", "mastery": 0.71 },
+        { "name": "Series circuits", "mastery": 0.44 }
+      ],
+      "next": {
+        "id": "phy-incline-forces",
+        "title": "Find the wrong step: forces on a block on an incline",
+        "skill": "Newton’s laws",
+        "type": "Find the wrong step",
+        "mastery": 0.41,
+        "difficulty": 0.51,
+        "why": "Newton’s laws is your lowest physics skill and you missed 3 of your last 5 force problems. This scenario sits just above your level, so it should feel like a stretch, not a wall.",
+        "log": [
+          ["skill", "Newton’s laws"],
+          ["mastery", "0.41"],
+          ["error_rate", "0.60  (3 of last 5)"],
+          ["priority", "(1 - 0.41) + 0.3 x 0.60 = 0.77"],
+          ["target", "0.41 + 0.10 = 0.51"],
+          ["prereq", "Kinematics 0.66 >= 0.50  ok"],
+          ["skip", "none"],
+          ["hint_dep", "no"]
+        ],
+        "mistakes": [
+          "Took the normal force as mg instead of mg cos θ.",
+          "Left friction out of the net force along the slope."
+        ]
+      }
+    },
+    {
+      "id": "chemistry",
+      "name": "Chemistry",
+      "accent": "#7B3F36",
+      "logo": "flask",
+      "book": { "width": 70, "height": 192 },
+      "skills": [
+        { "name": "Periodic trends", "mastery": 0.84, "mastered": true },
+        { "name": "Balancing equations", "mastery": 0.58 },
+        { "name": "Mole conversions", "mastery": 0.33, "note": "Next up" },
+        { "name": "Stoichiometry", "mastery": 0.29, "note": "Needs Mole conversions ≥ 0.5" },
+        { "name": "Acids and bases", "mastery": 0.47 }
+      ],
+      "next": {
+        "id": "chem-grams-moles-grams",
+        "title": "Find the wrong step: grams to moles to grams",
+        "skill": "Mole conversions",
+        "type": "Find the wrong step",
+        "mastery": 0.33,
+        "difficulty": 0.43,
+        "why": "Stoichiometry has a lower score, but it builds on mole conversions, which isn’t solid yet. Fixing mole conversions first makes the next stoichiometry problems fair.",
+        "log": [
+          ["skill", "Mole conversions"],
+          ["mastery", "0.33"],
+          ["error_rate", "0.40  (2 of last 5)"],
+          ["priority", "(1 - 0.33) + 0.3 x 0.40 = 0.79"],
+          ["target", "0.33 + 0.10 = 0.43"],
+          ["skip", "Stoichiometry: prereq 0.33 < 0.50"],
+          ["hint_dep", "no"]
+        ],
+        "mistakes": [
+          "Divided by molar mass when converting moles back to grams.",
+          "Used the molar mass of O instead of O₂."
+        ]
+      }
+    },
+    {
+      "id": "biology",
+      "name": "Biology",
+      "accent": "#2F5B47",
+      "logo": "dna",
+      "book": { "width": 74, "height": 204 },
+      "skills": [
+        { "name": "Cell structure", "mastery": 0.82, "mastered": true },
+        { "name": "Photosynthesis", "mastery": 0.63 },
+        { "name": "Mendelian genetics", "mastery": 0.52 },
+        { "name": "Protein synthesis", "mastery": 0.38, "note": "Next up" },
+        { "name": "Natural selection", "mastery": 0.69 }
+      ],
+      "next": {
+        "id": "bio-dna-to-protein",
+        "title": "Find the wrong step: from DNA to protein",
+        "skill": "Protein synthesis",
+        "type": "Find the wrong step",
+        "mastery": 0.38,
+        "difficulty": 0.48,
+        "why": "You solved recent protein synthesis items only after opening hints. This version gives you a scaffold for the first step, then leaves the rest to you.",
+        "log": [
+          ["skill", "Protein synthesis"],
+          ["mastery", "0.38"],
+          ["error_rate", "0.40  (2 of last 5)"],
+          ["priority", "(1 - 0.38) + 0.3 x 0.40 = 0.74"],
+          ["target", "0.38 + 0.10 = 0.48"],
+          ["skip", "none"],
+          ["hint_dep", "yes: scaffolded scenario"]
+        ],
+        "mistakes": [
+          "Read the codon from the DNA template strand, not the mRNA.",
+          "Translated past the stop codon UAA."
+        ]
+      }
+    }
+  ]
+}

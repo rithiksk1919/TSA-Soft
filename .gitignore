@@ -1,0 +1,8 @@
+node_modules/
+test-results/
+playwright-report/
+qa/traces/*.json
+.taste-skill/
+# Agent tooling, not part of the app
+.agents/
+.aider-desk/

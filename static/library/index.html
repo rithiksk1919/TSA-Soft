@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkillBridge Library</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#F4F2EE">
+<link rel="preload" href="assets/fonts/source-serif-4-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="library.css">
+<link rel="stylesheet" href="cabinet.css">
+</head>
+<body>
+<div class="library" id="library">
+  <header class="top" id="top">
+    <a class="brand" href="./" aria-label="SkillBridge library">
+      <svg class="brand__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M2.5 17.5h19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M4.5 17.5c0-6 3.4-10 7.5-10s7.5 4 7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8.5 17.5v-5.2M12 17.5V7.5M15.5 17.5v-5.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="brand__name" translate="no">SkillBridge</span>
+    </a>
+    <p class="learner" id="learner"><span class="learner__initials" aria-hidden="true">PN</span><span><span class="learner__name">Priya Nair</span> · Saved on this device</span></p>
+  </header>
+
+  <main class="main">
+    <!-- Headings crossfade with the camera progress p -->
+    <div class="headings">
+      <div class="intro heading heading--a" id="intro">
+        <h1 class="intro__title" id="h-a" tabindex="-1">Learn your mistakes</h1>
+        <p class="intro__lede">Open a book to see what trips you up and why.</p>
+      </div>
+      <div class="intro heading heading--b" id="intro-b">
+        <h1 class="intro__title" id="h-b" tabindex="-1">Practice your mistakes</h1>
+        <p class="intro__lede">Each drawer holds a different kind of practice.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- One stage, two scenes on a horizontal track -->
+  <div class="world" id="world">
+    <div class="cam-stage" id="cam-stage">
+      <div class="layer layer--wall" aria-hidden="true"></div>
+      <div class="layer layer--floor" aria-hidden="true"><span class="floor-shadow" id="cab-shadow"></span></div>
+      <div class="track" id="track">
+
+        <section class="panel panel--a" id="scene-a" aria-labelledby="h-a">
+          <div class="panel-a__row">
+            <div class="shelf-wrap" id="shelf-wrap">
+              <div class="scene" id="scene">
+                <div class="rig" id="rig">
+                  <div class="shelf">
+                    <div class="shelf__back" aria-hidden="true"></div>
+                    <div class="shelf__board-top" aria-hidden="true"></div>
+                    <div class="shelf__board-front" aria-hidden="true"></div>
+                    <ul class="shelf__row" id="shelf-row" aria-label="Subjects"></ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="nav-arrow" id="to-cabinet" type="button" aria-label="Practice your mistakes: go to the card cabinet">
+              <span class="nav-arrow__circle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="nav-arrow__label">Practice them</span>
+            </button>
+          </div>
+          <p class="shelf-error" id="shelf-error" hidden></p>
+        </section>
+
+        <section class="panel panel--b" id="scene-b" aria-labelledby="h-b">
+          <button class="nav-arrow nav-arrow--back" id="to-shelf" type="button" aria-label="Learn your mistakes: go back to the bookshelf">
+            <span class="nav-arrow__circle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M16 10H5M9 5.5 4.5 10 9 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="nav-arrow__label">Learn</span>
+          </button>
+
+          <div class="drawer-bar" id="drawer-bar" hidden>
+            <p class="drawer-bar__title"><span>Flashcards</span> <span class="drawer-bar__count" id="drawer-count"></span></p>
+            <div class="drawer-bar__subjects" id="subject-buttons" role="group" aria-label="Choose a subject"></div>
+            <button class="drawer-bar__close" id="close-drawer" type="button">Close Drawer</button>
+          </div>
+          <p class="drawer-hint" id="drawer-hint" hidden></p>
+
+          <div class="cab-scene" id="cab-scene">
+            <div class="cab-rig" id="cab-rig">
+              <span class="cab__face cab__front" id="cab-front"></span>
+              <span class="cab__face cab__cornice"></span>
+              <span class="cab__face cab__top"></span>
+              <span class="cab__face cab__side cab__side--r"><span class="cab__plate">SkillBridge · Card catalog</span></span>
+              <span class="cab__face cab__side cab__side--l"></span>
+              <span class="cab__scrim" id="cab-scrim"></span>
+              <div class="drawers" id="drawers"></div>
+            </div>
+          </div>
+
+          <div class="review" id="review" hidden>
+            <div class="review__scrim" id="review-scrim"></div>
+            <div class="review__body">
+              <p class="review__progress" id="review-progress" aria-live="polite"></p>
+              <div class="review__stage">
+                <div class="rcard-fly" id="rcard-fly">
+                  <div class="rcard" id="rcard">
+                    <div class="rcard__face rcard__front" id="rcard-front"></div>
+                    <div class="rcard__face rcard__back" id="rcard-back"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="review__actions" id="review-actions"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot" id="foot">
+    <p>Type: IBM Plex Sans and IBM Plex Mono (IBM) and Source Serif 4 (Adobe), each under the SIL Open Font License 1.1.</p>
+  </footer>
+</div>
+
+<!-- The open book. Its two pages are the subject dashboard. -->
+<div class="reader" id="reader" role="region" aria-label="Open book">
+  <div class="reader__bg" aria-hidden="true"></div>
+  <div class="reader__inner">
+    <div class="reader__bar">
+      <button class="back" id="back" type="button">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back to library
+      </button>
+    </div>
+    <div class="stage" id="stage">
+      <div class="cam" id="cam">
+        <div class="tilt" id="tilt">
+          <div class="spread" id="spread">
+            <div class="leaf" id="leaf">
+              <section class="page page--left" aria-labelledby="where-title">
+                <div class="page__inner" id="page-left"></div>
+                <div class="shade shade--left" id="shade-left" aria-hidden="true"></div>
+              </section>
+              <div class="cover cover--leaf" id="leaf-cover" aria-hidden="true"></div>
+            </div>
+            <section class="page page--right" aria-labelledby="next-title">
+              <span class="ribbon" aria-hidden="true"></span>
+              <div class="page__inner" id="page-right"></div>
+              <div class="shade shade--right" id="shade-right" aria-hidden="true"></div>
+            </section>
+            <div class="edges" id="edges" aria-hidden="true">
+              <i class="edge edge--r-top"></i>
+              <i class="edge edge--r-bottom"></i>
+              <i class="edge edge--r-fore"></i>
+              <i class="edge edge--r-spine"></i>
+            </div>
+            <div class="edges edges--left" id="edges-left" aria-hidden="true">
+              <i class="edge edge--l-bottom"></i>
+              <i class="edge edge--l-fore"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="visually-hidden" id="announcer" aria-live="polite"></p>
+
+<script src="spring.js"></script>
+<script src="library.js"></script>
+<script src="cabinet.js"></script>
+</body>
+</html>
