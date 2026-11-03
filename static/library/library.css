@@ -205,6 +205,12 @@ body {
   transform: translateZ(var(--board-proud));
 }
 
+/* The scene, rig, shelf, row, back panel and board are scenery: only books take the pointer. Their
+   boxes are coplanar with the spines (z = 0), so without this they can win the hit test and
+   swallow a click on a spine. */
+.scene, .rig, .shelf, .shelf__row, .shelf__back, .shelf__board-top, .shelf__board-front { pointer-events: none; }
+.slot { pointer-events: auto; }
+.slot--empty { pointer-events: none; }
 .shelf__row {
   position: absolute;
   left: 0; right: 0; top: 0;
@@ -776,3 +782,7 @@ body {
   .logo .bubble { opacity: .7; }
   .live-logo:hover { transform: none; }
 }
+
+/* Spine and cover lettering is painted from data-text: it decorates the spine button, whose name is
+   its aria-label ("Open the Physics book"); a text node there would break label-in-name. */
+.spine__title::before, .spine__score::before, .cover__title::before, .cover__meta::before { content: attr(data-text); }

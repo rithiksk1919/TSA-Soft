@@ -1,0 +1,118 @@
+{
+  "_note": "Mock flashcards: 6 tagged mistakes, 2 cards each. Every answer is worked in 'explain'. g = 9.8 m/s^2, O = 16.00 g/mol.",
+  "subjects": [
+    { "id": "physics", "name": "Physics", "accent": "#2D4A6E" },
+    { "id": "chemistry", "name": "Chemistry", "accent": "#7B3F36" },
+    { "id": "biology", "name": "Biology", "accent": "#2F5B47" }
+  ],
+  "mistakes": [
+    {
+      "id": "phy-normal", "subject": "physics", "call": "PHY.NEW.001",
+      "title": "Normal force on an incline", "skill": "Newton’s laws",
+      "cards": [
+        {
+          "id": "phy-normal-1",
+          "prompt": "A 2.0 kg block rests on a 30° incline. What is the normal force on it?",
+          "options": ["19.6 N", "9.8 N", "17.0 N"], "answer": 2,
+          "explain": "N = mg cos θ = 2.0 × 9.8 × cos 30° = 19.6 × 0.866 ≈ 17.0 N. 19.6 N is mg, which ignores the tilt; 9.8 N is mg sin 30°, the part along the slope."
+        },
+        {
+          "id": "phy-normal-2",
+          "prompt": "As the incline gets steeper, what happens to the normal force on the block?",
+          "options": ["It decreases", "It increases", "It stays equal to mg"], "answer": 0,
+          "explain": "N = mg cos θ, and cos θ falls as θ grows, so N decreases. At 90° the surface is a wall and N = 0."
+        }
+      ]
+    },
+    {
+      "id": "phy-sign", "subject": "physics", "call": "PHY.KIN.002",
+      "title": "Sign of g when up is positive", "skill": "Kinematics",
+      "cards": [
+        {
+          "id": "phy-sign-1",
+          "prompt": "Up is positive. A ball is thrown straight up at 12 m/s. What is its acceleration while it rises?",
+          "options": ["+9.8 m/s²", "−9.8 m/s²", "0 m/s²"], "answer": 1,
+          "explain": "Gravity points down and down is negative here, so a = −9.8 m/s² for the whole flight, rising or falling. It is not zero at the top either."
+        },
+        {
+          "id": "phy-sign-2",
+          "prompt": "Up is positive. The same ball, thrown up at 12 m/s: what is its velocity after 2.0 s?",
+          "options": ["+31.6 m/s", "+7.6 m/s", "−7.6 m/s"], "answer": 2,
+          "explain": "v = v₀ + at = 12 + (−9.8)(2.0) = 12 − 19.6 = −7.6 m/s. The minus sign means it is already falling. +31.6 m/s comes from giving g the wrong sign."
+        }
+      ]
+    },
+    {
+      "id": "chem-molar", "subject": "chemistry", "call": "CHE.MOL.001",
+      "title": "Molar mass of a diatomic gas", "skill": "Mole conversions",
+      "cards": [
+        {
+          "id": "chem-molar-1",
+          "prompt": "What is the molar mass of oxygen gas, O₂? (O = 16.00 g/mol)",
+          "options": ["32.00 g/mol", "16.00 g/mol", "8.00 g/mol"], "answer": 0,
+          "explain": "Oxygen gas is O₂, two atoms per molecule: 2 × 16.00 = 32.00 g/mol. 16.00 g/mol is a single O atom."
+        },
+        {
+          "id": "chem-molar-2",
+          "prompt": "How many moles are in 8.0 g of O₂?",
+          "options": ["0.50 mol", "0.25 mol", "256 mol"], "answer": 1,
+          "explain": "n = m / M = 8.0 g ÷ 32.00 g/mol = 0.25 mol. 0.50 mol uses 16.00 g/mol (atomic O); 256 multiplies instead of dividing."
+        }
+      ]
+    },
+    {
+      "id": "chem-ratio", "subject": "chemistry", "call": "CHE.STO.002",
+      "title": "Mole ratio from the equation", "skill": "Stoichiometry",
+      "cards": [
+        {
+          "id": "chem-ratio-1",
+          "prompt": "2H₂ + O₂ → 2H₂O. How many moles of H₂O form from 3.0 mol of O₂, with H₂ in excess?",
+          "options": ["3.0 mol", "1.5 mol", "6.0 mol"], "answer": 2,
+          "explain": "The equation gives 2 mol H₂O per 1 mol O₂: 3.0 × 2/1 = 6.0 mol. 3.0 mol assumes 1 : 1; 1.5 mol turns the ratio upside down."
+        },
+        {
+          "id": "chem-ratio-2",
+          "prompt": "N₂ + 3H₂ → 2NH₃. How many moles of H₂ react with 2.0 mol of N₂?",
+          "options": ["6.0 mol", "2.0 mol", "0.67 mol"], "answer": 0,
+          "explain": "3 mol H₂ per 1 mol N₂: 2.0 × 3/1 = 6.0 mol. 0.67 mol divides by 3 instead of multiplying."
+        }
+      ]
+    },
+    {
+      "id": "bio-mrna", "subject": "biology", "call": "BIO.PRO.001",
+      "title": "Skipping the mRNA step", "skill": "Protein synthesis",
+      "cards": [
+        {
+          "id": "bio-mrna-1",
+          "prompt": "A DNA template strand reads 3′-TAC-5′. Which codon does the ribosome read?",
+          "options": ["TAC", "ATG", "AUG"], "answer": 2,
+          "explain": "Transcription makes mRNA complementary to the template, with U in place of T: 3′-TAC-5′ gives 5′-AUG-3′. Ribosomes read mRNA, not DNA. ATG is the coding strand in DNA letters."
+        },
+        {
+          "id": "bio-mrna-2",
+          "prompt": "Which molecule carries the codons that the ribosome reads?",
+          "options": ["mRNA", "The DNA template strand", "tRNA"], "answer": 0,
+          "explain": "mRNA carries the codons. tRNA carries the matching anticodons and brings the amino acids; DNA stays in the nucleus."
+        }
+      ]
+    },
+    {
+      "id": "bio-strand", "subject": "biology", "call": "BIO.PRO.002",
+      "title": "Codons from the wrong strand", "skill": "Protein synthesis",
+      "cards": [
+        {
+          "id": "bio-strand-1",
+          "prompt": "The coding (non-template) strand is 5′-ATG GCT-3′. What is the mRNA?",
+          "options": ["5′-UAC CGA-3′", "5′-AUG GCU-3′", "5′-ATG GCT-3′"], "answer": 1,
+          "explain": "mRNA has the same sequence as the coding strand, with U in place of T: 5′-AUG GCU-3′. UAC CGA is the complement, which is what the template strand would give if read as codons."
+        },
+        {
+          "id": "bio-strand-2",
+          "prompt": "The template strand is 3′-TAC AAA-5′. What is the second codon of the mRNA?",
+          "options": ["AAA", "TTT", "UUU"], "answer": 2,
+          "explain": "Template A pairs with U in RNA, so AAA gives the codon UUU (mRNA 5′-AUG UUU-3′). AAA is the template itself; TTT is the coding strand in DNA letters."
+        }
+      ]
+    }
+  ]
+}

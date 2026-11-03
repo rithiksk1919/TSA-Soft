@@ -1,0 +1,14 @@
+import { chromium } from "@playwright/test";
+const [variant = "base"] = process.argv.slice(2);
+const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1360, height: 860 } });
+await p.goto("http://127.0.0.1:5180/"); await p.waitForTimeout(1300);
+await p.click("#to-cabinet"); await p.waitForTimeout(1800);
+if (variant === "willchange") await p.addStyleTag({ content: ".fitem, .dslot { will-change: transform; }" });
+if (variant === "noshadow") await p.addStyleTag({ content: ".fcard, .fdivider { box-shadow: none !important; background-image: none !important; } .cab__face, .drawer, .dbox { background-image: none !important; }" });
+const cdp = await p.context().newCDPSession(p);
+await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+const fr = p.evaluate(() => new Promise((res) => { const d = []; let l = performance.now(); const t0 = l; (function f(n) { d.push(n - l); l = n; if (n - t0 < 1800) requestAnimationFrame(f); else res(d.slice(2)); })(l); }));
+await p.click('.dslot[data-i="0"] .drawer');
+const d = await fr; const mean = d.reduce((a, b) => a + b) / d.length; const s = [...d].sort((a, b) => a - b);
+console.log(`${variant}: ${(1000 / mean).toFixed(1)} fps, p95 ${s[Math.floor(s.length * .95)].toFixed(1)}ms, worst ${s.at(-1).toFixed(1)}ms`);
+await b.close();

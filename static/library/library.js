@@ -34,6 +34,7 @@
   var busy = false;
   var running = [];
   var uid = 0;
+  var releaseTrap = null;   // focus isolation while the book is open
 
   var num = new Intl.NumberFormat("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -95,9 +96,9 @@
   function coverInner(s) {
     return '<span class="cover__frame"></span>' +
       '<span class="cover__logo">' + logo(s.logo) + "</span>" +
-      '<span class="cover__title">' + esc(s.name) + "</span>" +
+      '<span class="cover__title" data-text="' + esc(s.name) + '"></span>' +
       '<span class="cover__rule"></span>' +
-      '<span class="cover__meta" translate="no">SkillBridge</span>';
+      '<span class="cover__meta" data-text="SkillBridge"></span>';
   }
 
   /* ---------- Shelf ---------- */
@@ -107,18 +108,19 @@
     return '<li class="slot" data-id="' + esc(s.id) + '" style="--w:' + w + "px;--h:" + h + "px;--d:" + d + "px;--accent:" + esc(s.accent) + '">' +
       '<span class="contact" aria-hidden="true"></span>' +
       '<div class="mover"><div class="carry">' +
-        '<button class="book" type="button" data-id="' + esc(s.id) + '" aria-label="Open the ' + esc(s.name) + ' book" aria-expanded="false" aria-controls="reader">' +
+        '<button class="book" type="button" data-id="' + esc(s.id) + '" aria-label="Open the ' + esc(s.name) + ' book" aria-describedby="desc-' + esc(s.id) + '" aria-expanded="false" aria-controls="reader">' +
+          '<span class="visually-hidden" id="desc-' + esc(s.id) + '">Average mastery ' + num.format(average(s)) + '</span>' +
           '<span class="face face--back"></span>' +
           '<span class="face face--fore"></span>' +
           '<span class="face face--top"></span>' +
           '<span class="face face--bottom"></span>' +
-          '<span class="face face--front"><span class="cover">' + coverInner(s) + "</span></span>" +
-          '<span class="face face--spine"><span class="spine">' +
+          '<span class="face face--front" aria-hidden="true"><span class="cover">' + coverInner(s) + "</span></span>" +
+          '<span class="face face--spine" aria-hidden="true"><span class="spine">' +
             logo(s.logo) +
             '<span class="spine__rule"></span>' +
-            '<span class="spine__title">' + esc(s.name) + "</span>" +
+            '<span class="spine__title" data-text="' + esc(s.name) + '"></span>' +
             '<span class="spine__rule"></span>' +
-            '<span class="spine__score">' + num.format(average(s)) + "</span>" +
+            '<span class="spine__score" data-text="' + num.format(average(s)) + '"></span>' +
           "</span></span>" +
         "</button>" +
       "</div></div></li>";
@@ -427,6 +429,8 @@
       el.library.style.visibility = "hidden";
       cancelAll();
       clearWillChange();
+      if (releaseTrap) releaseTrap();
+      releaseTrap = window.SkillBridge.ui ? window.SkillBridge.ui.isolate([el.reader]) : null;
       $("#where-title").focus({ preventScroll: true });
       announce(s.name + " book opened");
       busy = false;
@@ -437,6 +441,7 @@
     if (busy || !current) return;
     busy = true;
     var s = current, btn = opener, slot = btn.closest(".slot");
+    if (releaseTrap) { releaseTrap(); releaseTrap = null; }
     if (el.reader.contains(document.activeElement)) document.activeElement.blur();
 
     el.library.style.visibility = "";
@@ -471,8 +476,36 @@
 
   window.SkillBridge = window.SkillBridge || {};
   window.SkillBridge.bookOpen = function () { return !!current || busy; };
+  // Open a subject's book from anywhere: go to the shelf first if needed.
+  window.SkillBridge.openBook = function (id) {
+    var btn = $('.book[data-id="' + id + '"]');
+    if (!btn || current || busy) return;
+    var sb = window.SkillBridge;
+    if (!atShelf() && sb.goScene) sb.goScene(0);
+    (function whenThere(tries) {
+      if (atShelf()) { open(id, btn); return; }
+      if (tries > 300) return;
+      requestAnimationFrame(function () { whenThere(tries + 1); });
+    })(0);
+  };
 
+  // The hover lift moves the book under the pointer, so a quick press can end over a different
+  // element and the browser sends "click" to an ancestor outside the button. Open on pointerup
+  // when the press began on a book and barely moved; keyboard activation still uses click.
+  var press = null;
+  el.row.addEventListener("pointerdown", function (e) {
+    var btn = e.target.closest(".book");
+    press = btn && e.button === 0 ? { btn: btn, x: e.clientX, y: e.clientY } : null;
+  });
+  el.row.addEventListener("pointerup", function (e) {
+    if (!press) return;
+    var p = press; press = null;
+    if (Math.hypot(e.clientX - p.x, e.clientY - p.y) > 12) return;
+    p.handled = true;
+    open(p.btn.dataset.id, p.btn);
+  });
   el.row.addEventListener("click", function (e) {
+    if (e.detail !== 0) return;   // pointer clicks are handled on pointerup
     var btn = e.target.closest(".book");
     if (btn) open(btn.dataset.id, btn);
   });

@@ -22,14 +22,18 @@ export async function gotoApp(page, opts = {}) {
 }
 
 // Wait until no spring is running and no Web Animation is in flight.
-export async function settle(page, timeout = 8000) {
-  await page.waitForFunction(() => {
+// Quiet = no spring running, no finite Web Animation running, and no drawer mid-sequence.
+// It must stay quiet across two checks 300ms apart (sequences pause between motions).
+export async function settle(page, timeout = 10000) {
+  const quiet = () => page.waitForFunction(() => {
     const sb = window.SkillBridge;
     const springs = sb && sb.activeSprings ? sb.activeSprings() : 0;
     const anims = document.getAnimations().filter((a) => a.playState === "running" && a.effect && a.effect.getTiming().iterations !== Infinity).length;
-    return springs === 0 && anims === 0;
+    const st = sb && sb.debug ? sb.debug.drawer() : "closed";
+    return springs === 0 && anims === 0 && st !== "opening" && st !== "closing";
   }, null, { timeout });
-  await page.waitForTimeout(60);
+  for (let i = 0; i < 2; i++) { await quiet(); await page.waitForTimeout(300); }
+  await quiet();
 }
 
 export const state = (page) => page.evaluate(() => {

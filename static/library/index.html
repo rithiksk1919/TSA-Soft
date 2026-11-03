@@ -10,6 +10,7 @@
 <link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="library.css">
 <link rel="stylesheet" href="cabinet.css">
+<link rel="stylesheet" href="drawers.css">
 </head>
 <body>
 <div class="library" id="library">
@@ -37,6 +38,10 @@
         <p class="intro__lede">Each drawer holds a different kind of practice.</p>
       </div>
     </div>
+    <div class="seg" role="group" aria-label="Choose a scene">
+      <button class="seg__btn" id="seg-learn" type="button" aria-pressed="true">Learn</button>
+      <button class="seg__btn" id="seg-practice" type="button" aria-pressed="false">Practice</button>
+    </div>
   </main>
 
   <!-- One stage, two scenes on a horizontal track -->
@@ -60,7 +65,7 @@
                 </div>
               </div>
             </div>
-            <button class="nav-arrow" id="to-cabinet" type="button" aria-label="Practice your mistakes: go to the card cabinet">
+            <button class="nav-arrow" id="to-cabinet" type="button" aria-label="Practice them: go to Practice your mistakes">
               <span class="nav-arrow__circle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               <span class="nav-arrow__label">Practice them</span>
             </button>
@@ -76,7 +81,9 @@
 
           <div class="drawer-bar" id="drawer-bar" hidden>
             <p class="drawer-bar__title"><span>Flashcards</span> <span class="drawer-bar__count" id="drawer-count"></span></p>
-            <div class="drawer-bar__subjects" id="subject-buttons" role="group" aria-label="Choose a subject"></div>
+            <div class="drawer-bar__subjects" id="subject-buttons"></div>
+            <div class="drawer-bar__trays" id="drawer-trays"></div>
+            <button class="drawer-bar__all" id="review-all" type="button">Review All</button>
             <button class="drawer-bar__close" id="close-drawer" type="button">Close Drawer</button>
           </div>
           <p class="drawer-hint" id="drawer-hint" hidden></p>
@@ -93,21 +100,6 @@
             </div>
           </div>
 
-          <div class="review" id="review" hidden>
-            <div class="review__scrim" id="review-scrim"></div>
-            <div class="review__body">
-              <p class="review__progress" id="review-progress" aria-live="polite"></p>
-              <div class="review__stage">
-                <div class="rcard-fly" id="rcard-fly">
-                  <div class="rcard" id="rcard">
-                    <div class="rcard__face rcard__front" id="rcard-front"></div>
-                    <div class="rcard__face rcard__back" id="rcard-back"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="review__actions" id="review-actions"></div>
-            </div>
-          </div>
         </section>
 
       </div>
@@ -120,7 +112,7 @@
 </div>
 
 <!-- The open book. Its two pages are the subject dashboard. -->
-<div class="reader" id="reader" role="region" aria-label="Open book">
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Open book">
   <div class="reader__bg" aria-hidden="true"></div>
   <div class="reader__inner">
     <div class="reader__bar">
@@ -162,11 +154,47 @@
   </div>
 </div>
 
+<!-- Drawer panel: a tray over the room on desktop, a bottom sheet under 820px -->
+<div class="sheet-scrim" id="sheet-scrim" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <header class="sheet__head">
+    <div class="sheet__heading">
+      <p class="sheet__call"></p>
+      <h2 class="sheet__title" id="sheet-title" tabindex="-1"></h2>
+      <p class="sheet__sub"></p>
+    </div>
+    <button class="sheet__close" type="button">Close Drawer</button>
+  </header>
+  <div class="sheet__body"></div>
+</section>
+
+<!-- Flashcard review: shared by the 3D fan and the sheet -->
+<div class="review" id="review" role="dialog" aria-modal="true" aria-labelledby="review-title" hidden>
+  <div class="review__scrim"></div>
+  <div class="review__body">
+    <p class="review__progress" id="review-title"></p>
+    <div class="review__stage">
+      <div class="rcard-fly">
+        <div class="rcard">
+          <div class="rcard__face rcard__front"></div>
+          <div class="rcard__face rcard__back"></div>
+        </div>
+      </div>
+    </div>
+    <div class="review__actions"></div>
+  </div>
+</div>
+
 <p class="visually-hidden" id="announcer" aria-live="polite"></p>
 
 <script src="logic.js"></script>
 <script src="spring.js"></script>
+<script src="ui.js"></script>
+<script src="state.js"></script>
 <script src="library.js"></script>
+<script src="review.js"></script>
+<script src="panel.js"></script>
+<script src="drawers.js"></script>
 <script src="cabinet.js"></script>
 </body>
 </html>

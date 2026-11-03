@@ -23,3 +23,36 @@
 - Regression test: tests/e2e/flicker.spec.mjs samples every frame (box, opacity, visibility, display,
   hit-test of the face, depth). Mutation check: with the old preset restored it fails ("drawer depth
   0.96px is behind the cabinet front"); with the fix it passes. Unit tests simulate 30/60/120/144 fps.
+
+## Phase 2 findings (what, where, fix)
+- Spine clicks did nothing in a fresh page (library.css). The scene, rig, shelf and row boxes are
+  coplanar with the spines at z = 0 and won the 3D hit test, so mousedown/up landed on the row.
+  Fix: scenery is pointer-events: none, only .slot takes the pointer. Also (library.js) the hover
+  lift moves the book under the cursor mid-press; open on pointerup when the press began on a book
+  and moved < 12px; keyboard activation still uses click.
+- Open book did not trap focus (library.js, ui.js). Fix: ui.isolate makes everything else inert and
+  wraps Tab / Shift+Tab inside the top layer; the reader is role="dialog" aria-modal.
+- Fan stacks sorted wrong after raising the card step to 46px (cabinet.js): rising at the 18deg
+  pitch brought cards closer faster than the 14px depth step pushed them back. Fix: depth step =
+  step * sin(18deg) + 8.
+- spring.jump() left awaiting promises unresolved (spring.js): a superseded move could hang a
+  sequence forever. Fix: jump releases waiters.
+- Test harness: settle() could return in the 250ms pause before the pop. Fix: also wait for the
+  drawer to leave opening/closing and stay quiet across two checks.
+- Label in name (WCAG 2.5.3, axe label-content-name-mismatch): spine, drawer, fan card and arrow
+  names did not contain their visible text. Fix: drawers and fan cards take their name from their
+  content (+ screen-reader-only context); spines keep the spec's "Open the X book" label and paint
+  their lettering from data-text (score via aria-describedby); arrow label "Practice them: go to ...".
+- Focus trap Tab order (ui.js): tabbables were listed in the order the kept nodes were passed,
+  not document order, so Tab could escape from the last fan card. Fix: sort by document position.
+- Camera move frame time (cabinet.js): writing --p on the stage each frame restyled both scenes
+  (custom properties inherit). Fix: write the three layer transforms directly; --p is written once
+  the move settles. 4x throttled camera move: 31.5 -> 46.9 fps (harness overhead also removed).
+- Fan cards get will-change: transform only while a choreography runs (+1.5 fps).
+- Missing features the checklist assumed (from the truncated earlier prompt), built in Phase 2:
+  multiple-choice cards verified instantly; three-box Leitner trays (nextBox) with counts in the bar
+  and sheet; "Review N cards" per mistake and "Review All"; end screen with Review Again and Back to
+  Drawer; segmented Learn | Practice toggle and bottom sheets under 820px; flat (no 3D) cabinet under
+  820px and with reduced motion; focus traps for the book, the drawer, the sheet and the review.
+- Data: flashcards moved to data/cards.json (6 mistakes x 2 cards) to match Phase 3's "6 mistakes
+  from data/cards.json"; drawer labels moved to data/drawers.json.

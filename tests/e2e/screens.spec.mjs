@@ -25,6 +25,17 @@ for (const [name, size] of Object.entries(WIDTHS)) {
         if (enabled === "true") continue;
         await openDrawer(page, i);
         await shot(page, `04-drawer-${id}`);
+        if (id === "flashcards") {
+          const flat = await page.evaluate(() => document.documentElement.classList.contains("sb-flat"));
+          await page.locator(flat ? "#sheet [data-review-all]" : "#review-all").click();
+          await settle(page);
+          await shot(page, "05-review-front");
+          await page.locator(".rcard__front .ropt").first().click();
+          await settle(page);
+          await shot(page, "05-review-back");
+          await page.keyboard.press("Escape");
+          await settle(page);
+        }
         await page.keyboard.press("Escape");
         await settle(page);
         // Leave any nested view with repeated Esc until the drawer is closed.

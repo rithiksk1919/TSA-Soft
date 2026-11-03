@@ -1,50 +1,42 @@
-/* SkillBridge: the camera move between scenes, the card-catalog cabinet, and the flashcards
-   drawer. All motion comes from the springs in spring.js; data comes from data/flashcards.json. */
+/* SkillBridge: the camera move between scenes, the card-catalog cabinet, its drawers, and the
+   Flashcards fan. All physical motion comes from spring.js; data comes from SB.store.
+   Flat mode (under 820px or reduced motion): no 3D camera or cabinet; drawers open as sheets. */
 (function () {
   "use strict";
 
   var SB = window.SkillBridge;
-  var P = SB.PRESETS;
-  var $ = function (s, r) { return (r || document).querySelector(s); };
-  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
-  function lerp(a, b, t) { return a + (b - a) * t; }
-  function wait(ms) { return new Promise(function (r) { setTimeout(r, SB.reducedMotion() ? 0 : ms); }); }
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
+  var ui = SB.ui, P = SB.PRESETS, store = SB.store;
+  var $ = ui.$, $$ = ui.$$, esc = ui.esc, clamp = ui.clamp, lerp = ui.lerp, wait = ui.wait, announce = ui.announce;
 
   var el = {
     world: $("#world"), stage: $("#cam-stage"),
     sceneA: $("#scene-a"), sceneB: $("#scene-b"),
     headA: $("#intro"), headB: $("#intro-b"), h1A: $("#h-a"), h1B: $("#h-b"),
-    toCab: $("#to-cabinet"), toShelf: $("#to-shelf"),
+    toCab: $("#to-cabinet"), toShelf: $("#to-shelf"), segLearn: $("#seg-learn"), segPractice: $("#seg-practice"),
     rig: $("#cab-rig"), front: $("#cab-front"), drawers: $("#drawers"), scrim: $("#cab-scrim"),
     bar: $("#drawer-bar"), count: $("#drawer-count"), subjects: $("#subject-buttons"), close: $("#close-drawer"),
-    hint: $("#drawer-hint"),
-    review: $("#review"), rscrim: $("#review-scrim"), fly: $("#rcard-fly"), rcard: $("#rcard"),
-    rfront: $("#rcard-front"), rback: $("#rcard-back"), rprogress: $("#review-progress"), ractions: $("#review-actions"),
-    announcer: $("#announcer")
+    trays: $("#drawer-trays"), reviewAll: $("#review-all"), hint: $("#drawer-hint")
   };
 
-  function announce(msg) {
-    el.announcer.textContent = "";
-    setTimeout(function () { el.announcer.textContent = msg; }, 30);
-  }
-
   /* =====================================================================
-     Camera: p in [0, 1], everything derived from p and its velocity v
+     Camera: p in [0, 1]; everything is derived from p and its velocity v
      ===================================================================== */
 
   var sw = 0;
   var cameraTarget = 0;
   var PEAK_V = 3.4;   // peak dp/dt of the camera preset over a full move
 
+  var layerEls = { track: $("#track"), wall: $(".layer--wall"), floor: $(".layer--floor") };
   var cam = SB.createSpring(P.camera, function (p, v) {
-    el.stage.style.setProperty("--p", p.toFixed(5));
-    if (v === 0) {
+    // Depth layers move at 0.6x / 1.0x / 1.12x of the scene width. Transforms are written on the
+    // three layers directly: writing --p on the stage every frame restyled every element in both
+    // scenes (custom properties inherit) and cost ~15% of the frame budget at 4x CPU throttling.
+    // --p is still written once the move settles, so the CSS rules stay a correct resting state.
+    layerEls.track.style.transform = "translateX(" + (-p * sw).toFixed(2) + "px)";
+    layerEls.wall.style.transform = "translateX(" + (-0.6 * p * sw).toFixed(2) + "px)";
+    layerEls.floor.style.transform = "translateX(" + (-1.12 * p * sw).toFixed(2) + "px)";
+    if (v === 0) el.stage.style.setProperty("--p", p.toFixed(5));
+    if (v === 0 || ui.flat()) {
       el.stage.style.transform = "";
     } else {
       var lean = -6 * clamp(v / 2, -1, 1);
@@ -57,21 +49,27 @@
 
   SB.atShelf = function () { return cameraTarget === 0 && !cam.moving(); };
 
-  // Read-only view of the page state, for tests and debugging.
-  SB.debug = {
-    scene: function () { return cameraTarget; },
-    p: function () { return cam.x; },
-    drawer: function () { return drawer.state; },
-    idle: function () { return SB.activeSprings() === 0; }
-  };
+  function syncSeg(t) {
+    if (el.segLearn) el.segLearn.setAttribute("aria-pressed", String(t === 0));
+    if (el.segPractice) el.segPractice.setAttribute("aria-pressed", String(t === 1));
+  }
 
   function go(target) {
     if (SB.bookOpen && SB.bookOpen()) return;
     if (drawer.state !== "closed") return;
+    if (target === cameraTarget && !cam.moving()) return;
     cameraTarget = target;
+    syncSeg(target);
     // Both scenes are live while the camera moves, so the far arrow can reverse it.
     [el.sceneA, el.sceneB].forEach(function (n) { n.inert = false; n.style.visibility = "visible"; });
     [el.headA, el.headB].forEach(function (n) { n.style.visibility = "visible"; n.removeAttribute("aria-hidden"); });
+    if (SB.reducedMotion()) {
+      cam.jump(target);
+      ui.fade(target === 1 ? el.sceneB : el.sceneA, 0, 1);
+      ui.fade(target === 1 ? el.headB : el.headA, 0, 1);
+      settleScene(target);
+      return;
+    }
     cam.to(target).then(function () {
       if (cameraTarget !== target || cam.moving()) return;
       settleScene(target);
@@ -94,17 +92,19 @@
 
   el.toCab.addEventListener("click", function () { go(1); });
   el.toShelf.addEventListener("click", function () { go(0); });
+  if (el.segLearn) el.segLearn.addEventListener("click", function () { go(0); });
+  if (el.segPractice) el.segPractice.addEventListener("click", function () { go(1); });
+  SB.goScene = go;
 
-  // Initial state: on the shelf, the cabinet scene out of reach.
   el.sceneB.inert = true;
   el.headB.setAttribute("aria-hidden", "true");
+  syncSeg(0);
 
   /* =====================================================================
      Cabinet geometry
      ===================================================================== */
 
-  var data = null;
-  var G = {};      // geometry of the current layout
+  var G = {};
   var drawerViews = [];
 
   function computeGeometry() {
@@ -116,12 +116,10 @@
     var pad = compact ? 16 : 22, gap = compact ? 10 : 12, base = 30;
     var dw = (W - 2 * pad - (cols - 1) * gap) / cols;
     var dh = (H - pad - base - (rows - 1) * gap) / rows;
-    var worldH = el.world.clientHeight;
-    var floorY = worldH - 64;
-    var fit = Math.min(1, (sw - 2 * 24) / (W + 24), (floorY - 40) / (H + 60));
+    var floorY = el.world.clientHeight - 64;
+    var fit = Math.min(1, (sw - 2 * 16) / (W + 16), (floorY - 40) / (H + 60));
     var openZ = compact ? 170 : 260;
-    // How much the pulled-out drawer and its cards are magnified by the 1200px perspective.
-    var mag = 1200 / (1200 - openZ - 70);
+    var mag = 1200 / (1200 - openZ - 70);   // magnification of the pulled drawer by the perspective
     G = { compact: compact, W: W, H: H, D: D, cols: cols, rows: rows, pad: pad, gap: gap, dw: dw, dh: dh, DD: D - 30, fit: fit, openZ: openZ, mag: mag };
     el.rig.style.setProperty("--cw", W + "px");
     el.rig.style.setProperty("--ch", H + "px");
@@ -138,17 +136,18 @@
      Drawers
      ===================================================================== */
 
-  var drawer = { state: "closed", view: null };   // closed | opening | groups | subject | review | closing
+  // closed | opening | groups | subject | panel | closing   (review sits on top of groups/subject/panel)
+  var drawer = { state: "closed", view: null };
 
-  function holderHTML(d, total) {
-    var meta = d.active ? total + " cards" : "Soon";
+  function labelMeta(d) { return d.active ? store.countLabel(d.count) : "Soon"; }
+
+  function holderHTML(d) {
     return '<span class="drawer__holder"><span class="drawer__card">' +
-      '<span class="drawer__line"><span>' + esc(d.call) + '</span><span class="' + (d.active ? "" : "drawer__soon") + '">' + esc(meta) + "</span></span>" +
+      '<span class="drawer__line"><span>' + esc(d.call) + '</span><span class="drawer__meta' + (d.active ? "" : " drawer__soon") + '">' + esc(labelMeta(d)) + "</span></span>" +
       '<span class="drawer__title">' + esc(d.title) + "</span>" +
       '<span class="drawer__sub">' + esc(d.sub) + "</span>" +
       "</span></span>";
   }
-
   function pullHTML(r) {
     var pw = Math.round(r.w * 0.3), py = Math.round(r.h * 0.74), px = Math.round((r.w - pw) / 2);
     return '<span class="pull">' +
@@ -170,34 +169,29 @@
 
   function buildCabinet() {
     computeGeometry();
-    var total = data.subjects.reduce(function (a, s) {
-      return a + s.mistakes.reduce(function (b, m) { return b + m.cards.length; }, 0);
-    }, 0);
-    data.total = total;
-
-    el.front.innerHTML = data.drawers.map(function (d, i) {
+    var ds = store.data.drawers;
+    el.front.innerHTML = ds.map(function (d, i) {
       var r = drawerRect(i);
       return '<span class="cab__hole" style="left:' + r.x + "px;top:" + r.y + "px;width:" + r.w + "px;height:" + r.h + 'px"></span>';
     }).join("");
 
-    el.drawers.innerHTML = data.drawers.map(function (d, i) {
+    el.drawers.innerHTML = ds.map(function (d, i) {
       var r = drawerRect(i);
-      var label = d.active
-        ? d.title + " drawer. " + d.sub + ". " + total + " cards."
-        : d.title + " drawer. Not available yet.";
-      return '<div class="dslot" data-i="' + i + '" style="left:' + r.x + "px;top:" + r.y + "px;width:" + r.w + "px;height:" + r.h + 'px">' +
+      return '<div class="dslot" data-i="' + i + '" data-id="' + esc(d.id) + '" style="left:' + r.x + "px;top:" + r.y + "px;width:" + r.w + "px;height:" + r.h + 'px">' +
         boxHTML(r) +
-        (d.active ? '<div class="dcontents" id="dcontents"></div>' : "") +
-        '<button class="drawer" type="button" aria-label="' + esc(label) + '" aria-expanded="false"' + (d.active ? "" : ' aria-disabled="true"') + ">" + holderHTML(d, total) + "</button>" +
+        (d.id === "flashcards" ? '<div class="dcontents" id="dcontents"></div>' : "") +
+        '<button class="drawer" type="button" aria-expanded="false"' + (d.active ? ' aria-haspopup="dialog"' : ' aria-disabled="true"') + ">" + holderHTML(d) +
+        '<span class="visually-hidden"> drawer' + (d.active ? "" : ", not available yet") + "</span></button>" +
         pullHTML(r) +
-        '<span class="dtip" aria-hidden="true">Not in this version</span>' +
+        (d.active ? "" : '<span class="dtip" aria-hidden="true">Not in this version</span>') +
         "</div>";
     }).join("");
 
     drawerViews = $$(".dslot", el.drawers).map(function (slot, i) {
-      var v = { i: i, slot: slot, btn: $(".drawer", slot), tip: $(".dtip", slot), d: data.drawers[i], hover: 0, shake: 0, open: 0 };
+      var v = { i: i, slot: slot, btn: $(".drawer", slot), tip: $(".dtip", slot), d: ds[i], hover: 0, shake: 0, open: 0 };
       v.render = function () {
-        slot.style.transform = "translate3d(" + (v.shake * 3).toFixed(2) + "px,0," + (1 + v.hover * 10 + v.open * G.openZ).toFixed(2) + "px)";
+        var z = ui.flat() ? 0 : 1 + v.hover * 10 + v.open * G.openZ;
+        slot.style.transform = "translate3d(" + (v.shake * 3).toFixed(2) + "px,0," + z.toFixed(2) + "px)";
         slot.classList.toggle("is-hover", v.hover > 0.5 && drawer.state === "closed");
       };
       v.hoverS = SB.createSpring(P.drawerTravel, function (x) { v.hover = x; v.render(); }, 0);
@@ -208,19 +202,24 @@
       return v;
     });
 
-    el.count.textContent = "· " + total + " cards";
     buildContents();
-    buildSubjectButtons();
+    buildBar();
     renderRig(null);
+    updateCounts();
   }
 
   function renderRig(v) {
     var q = v ? clamp(v.open, -0.2, 1.2) : 0;
+    if (ui.flat()) {
+      el.rig.style.transform = "scale(" + G.fit.toFixed(4) + ")";
+      el.scrim.style.opacity = "0";
+      return;
+    }
     var tx = 0, ty = 0;
     if (v) {
       var r = drawerRect(v.i);
       tx = -((r.x + r.w / 2) - G.W / 2) * q * G.fit;
-      ty = -64 * q;          // the pitch carries the pulled drawer downward; lift it back
+      ty = -64 * q;   // the pitch carries the pulled drawer downward; lift it back
     }
     el.rig.style.transform =
       "translate3d(" + tx.toFixed(2) + "px," + ty.toFixed(2) + "px,0) scale3d(" + G.fit.toFixed(4) + "," + G.fit.toFixed(4) + "," + G.fit.toFixed(4) + ") " +
@@ -245,47 +244,70 @@
   var tipTimer = 0;
   function stuck(v) {
     v.shakeS.kick(28);   // about 4px of shake from the stuck preset
-    drawerViews.forEach(function (o) { o.tip.classList.remove("is-on"); });
-    v.tip.classList.add("is-on");
+    drawerViews.forEach(function (o) { if (o.tip) o.tip.classList.remove("is-on"); });
+    if (v.tip) v.tip.classList.add("is-on");
     clearTimeout(tipTimer);
-    tipTimer = setTimeout(function () { v.tip.classList.remove("is-on"); }, 1600);
+    tipTimer = setTimeout(function () { if (v.tip) v.tip.classList.remove("is-on"); }, 1600);
     announce(v.d.title + " is not in this version.");
   }
 
+  // Live counts on every label card and in the Flashcards bar.
+  function updateCounts() {
+    drawerViews.forEach(function (v) {
+      var m = $(".drawer__meta", v.btn);
+      if (m) m.textContent = labelMeta(v.d);
+    });
+    var filter = chosenSubject() ? { subject: chosenSubject() } : {};
+    var counts = store.counts(filter);
+    if (el.trays) el.trays.innerHTML = ui.trays(counts);
+    if (el.count) el.count.textContent = "· " + store.countLabel("cards");
+    if (el.reviewAll) el.reviewAll.textContent = "Review " + (chosenSubject() ? "All " + store.subject(chosenSubject()).name : "All") + " (" + counts.total + ")";
+    items.forEach(function (it) {
+      if (it.kind !== "card") return;
+      var c = store.counts({ mistake: it.m.id });
+      var s = $("[data-state]", it.el);
+      if (s) s.textContent = c[3] ? c[3] + " learned" : c[2] ? c[2] + " learning" : "";
+    });
+  }
+  store.on(updateCounts);
+
   /* =====================================================================
-     Flashcards: items inside the drawer, and their poses
+     Flashcards fan (desktop 3D): cards and dividers inside the drawer
      ===================================================================== */
 
-  var items = [];       // every card and divider plane in the flashcards drawer
-  var groups = [];      // per subject: { s, divider, cards: [mistake items] }
-  var chosen = -1;      // index of the chosen subject group
-  var progress = {};    // mistake id -> { done, again }
+  var items = [];
+  var groups = [];
+  var chosen = -1;
+  function chosenSubject() { return chosen >= 0 && groups[chosen] ? groups[chosen].s.id : null; }
 
-  function cardFace(s, m) {
-    return '<span class="fcard__top"><span class="fcard__call">' + esc(m.call) + "</span><span>" + m.cards.length + (m.cards.length === 1 ? " card" : " cards") + "</span></span>" +
+  function cardFace(m) {
+    var n = m.cards.length;
+    return '<span class="fcard__top"><span class="fcard__call">' + esc(m.call) + "</span><span>" + ui.plural(n, "card") + "</span></span>" +
       '<span class="fcard__title">' + esc(m.title) + "</span>" +
       '<span class="fcard__state" data-state></span>' +
-      '<span class="fcard__go" aria-hidden="true">Review →</span>';
+      '<span class="fcard__go" aria-hidden="true">Review ' + n + " →</span>";
   }
 
   function buildContents() {
     var box = $("#dcontents");
+    if (!box) return;
     var cw = G.dw - 16, ch = G.dh - 24;
     var html = "", list = [];
     var tabSpots = [0.04, 0.32, 0.6];
-    data.subjects.forEach(function (s, g) {
-      var mistakeCount = s.mistakes.length;
+    store.subjects().forEach(function (s, g) {
+      var ms = store.mistakes(s.id);
       list.push({ kind: "divider", g: g, s: s });
-      html += '<button class="fitem fdivider" type="button" data-k="' + list.length + '" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px" aria-label="' + esc(s.name + ", " + mistakeCount + " mistakes") + '">' +
+      html += '<button class="fitem fdivider" type="button" data-subject="' + s.id + '" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px">' +
         '<span class="fdivider__tab" style="left:' + Math.round(tabSpots[g % 3] * cw) + 'px">' + esc(s.name) + "</span>" +
-        '<span class="fdivider__count">' + mistakeCount + " mistakes</span></button>";
-      s.mistakes.forEach(function (m, k) {
+        '<span class="fdivider__count">' + ui.plural(ms.length, "mistake") + "</span></button>";
+      ms.forEach(function (m, k) {
         list.push({ kind: "card", g: g, s: s, m: m, k: k });
-        html += '<button class="fitem fcard" type="button" data-k="' + list.length + '" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px" aria-label="' + esc(s.name + ": " + m.title + ", " + m.cards.length + (m.cards.length === 1 ? " card" : " cards")) + '">' + cardFace(s, m) + "</button>";
+        html += '<button class="fitem fcard" type="button" data-subject="' + s.id + '" data-mistake="' + m.id + '" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px">' +
+          '<span class="visually-hidden">' + esc(s.name) + ": </span>" + cardFace(m) + '<span class="visually-hidden">. Review ' + ui.plural(m.cards.length, "card") + "</span></button>";
       });
       for (var f = 0; f < 2; f++) {
         list.push({ kind: "filler", g: g, s: s });
-        html += '<span class="fitem fcard fcard--filler" data-k="' + list.length + '" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px"></span>';
+        html += '<span class="fitem fcard fcard--filler" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px"></span>';
       }
     });
     box.innerHTML = html;
@@ -293,28 +315,25 @@
     var n = list.length;
     items = list.map(function (it, i) {
       it.el = nodes[i];
-      // In the drawer: standing upright, front to back.
       it.zIn = -14 - i * ((G.DD - 26) / (n - 1));
       it.home = { x: 0, y: 0, z: it.zIn, rx: 0, rz: 0 };
-      it.from = it.home; it.to = it.home; it.bump = 0;
-      it.cur = it.home;
+      it.from = it.home; it.to = it.home; it.bump = 0; it.cur = it.home;
       it.sp = SB.createSpring(P.pop, function (t) { renderItem(it, t); }, 1);
       renderItem(it, 1);
       return it;
     });
-    groups = data.subjects.map(function (s, g) {
+    groups = store.subjects().map(function (s, g) {
       return {
         s: s,
         divider: items.filter(function (x) { return x.g === g && x.kind === "divider"; })[0],
-        cards: items.filter(function (x) { return x.g === g && x.kind === "card"; }),
-        fillers: items.filter(function (x) { return x.g === g && x.kind === "filler"; })
+        cards: items.filter(function (x) { return x.g === g && x.kind === "card"; })
       };
     });
     items.forEach(function (it) {
       if (it.kind === "divider") it.el.addEventListener("click", function () { chooseSubject(it.g); });
       if (it.kind === "card") it.el.addEventListener("click", function () {
         if (drawer.state === "groups") chooseSubject(it.g);
-        else if (drawer.state === "subject" && chosen === it.g) startReview(it);
+        else if (drawer.state === "subject" && chosen === it.g) reviewMistake(it.m, it.el);
       });
     });
     setItemsReachable([]);
@@ -322,12 +341,8 @@
 
   function poseAt(it, t) {
     var a = it.from, b = it.to;
-    var p = {
-      x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), z: lerp(a.z, b.z, t),
-      rx: lerp(a.rx, b.rx, t), rz: lerp(a.rz, b.rz, t)
-    };
-    // The pop: a tilt that peaks mid-flight and settles to the pose's own angle.
-    if (it.bump) p.rx += it.bump * Math.sin(Math.PI * clamp(t, 0, 1.25));
+    var p = { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), z: lerp(a.z, b.z, t), rx: lerp(a.rx, b.rx, t), rz: lerp(a.rz, b.rz, t) };
+    if (it.bump) p.rx += it.bump * Math.sin(Math.PI * clamp(t, 0, 1.25));   // the pop: a tilt that settles
     return p;
   }
   function renderItem(it, t) {
@@ -336,39 +351,27 @@
     it.el.style.transform = "translate3d(" + p.x.toFixed(2) + "px," + p.y.toFixed(2) + "px," + p.z.toFixed(2) + "px) rotateX(" + p.rx.toFixed(2) + "deg) rotateZ(" + p.rz.toFixed(2) + "deg)";
   }
   function moveItem(it, pose, bump) {
-    it.from = it.cur;
-    it.to = pose;
-    it.bump = bump || 0;
+    it.from = it.cur; it.to = pose; it.bump = bump || 0;
     it.sp.jump(0);
     return it.sp.to(1);
   }
 
-  // Face the camera: the rig is pitched -18deg when a drawer is open.
-  var FACE = 18;
+  var FACE = 18;   // the rig is pitched -18deg with a drawer open; cards counter-rotate to face the camera
 
-  // Half the usable screen width, in the cabinet's own units at the cards' depth.
   function halfRoom() { return (sw / 2 - 14) / (G.fit * G.mag); }
-  function fanSpacing() {
-    var cw = G.dw - 16;
-    return clamp(halfRoom() - cw / 2, cw * 0.5, cw + 60);
-  }
+  function fanSpacing() { var cw = G.dw - 16; return clamp(halfRoom() - cw / 2, cw * 0.5, cw + 60); }
 
   function groupsPose(it) {
     var gr = groups[it.g];
     var stack = [gr.divider].concat(gr.cards);
-    var j = stack.indexOf(it);
-    var n = stack.length;
+    var j = stack.indexOf(it), n = stack.length;
     var step = G.compact ? 30 : 46;   // enough to show the call number and title above the card in front
-    if (j < 0) return it.home;   // fillers stay in the drawer
-    return {
-      x: (it.g - 1) * fanSpacing(),
-      y: -(G.dh - 6) - (n - 1 - j) * 0 - j * step,
-      z: 40 + (n - j) * 14,   // back cards rise higher, so they step back further than the pitch brings them forward
-      rx: FACE,
-      rz: (it.g - 1) * 4 + (j - (n - 1) / 2) * 1.1
-    };
+    if (j < 0) return it.home;
+    // Rising by `step` at the FACE pitch also brings a card step*sin(FACE) closer; step back more
+    // than that, or the cards behind would sort in front of the one before them.
+    var zStep = step * Math.sin(FACE * Math.PI / 180) + 8;
+    return { x: (it.g - 1) * fanSpacing(), y: -(G.dh - 6) - j * step, z: 40 + (n - j) * zStep, rx: FACE, rz: (it.g - 1) * 4 + (j - (n - 1) / 2) * 1.1 };
   }
-
   function subjectPose(it) {
     if (it.g !== chosen || it.kind !== "card") return it.home;
     var gr = groups[chosen];
@@ -376,34 +379,35 @@
     var cw = G.dw - 16;
     var span = Math.max(0, Math.min(2 * (halfRoom() - cw / 2), (cw + 22) * (m - 1)));
     var stepX = m > 1 ? span / (m - 1) : 0;
-    return {
-      x: (k - c) * stepX,
-      y: -(G.dh + 10) + Math.abs(k - c) * 10,
-      z: 70 + k * 2,
-      rx: FACE,
-      rz: (k - c) * 3
-    };
+    return { x: (k - c) * stepX, y: -(G.dh + 10) + Math.abs(k - c) * 10, z: 70 + k * 2, rx: FACE, rz: (k - c) * 3 };
   }
 
-  // Card choreography. moves: [{ it, pose, bump, delay }]. A new choreography supersedes any
-  // starts still pending from the previous one (re-target, never stack). Resolves when every
-  // moved card is near its pose, so the next motion can begin without waiting on the long tail.
+  // Card choreography: a new one supersedes starts still pending from the last (re-target, never stack).
   var chorSeq = 0;
   function choreograph(moves) {
     var my = ++chorSeq;
+    // Promote the moving cards only while they move (measured +1.5 fps at 4x CPU throttling).
+    moves.forEach(function (mv) { mv.it.el.style.willChange = "transform"; });
     return Promise.all(moves.map(function (mv) {
       return wait(mv.delay || 0).then(function () {
         if (my !== chorSeq) return;
         moveItem(mv.it, mv.pose, mv.bump || 0);
         return mv.it.sp.near(0.03);
       });
-    })).then(function () { return my === chorSeq; });
+    })).then(function () {
+      if (my === chorSeq) moves.forEach(function (mv) { mv.it.sp.near(0.0005).then(function () { if (!mv.it.sp.moving()) mv.it.el.style.willChange = ""; }); });
+      return my === chorSeq;
+    });
   }
   function staggerMoves(list, poseFn, gap, bump) {
     return list.map(function (it, i) { return { it: it, pose: poseFn(it), bump: bump, delay: i * gap }; });
   }
+  function popOrder() {
+    var out = [];
+    groups.forEach(function (gr) { out.push(gr.divider); out = out.concat(gr.cards); });
+    return out;
+  }
 
-  // focusable: in the Tab order. clickable: reachable by pointer (a superset).
   function setItemsReachable(focusable, clickable) {
     clickable = clickable || focusable;
     items.forEach(function (it) {
@@ -415,39 +419,101 @@
   function dividers() { return groups.map(function (g) { return g.divider; }); }
   function groupItems() { return items.filter(function (it) { return it.kind !== "filler"; }); }
 
-  function updateCardStates() {
-    items.forEach(function (it) {
-      if (it.kind !== "card") return;
-      var pr = progress[it.m.id];
-      var node = $("[data-state]", it.el);
-      node.textContent = pr ? (pr.again ? "Reviewed · " + pr.again + " to repeat" : "Reviewed") : "";
+  function chooseSubject(g) {
+    if (drawer.state !== "groups" && drawer.state !== "subject") return;
+    chosen = g;
+    drawer.state = "subject";
+    syncBar();
+    var gr = groups[g];
+    setHint("Choose a mistake to review");
+    var sinking = items.filter(function (it) { return it.g !== g && it.kind !== "filler"; }).concat([gr.divider]);
+    var moves = staggerMoves(sinking.reverse(), function (it) { return it.home; }, 18, 0)
+      .concat(staggerMoves(gr.cards, subjectPose, 35, -14));
+    setItemsReachable(gr.cards);
+    choreograph(moves).then(function (current) {
+      if (!current || chosen !== g || drawer.state !== "subject") return;
+      gr.cards[0].el.focus({ preventScroll: true });
+    });
+    announce(gr.s.name + ": " + ui.plural(gr.cards.length, "mistake") + ". Choose one to review.");
+  }
+
+  function backToGroups() {
+    drawer.state = "groups";
+    chosen = -1;
+    syncBar();
+    setHint("Choose a subject");
+    choreograph(staggerMoves(popOrder(), groupsPose, 20, 0));
+    setItemsReachable(dividers(), groupItems());
+    var first = $(".chip-btn", el.subjects);
+    if (first) first.focus({ preventScroll: true });
+  }
+
+  function setHint(text) {
+    el.hint.hidden = !text;
+    el.hint.innerHTML = text ? "<span>" + esc(text) + "</span>" : "";
+  }
+
+  // The bar on the floor band: subject chips, trays, Review All, Close Drawer.
+  function buildBar() {
+    el.subjects.innerHTML = ui.chips(store.subjects(), null, { label: "Choose a subject" });
+    $$(".chip-btn", el.subjects).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = b.dataset.subject;
+        if (!id) { if (drawer.state === "subject") backToGroups(); return; }
+        var g = groups.map(function (x) { return x.s.id; }).indexOf(id);
+        if (drawer.state === "subject" && chosen === g) { backToGroups(); return; }
+        chooseSubject(g);
+      });
     });
   }
+  function syncBar() {
+    $$(".chip-btn", el.subjects).forEach(function (b) {
+      b.setAttribute("aria-pressed", String((b.dataset.subject || null) === chosenSubject()));
+    });
+    updateCounts();
+  }
+  el.reviewAll.addEventListener("click", function () {
+    var sub = chosenSubject();
+    reviewCards(store.cards(sub ? { subject: sub } : {}), sub ? "All " + store.subject(sub).name + " mistakes" : "All mistakes", el.reviewAll);
+  });
+  el.close.addEventListener("click", function () { requestClose(); });
 
   /* =====================================================================
-     Drawer flow
+     Review (shared overlay in review.js)
      ===================================================================== */
 
-  function popOrder() {
-    // Front to back inside each group, groups left to right: reads as one sweep.
-    var out = [];
-    groups.forEach(function (gr) { out.push(gr.divider); out = out.concat(gr.cards); });
-    return out;
+  function reviewCards(cards, title, fromEl) {
+    if (!cards.length) return;
+    var flyFrom = fromEl && fromEl.classList.contains("fitem") ? fromEl : null;
+    SB.review.open({
+      cards: cards, title: title, from: flyFrom,
+      onExit: function () { if (fromEl && fromEl.isConnected) fromEl.focus({ preventScroll: true }); }
+    });
   }
+  function reviewMistake(m, fromEl) { reviewCards(store.cards({ mistake: m.id }), m.title, fromEl); }
+  SB.reviewMistake = function (mistakeId, fromEl) { var m = store.mistake(mistakeId); if (m) reviewMistake(m, fromEl); };
+  SB.reviewCards = reviewCards;
+
+  /* =====================================================================
+     Open / close: one choreography for every drawer
+     ===================================================================== */
 
   // Open and close are sequences on one token: starting either supersedes the other, and the
   // springs are re-targeted from where they are (keeping velocity), never restarted or stacked.
   var seq = 0;
+  var releaseTrap = null;
 
   function lockOthers(v, locked) {
     drawerViews.forEach(function (o) { if (o !== v) o.btn.tabIndex = locked ? -1 : 0; });
     el.toShelf.inert = locked;
     el.toShelf.style.opacity = locked ? "0" : "";
   }
+  function usesFan(v) { return v.d.id === "flashcards" && !ui.flat(); }
 
-  function openDrawer(v) {
-    if (drawer.view && drawer.view !== v) return;                    // another drawer is in use
-    if (drawer.state !== "closed" && drawer.state !== "closing") return;
+  function openDrawer(v, opts) {
+    opts = opts || {};
+    if (drawer.view && drawer.view !== v) return Promise.resolve();
+    if (drawer.state !== "closed" && drawer.state !== "closing") return Promise.resolve();
     var my = ++seq;
     var reopening = drawer.state === "closing";
     drawer.state = "opening";
@@ -456,70 +522,56 @@
     v.btn.setAttribute("aria-expanded", "true");
     v.hoverS.to(0);
     lockOthers(v, true);
-    v.openS.to(1);
-    return v.openS.near(0.03).then(function () {
+    var flat = ui.flat();
+    var slid = flat ? Promise.resolve() : (v.openS.to(1), v.openS.near(0.03).then(function () { return my === seq && wait(250); }));
+    return slid.then(function () {
       if (my !== seq) return;
-      return wait(250);
-    }).then(function () {
-      if (my !== seq) return;
-      return choreograph(staggerMoves(popOrder(), groupsPose, 35, -26));
-    }).then(function () {
-      if (my !== seq) return;
-      drawer.state = "groups";
-      renderBar();
-      el.bar.hidden = false;
-      setHint("Choose a subject");
-      setItemsReachable(dividers(), groupItems());
-      var first = $(".subj", el.subjects);
-      if (first) first.focus({ preventScroll: true });
-      announce("Flashcards drawer open. " + data.total + " cards in " + groups.length + " subjects. Choose a subject.");
+      if (usesFan(v)) {
+        return choreograph(staggerMoves(popOrder(), groupsPose, 35, -26)).then(function () {
+          if (my !== seq) return;
+          drawer.state = "groups";
+          syncBar();
+          el.bar.hidden = false;
+          setHint("Choose a subject");
+          setItemsReachable(dividers(), groupItems());
+          if (releaseTrap) releaseTrap();
+          releaseTrap = ui.isolate([v.slot, el.bar, el.hint]);
+          var first = $(".chip-btn", el.subjects);
+          if (first) first.focus({ preventScroll: true });
+          announce("Flashcards drawer open. " + store.countLabel("cards") + " in " + groups.length + " subjects. Choose a subject.");
+        });
+      }
+      var contents = SB.drawerContents && SB.drawerContents[v.d.id];
+      if (!contents) return;
+      drawer.state = "panel";
+      return SB.panel.open({
+        id: v.d.id, call: v.d.call, title: v.d.title, sub: v.d.sub,
+        render: function (body, api) { contents.render(body, api, opts); },
+        onCloseRequest: requestClose
+      }).then(function () {
+        if (my !== seq) return;
+        announce(v.d.title + " drawer open.");
+      });
     });
   }
 
-  function chooseSubject(g) {
-    if (drawer.state !== "groups" && drawer.state !== "subject") return;
-    chosen = g;
-    drawer.state = "subject";
-    renderBar();
-    var gr = groups[g];
-    setHint("Choose a mistake to review");
-    // Others sink back into the drawer; the chosen subject's cards spread out.
-    var sinking = items.filter(function (it) { return it.g !== g && it.kind !== "filler"; }).concat([gr.divider]);
-    var moves = staggerMoves(sinking.reverse(), function (it) { return it.home; }, 18, 0)
-      .concat(staggerMoves(gr.cards, subjectPose, 35, -14));
-    choreograph(moves).then(function (current) {
-      if (!current || chosen !== g || drawer.state !== "subject") return;
-      setItemsReachable(gr.cards);
-      gr.cards[0].el.focus({ preventScroll: true });
-    });
-    setItemsReachable(gr.cards);
-    announce(gr.s.name + ": " + gr.cards.length + " mistakes. Choose one to review.");
-  }
-
-  function backToGroups() {
-    drawer.state = "groups";
-    chosen = -1;
-    renderBar();
-    setHint("Choose a subject");
-    choreograph(staggerMoves(popOrder(), groupsPose, 20, 0));
-    setItemsReachable(dividers(), groupItems());
-    var first = $(".subj", el.subjects);
-    if (first) first.focus({ preventScroll: true });
-  }
-
-  // Close: cards drop back in (reverse stagger), then the drawer springs home against its stop,
+  // Close: contents drop back in (reverse stagger), then the drawer springs home against its stop,
   // and only then do the state flags change. Nothing is hidden or re-rendered during the motion.
   function closeDrawer() {
     var v = drawer.view;
-    if (!v || drawer.state === "closing" || drawer.state === "review" || drawer.state === "closed") return;
+    if (!v || drawer.state === "closing" || drawer.state === "closed") return Promise.resolve();
+    if (SB.review.isOpen()) return SB.review.exit().then(closeDrawer);
     var my = ++seq;
+    var wasPanel = drawer.state === "panel" || SB.panel.isOpen();
     drawer.state = "closing";
+    if (releaseTrap) { releaseTrap(); releaseTrap = null; }
     el.bar.hidden = true;
     setHint("");
     setItemsReachable([]);
-    return choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0)).then(function () {
+    var dropped = wasPanel ? SB.panel.close() : choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0));
+    return dropped.then(function () {
       if (my !== seq) return;
-      return v.openS.to(0);
+      return ui.flat() ? null : v.openS.to(0);
     }).then(function () {
       if (my !== seq) return;
       drawer.state = "closed";
@@ -528,215 +580,61 @@
       v.btn.setAttribute("aria-expanded", "false");
       lockOthers(v, false);
       v.btn.focus({ preventScroll: true });
-      announce("Flashcards drawer closed.");
+      announce(v.d.title + " drawer closed.");
     });
   }
+  function requestClose() { return closeDrawer(); }
 
-  function setHint(text) {
-    el.hint.hidden = !text;
-    el.hint.innerHTML = text ? "<span>" + esc(text) + "</span>" : "";
-  }
-
-  function buildSubjectButtons() {
-    el.subjects.innerHTML = data.subjects.map(function (s, g) {
-      return '<button class="subj" type="button" data-g="' + g + '" style="--sub:' + s.accent + '" aria-pressed="false">' + esc(s.name) + "</button>";
-    }).join("");
-    $$(".subj", el.subjects).forEach(function (b) {
-      b.addEventListener("click", function () {
-        var g = +b.dataset.g;
-        if (drawer.state === "subject" && chosen === g) { backToGroups(); return; }
-        chooseSubject(g);
-      });
-    });
-  }
-  function renderBar() {
-    $$(".subj", el.subjects).forEach(function (b) {
-      b.setAttribute("aria-pressed", String(+b.dataset.g === chosen));
-    });
-  }
-  el.close.addEventListener("click", function () {
-    if (drawer.state === "review") { exitReview().then(closeDrawer); return; }
-    closeDrawer();
-  });
+  // Open a drawer by id (used across drawers: "Review these cards", "Open the book").
+  SB.openDrawer = function (id, opts) {
+    var v = drawerViews.filter(function (x) { return x.d.id === id; })[0];
+    if (!v) return Promise.resolve();
+    var go = function () { return openDrawer(v, opts); };
+    if (drawer.view && drawer.view !== v) return closeDrawer().then(go);
+    return go();
+  };
+  SB.closeDrawer = closeDrawer;
 
   /* =====================================================================
-     Review: the chosen card leaves the fan and lies flat to be read
+     Keys, resize, debug, boot
      ===================================================================== */
 
-  var rv = null;   // { it, m, s, i, flipped, again, done }
-  var flip = SB.createSpring(P.flip, function (x) {
-    el.rcard.style.transform = "rotateY(" + (x * 180).toFixed(2) + "deg)";
-  }, 0);
-  var flyK = 0, flyFrom = null;
-  var fly = SB.createSpring(P.drawer, function (k) {
-    flyK = k;
-    if (!flyFrom) return;
-    el.fly.style.transform = "translate(" + (flyFrom.dx * k).toFixed(2) + "px," + (flyFrom.dy * k).toFixed(2) + "px) scale(" + (1 + (flyFrom.sc - 1) * k).toFixed(4) + ")";
-    el.rscrim.style.opacity = (0.3 * clamp(1 - k, 0, 1)).toFixed(3);
-  }, 1);
-
-  function measureFly(it) {
-    el.fly.style.transform = "none";
-    var a = it.el.getBoundingClientRect();
-    var b = el.fly.getBoundingClientRect();
-    return {
-      dx: (a.left + a.width / 2) - (b.left + b.width / 2),
-      dy: (a.top + a.height / 2) - (b.top + b.height / 2),
-      sc: Math.max(0.2, a.width / b.width)
-    };
-  }
-
-  function faceFront(c) {
-    return '<div class="rcard__meta"><span><b>' + esc(rv.m.call) + "</b> · " + esc(rv.s.name) + "</span><span>Card " + (c + 1) + " of " + rv.m.cards.length + "</span></div>" +
-      '<p class="rcard__label">' + esc(rv.m.title) + "</p>" +
-      '<h2 class="rcard__text rcard__h" tabindex="-1">' + esc(rv.m.cards[c].front) + "</h2>";
-  }
-  function faceBack(c) {
-    return '<div class="rcard__meta"><span><b>' + esc(rv.m.call) + "</b> · Answer</span><span>Card " + (c + 1) + " of " + rv.m.cards.length + "</span></div>" +
-      '<p class="rcard__label">What to do instead</p>' +
-      '<p class="rcard__answer rcard__h" tabindex="-1">' + esc(rv.m.cards[c].back) + "</p>";
-  }
-  function faceDone() {
-    var n = rv.m.cards.length;
-    var line = rv.again ? n + " reviewed. " + rv.again + " marked to review again." : n + (n === 1 ? " card" : " cards") + " reviewed. All marked as got it.";
-    return '<div class="rcard__meta"><span><b>' + esc(rv.m.call) + "</b> · " + esc(rv.s.name) + "</span><span>Done</span></div>" +
-      '<p class="rcard__label">' + esc(rv.m.title) + "</p>" +
-      '<h2 class="rcard__text rcard__h" tabindex="-1">' + esc(line) + "</h2>";
-  }
-
-  function setActions(list) {
-    el.ractions.innerHTML = list.map(function (a, i) {
-      return '<button class="rbtn' + (a.primary ? " rbtn--primary" : "") + '" type="button" data-a="' + i + '">' + esc(a.label) + "</button>";
-    }).join("");
-    $$(".rbtn", el.ractions).forEach(function (b) {
-      b.addEventListener("click", function () { list[+b.dataset.a].run(); });
-    });
-  }
-
-  function showFaces(front) {
-    el.rfront.inert = !front; el.rfront.setAttribute("aria-hidden", String(!front));
-    el.rback.inert = front; el.rback.setAttribute("aria-hidden", String(front));
-  }
-
-  function frontActions() {
-    setActions([{ label: "Show Answer", primary: true, run: showAnswer }]);
-  }
-  function backActions() {
-    setActions([
-      { label: "Review Again", run: function () { grade(false); } },
-      { label: "Got It", primary: true, run: function () { grade(true); } }
-    ]);
-  }
-
-  function startReview(it) {
-    if (drawer.state !== "subject") return;
-    drawer.state = "review";
-    rv = { it: it, m: it.m, s: it.s, i: 0, again: 0 };
-    el.review.style.setProperty("--sub", it.s.accent);
-    el.rfront.innerHTML = faceFront(0);
-    el.rback.innerHTML = faceBack(0);
-    showFaces(true);
-    flip.jump(0);
-    el.review.hidden = false;
-    flyFrom = measureFly(it);
-    fly.jump(1);
-    it.el.style.visibility = "hidden";
-    el.rprogress.textContent = it.s.name + " · " + it.m.title;
-    frontActions();
-    setItemsReachable([]);
-    el.bar.hidden = true;
-    setHint("");
-    fly.to(0).then(function () {
-      var h = $(".rcard__h", el.rfront);
-      if (h) h.focus({ preventScroll: true });
-    });
-    announce("Reviewing " + it.m.title + ". Card 1 of " + it.m.cards.length + ".");
-  }
-
-  function showAnswer() {
-    showFaces(false);
-    flip.to(1);
-    backActions();
-    var h = $(".rcard__h", el.rback);
-    if (h) h.focus({ preventScroll: true });
-  }
-
-  function grade(gotIt) {
-    if (!gotIt) rv.again++;
-    var next = rv.i + 1;
-    if (next < rv.m.cards.length) {
-      rv.i = next;
-      el.rfront.innerHTML = faceFront(next);     // hidden while the card shows its back
-      showFaces(true);
-      flip.to(0).then(function () { el.rback.innerHTML = faceBack(next); });
-      frontActions();
-      var h = $(".rcard__h", el.rfront);
-      if (h) h.focus({ preventScroll: true });
-      announce("Card " + (next + 1) + " of " + rv.m.cards.length + ".");
-    } else {
-      progress[rv.m.id] = { done: true, again: rv.again };
-      updateCardStates();
-      el.rfront.innerHTML = faceDone();
-      showFaces(true);
-      flip.to(0);
-      setActions([{ label: "Back to Mistakes", primary: true, run: function () { exitReview(); } }]);
-      var d = $(".rcard__h", el.rfront);
-      if (d) d.focus({ preventScroll: true });
-      announce("Done. " + rv.m.cards.length + " reviewed.");
-    }
-  }
-
-  function exitReview() {
-    if (!rv) return Promise.resolve();
-    var it = rv.it;
-    flyFrom = measureFly(it);
-    fly.jump(0);
-    setActions([]);
-    return fly.to(1).then(function () {
-      el.review.hidden = true;
-      it.el.style.visibility = "";
-      el.bar.hidden = false;
-      drawer.state = "subject";
-      setHint("Choose a mistake to review");
-      setItemsReachable(groups[chosen].cards);
-      it.el.focus({ preventScroll: true });
-      rv = null;
-    });
-  }
-
-  /* =====================================================================
-     Keys, resize, boot
-     ===================================================================== */
-
+  // One Esc router for the page (the open book handles its own Esc in library.js).
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
     if (SB.bookOpen && SB.bookOpen()) return;
-    if (drawer.state === "review") { e.preventDefault(); exitReview(); }
-    else if (drawer.state === "subject") { e.preventDefault(); backToGroups(); }
-    else if (drawer.state === "groups" || drawer.state === "opening") { e.preventDefault(); closeDrawer(); }
+    if (SB.review.isOpen()) { e.preventDefault(); SB.review.exit(); return; }
+    if (drawer.state === "panel") { e.preventDefault(); if (!SB.panel.back()) closeDrawer(); return; }
+    if (drawer.state === "subject") { e.preventDefault(); backToGroups(); return; }
+    if (drawer.state === "groups" || drawer.state === "opening") { e.preventDefault(); closeDrawer(); }
   });
 
   var resizeTimer = 0;
   window.addEventListener("resize", function () {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
-      var before = sw;
       sw = el.world.clientWidth;
       el.stage.style.setProperty("--sw", sw + "px");
-      if (!data || drawer.state !== "closed") return;
-      var wasCompact = G.compact;
-      computeGeometry();
-      if (G.compact !== wasCompact || Math.abs(before - sw) > 0) buildCabinet();
+      cam.jump(cam.x);   // re-place the layers for the new width
+      if (!store.data.drawers || drawer.state !== "closed") return;
+      buildCabinet();
     }, 120);
   });
 
+  SB.debug = {
+    scene: function () { return cameraTarget; },
+    p: function () { return cam.x; },
+    drawer: function () { return drawer.state; },
+    drawerId: function () { return drawer.view ? drawer.view.d.id : null; },
+    panel: function () { return SB.panel.id(); },
+    review: function () { return SB.review.isOpen(); },
+    idle: function () { return SB.activeSprings() === 0; }
+  };
+
   computeGeometry();
-  fetch("data/flashcards.json")
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (d) { data = d; buildCabinet(); })
-    .catch(function () {
-      el.front.innerHTML = "";
-      el.hint.hidden = false;
-      el.hint.innerHTML = "<span>Couldn’t load data/flashcards.json. Serve this folder over http.</span>";
-    });
+  store.ready.then(buildCabinet).catch(function (err) {
+    el.hint.hidden = false;
+    el.hint.innerHTML = "<span>Couldn’t load the cabinet data. Serve this folder over http.</span>";
+    if (window.console) console.info(err);
+  });
 })();
