@@ -1,0 +1,166 @@
+
+> skillbridge-library@1.0.0 test
+> npm run test:unit && npm run test:e2e
+
+
+> skillbridge-library@1.0.0 test:unit
+> node --test "tests/unit/*.test.cjs"
+
+✔ cards.json: 6 mistakes, 12 cards, every answer index valid, ids unique (1.2548ms)
+✔ mistakes.json: extras for exactly the 6 mistakes, call numbers match (0.6686ms)
+✔ worked.json: one example per mistake, 4-6 steps, exactly one common-mistake step, valid check (0.1851ms)
+✔ worked examples: the arithmetic is right (0.1431ms)
+✔ diagnostic.json: 15 questions, 5 per subject, difficulty in 0..1, valid answers (0.19ms)
+✔ history.json: 12 attempts, newest first, outcome scores follow the formula (0.5322ms)
+✔ drawers.json: six drawers with a count kind each (0.1153ms)
+✔ outcomeScore: unsolved is 0 whatever the attempts and hints (0.807ms)
+✔ outcomeScore: first try, no hints is 1 (0.1041ms)
+✔ outcomeScore: 0.2 per extra attempt, 0.15 per hint (0.192ms)
+✔ outcomeScore: the 0.4 floor (0.6318ms)
+✔ outcomeScore: bad input is normalised (attempts >= 1, hints >= 0) (0.1281ms)
+✔ diagnosticMastery: all correct gives 1.0 on every skill (0.3709ms)
+✔ diagnosticMastery: all wrong gives the 0.3 floor (0.137ms)
+✔ diagnosticMastery: mixed answers are weighted by difficulty (0.204ms)
+✔ diagnosticMastery: zero difficulty falls back to the plain share (0.1466ms)
+✔ diagnosticMastery: empty input gives no skills (0.5951ms)
+✔ sortMistakes: most frequent, ties broken by most recent (0.276ms)
+✔ frequencyShare and relativeDays (0.1208ms)
+✔ historySummary (0.1791ms)
+✔ averageMastery: mean of the skills (0.8296ms)
+✔ averageMastery: empty or missing list is 0 (0.13ms)
+✔ averageMastery: shelf data matches the spec's sample averages (1.0518ms)
+✔ levelLabel: thresholds 0.4 / 0.6 / 0.8 are lower bounds (0.1415ms)
+✔ levelLabel: mastered flag wins over the number (0.1589ms)
+✔ nextBox: all 6 transitions of the three-box Leitner system (0.1401ms)
+✔ nextBox: out-of-range input is clamped, not trusted (0.1058ms)
+✔ nextBox: two correct answers in a row reach Learned (0.0884ms)
+✔ leitnerCounts: missing ids count as box 1 (0.2033ms)
+✔ leitnerCounts: counts per box and total (0.1837ms)
+✔ leitnerCounts: ignores boxes for cards not in the list, clamps bad values (0.1272ms)
+✔ boxName (0.1068ms)
+✔ drawer close with a stop never passes closed (30 fps) (1.2047ms)
+✔ drawer close with a stop never passes closed (60 fps) (0.1529ms)
+✔ drawer close with a stop never passes closed (120 fps) (0.7616ms)
+✔ drawer close with a stop never passes closed (144 fps) (0.1686ms)
+✔ root cause: without the stop, the close undershoots behind the cabinet front at 120 fps (0.4817ms)
+✔ stepSpring: restitution reflects velocity at the stop (0.1395ms)
+✔ presets keep their documented damping ratios (0.1245ms)
+✔ camera preset settles from 0 to 1 within about 1.1 s with about 2% overshoot (0.1875ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.5427
+
+> skillbridge-library@1.0.0 test:e2e
+> playwright test
+
+
+Running 70 tests using 1 worker
+
+contrast: 110 text elements checked at phone
+  ok  1 tests\e2e\a11y.spec.mjs:58:5 › a11y phone › axe and contrast: shelf, open book, cabinet, drawer, review (12.3s)
+contrast: 135 text elements checked at tablet
+  ok  2 tests\e2e\a11y.spec.mjs:58:5 › a11y tablet › axe and contrast: shelf, open book, cabinet, drawer, review (15.0s)
+contrast: 140 text elements checked at desktop
+  ok  3 tests\e2e\a11y.spec.mjs:58:5 › a11y desktop › axe and contrast: shelf, open book, cabinet, drawer, review (15.1s)
+  ok  4 tests\e2e\a11y.spec.mjs:89:1 › keyboard only: shelf -> book -> back -> cabinet -> drawer -> review -> answer -> back out (18.6s)
+  ok  5 tests\e2e\a11y.spec.mjs:142:3 › axe and contrast in every drawer and its detail view (desktop) (48.7s)
+  ok  6 tests\e2e\a11y.spec.mjs:142:3 › axe and contrast in every drawer and its detail view (phone) (44.9s)
+  ok  7 tests\e2e\drawers.spec.mjs:20:1 › label cards show live counts from data (2.7s)
+  ok  8 tests\e2e\drawers.spec.mjs:33:1 › every drawer: opens with focus on its title, Esc closes, focus returns, aria-expanded follows (30.8s)
+  ok  9 tests\e2e\drawers.spec.mjs:57:1 › Mistakes index: dividers, frequency sort and recency sort, detail with wrong vs right (7.4s)
+  ok 10 tests\e2e\drawers.spec.mjs:83:1 › Mistakes index: Review these cards opens Flashcards on that mistake's cards (11.0s)
+  ok 11 tests\e2e\drawers.spec.mjs:93:1 › Mistakes index: Open the book goes to the shelf and opens that subject's book (11.5s)
+  ok 12 tests\e2e\drawers.spec.mjs:103:1 › Worked examples: steps reveal one at a time (button and Right arrow), mistake step marked, check verified (25.8s)
+  ok 13 tests\e2e\drawers.spec.mjs:127:1 › Diagnostic: 5 questions per subject, results only at the end, mastery by the formula, saved, retake (21.8s)
+  ok 14 tests\e2e\drawers.spec.mjs:159:1 › History: summary strip, filters, month dividers, outcome scores, action timeline (7.7s)
+  ok 15 tests\e2e\drawers.spec.mjs:179:1 › Learned: empty state, then cards learned in Flashcards appear; Move back updates counts everywhere; stamp presses once (16.5s)
+  ok 16 tests\e2e\drawers.spec.mjs:208:1 › persisted state survives a reload: boxes, diagnostic, stamps (3.5s)
+  ok 17 tests\e2e\drawers.spec.mjs:217:1 › storage blocked: the page still works in memory (3.6s)
+  ok 18 tests\e2e\drawers.spec.mjs:231:3 › 390px sheets › every drawer opens as a bottom sheet and closes with its button (32.6s)
+  ok 19 tests\e2e\flashcards.spec.mjs:34:1 › open: cards fan up, label and bar counts match the data (5.0s)
+  ok 20 tests\e2e\flashcards.spec.mjs:49:1 › divider tabs and chips filter by subject; counts follow the filter (11.3s)
+  ok 21 tests\e2e\flashcards.spec.mjs:76:1 › Review N cards works for each mistake, and Review All for all of them (27.0s)
+  ok 22 tests\e2e\flashcards.spec.mjs:94:1 › all 12 cards: answered correctly, then incorrectly; boxes and end screen add up (46.7s)
+  ok 23 tests\e2e\flashcards.spec.mjs:124:1 › all 6 Leitner transitions happen in the UI (42.0s)
+  ok 24 tests\e2e\flashcards.spec.mjs:149:1 › Esc at every step walks back one level (12.8s)
+  ok 25 tests\e2e\flashcards.spec.mjs:168:1 › review persists in localStorage sb_cards and survives a reload (6.5s)
+  ok 26 tests\e2e\flicker.spec.mjs:64:5 › drawer flicker regression (desktop 3D) › flashcards: open then close, drawer face visible every frame (9.5s)
+  ok 27 tests\e2e\flicker.spec.mjs:64:5 › drawer flicker regression (desktop 3D) › index: open then close, drawer face visible every frame (9.7s)
+  ok 28 tests\e2e\flicker.spec.mjs:64:5 › drawer flicker regression (desktop 3D) › worked: open then close, drawer face visible every frame (9.6s)
+  ok 29 tests\e2e\flicker.spec.mjs:64:5 › drawer flicker regression (desktop 3D) › diagnostic: open then close, drawer face visible every frame (9.6s)
+  ok 30 tests\e2e\flicker.spec.mjs:64:5 › drawer flicker regression (desktop 3D) › history: open then close, drawer face visible every frame (9.5s)
+  ok 31 tests\e2e\flicker.spec.mjs:64:5 › drawer flicker regression (desktop 3D) › learned: open then close, drawer face visible every frame (9.5s)
+  ok 32 tests\e2e\flicker.spec.mjs:83:3 › drawer flicker regression (desktop 3D) › rapid open / close / open, and Esc during the open (8.7s)
+  ok 33 tests\e2e\motion.spec.mjs:13:1 › reduced motion: no tilt or lean, scenes swap with a 150ms crossfade, no springs run (2.4s)
+  ok 34 tests\e2e\motion.spec.mjs:39:1 › reduced motion: drawer opens as a sheet without springs; review and flip have no motion (3.3s)
+  ok 35 tests\e2e\motion.spec.mjs:59:1 › reduced motion: opening a book is a 150ms crossfade straight to flat pages (1.9s)
+  ok 36 tests\e2e\motion.spec.mjs:71:1 › reduced motion: every drawer opens without springs; the stamp appears without the press (12.2s)
+  ok 37 tests\e2e\narrow.spec.mjs:7:1 › 390px: segmented toggle replaces the arrows and switches scenes (4.3s)
+  ok 38 tests\e2e\narrow.spec.mjs:24:1 › 390px: flat cabinet, drawers open as bottom sheets, the page never scrolls sideways (10.1s)
+  ok 39 tests\e2e\narrow.spec.mjs:50:1 › 820px: still the 3D cabinet (the flat layout starts below 820px) (809ms)
+  ok 40 tests\e2e\scene.spec.mjs:5:1 › arrow to the cabinet and back; offscreen scene inert and hidden only after settling (4.4s)
+  ok 41 tests\e2e\scene.spec.mjs:25:1 › reverse mid-move keeps velocity and settles back (3.8s)
+  ok 42 tests\e2e\scene.spec.mjs:39:1 › spam-click the arrows 10 times: the final state is consistent (3.0s)
+  ok 43 tests\e2e\scene.spec.mjs:53:1 › headings crossfade with p: never both faint, never the wrong one in front (2.4s)
+  ok 44 tests\e2e\scene.spec.mjs:72:1 › parallax layers move at 0.6x / 1.0x / 1.12x of the track (2.6s)
+  ok 45 tests\e2e\screens.spec.mjs:9:5 › screens phone › shelf and book (3.4s)
+  ok 46 tests\e2e\screens.spec.mjs:19:5 › screens phone › cabinet and drawers (34.2s)
+  ok 47 tests\e2e\screens.spec.mjs:9:5 › screens tablet › shelf and book (5.6s)
+  ok 48 tests\e2e\screens.spec.mjs:19:5 › screens tablet › cabinet and drawers (40.2s)
+  ok 49 tests\e2e\screens.spec.mjs:9:5 › screens desktop › shelf and book (5.6s)
+  ok 50 tests\e2e\screens.spec.mjs:19:5 › screens desktop › cabinet and drawers (39.6s)
+  ok 51 tests\e2e\sequences.spec.mjs:22:1 › open A, close, open B immediately: B opens, A is home (13.0s)
+  ok 52 tests\e2e\sequences.spec.mjs:36:1 › open the fan drawer, close, open a panel drawer right away (and back) (12.0s)
+  ok 53 tests\e2e\sequences.spec.mjs:51:1 › Esc mid-animation, for every drawer: always lands closed and home (38.5s)
+  ok 54 tests\e2e\sequences.spec.mjs:65:1 › a panel drawer re-opened mid-close comes back with its contents (10.4s)
+  ok 55 tests\e2e\sequences.spec.mjs:80:1 › Esc while the drawer is closing re-closes nothing twice; clicking it again re-opens from where it is (7.2s)
+  ok 56 tests\e2e\sequences.spec.mjs:92:1 › with a drawer open, the scene arrow is out of reach; after closing it works (10.7s)
+  ok 57 tests\e2e\sequences.spec.mjs:104:1 › pressing the arrow while a drawer is opening does not move the camera (5.8s)
+  ok 58 tests\e2e\sequences.spec.mjs:112:1 › a review open inside a drawer: Close Drawer exits the review first, then closes (9.4s)
+  ok 59 tests\e2e\sequences.spec.mjs:121:1 › reload: persisted boxes and diagnostic come back, and the counts agree everywhere (18.3s)
+  ok 60 tests\e2e\shelf.spec.mjs:11:1 › shelf: no scrollbar, books stand fully on the board, averages come from data (794ms)
+  ok 61 tests\e2e\shelf.spec.mjs:39:3 › book Physics: focus starts the logo, open lands flat with its data, Back and Esc return focus (11.0s)
+  ok 62 tests\e2e\shelf.spec.mjs:39:3 › book Chemistry: focus starts the logo, open lands flat with its data, Back and Esc return focus (11.1s)
+  ok 63 tests\e2e\shelf.spec.mjs:39:3 › book Biology: focus starts the logo, open lands flat with its data, Back and Esc return focus (11.1s)
+  ok 64 tests\e2e\shelf.spec.mjs:82:1 › open book traps focus: Tab never leaves the reader (3.6s)
+  ok 65 tests\e2e\smoke.spec.mjs:5:3 › smoke: loads with no console errors or failed requests (phone) (804ms)
+  ok 66 tests\e2e\smoke.spec.mjs:5:3 › smoke: loads with no console errors or failed requests (tablet) (813ms)
+  ok 67 tests\e2e\smoke.spec.mjs:5:3 › smoke: loads with no console errors or failed requests (desktop) (815ms)
+  ok 68 tests\e2e\smoke.spec.mjs:14:1 › smoke: works offline (only same-origin requests, all served locally) (806ms)
+  ok 69 tests\e2e\perf.spec.mjs:36:1 › no layout shift on load (782ms)
+{
+ "cls": 0,
+ "book open (1.9s sequence)": {
+  "frames": 122,
+  "avgFps": 57.6,
+  "p95FrameMs": 16.8,
+  "worstMs": 83.2
+ },
+ "camera move to cabinet": {
+  "frames": 55,
+  "avgFps": 42.3,
+  "p95FrameMs": 33.4,
+  "worstMs": 116.6
+ },
+ "flashcards drawer open + pop": {
+  "frames": 84,
+  "avgFps": 46.2,
+  "p95FrameMs": 33.4,
+  "worstMs": 33.4
+ },
+ "flashcards drawer close": {
+  "frames": 87,
+  "avgFps": 53.8,
+  "p95FrameMs": 33.3,
+  "worstMs": 33.4
+ }
+}
+  ok 70 tests\e2e\perf.spec.mjs:47:1 › frame rate under 4x CPU throttling: book open, camera move, drawer open (12.0s)
+
+  70 passed (15.1m)
+exit 0

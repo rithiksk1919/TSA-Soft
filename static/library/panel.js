@@ -78,6 +78,18 @@
 
   // opts: { id, call, title, sub, accent, render(body, api), onCloseRequest() }
   function open(opts) {
+    // Re-opened while it was closing: cancel the close and spring back in from where it is.
+    if (cur && cur.closing && cur.id === opts.id) {
+      cur.closing = false;
+      sheet.style.pointerEvents = "";
+      scrim.style.pointerEvents = "";
+      cur.release = ui.isolate([sheet]);
+      ++popSeq;
+      $$(".pop", el.body).forEach(function (n) { itemSpring(n).to(1); });
+      frame.to(1);
+      api.focusTitle();
+      return frame.near(0.12);
+    }
     if (cur) return Promise.resolve();
     cur = { id: opts.id, opts: opts, back: null };
     sheet.dataset.drawer = opts.id;
@@ -89,6 +101,8 @@
     el.body.scrollTop = 0;
     sheet.hidden = false;
     scrim.hidden = false;
+    sheet.style.pointerEvents = "";
+    scrim.style.pointerEvents = "";
     sheet.classList.add("is-open");
     opts.render(el.body, api);
     cur.release = ui.isolate([sheet]);
@@ -110,22 +124,30 @@
   function close() {
     if (!cur) return Promise.resolve();
     var c = cur;
+    if (c.closing) return c.closingPromise;
+    c.closing = true;
+    // The panel is leaving: release the focus trap now, so the room is usable during the motion
+    // (a click on another drawer, or the same one to re-open, is not swallowed by inert).
+    if (c.release) { c.release(); c.release = null; }
+    // The departing tray floats over the drawers: let clicks through to the room while it goes.
+    sheet.style.pointerEvents = "none";
+    scrim.style.pointerEvents = "none";
     var done;
     if (SB.reducedMotion()) {
       done = Promise.all([ui.fade(sheet, 1, 0), ui.narrow() ? ui.fade(scrim, 1, 0) : null]);
     } else {
       done = drop().then(function () { return frame.to(0); });
     }
-    return done.then(function () {
-      if (cur !== c) return;
+    c.closingPromise = done.then(function () {
+      if (cur !== c || !c.closing) return;   // re-opened meanwhile
       sheet.hidden = true;
       scrim.hidden = true;
       sheet.classList.remove("is-open");
       sheet.style.opacity = "";
       el.body.innerHTML = "";
-      c.release();
       cur = null;
     });
+    return c.closingPromise;
   }
 
   // Esc inside the panel: a nested view goes back first; otherwise ask the cabinet to close.

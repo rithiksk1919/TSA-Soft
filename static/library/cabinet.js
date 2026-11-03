@@ -239,7 +239,13 @@
     b.addEventListener("blur", off);
     b.addEventListener("click", function () {
       if (!v.d.active) { stuck(v); return; }
-      if (drawer.state === "closed" || (drawer.state === "closing" && drawer.view === v)) openDrawer(v);
+      if (drawer.state === "closed" || (drawer.state === "closing" && drawer.view === v)) { openDrawer(v); return; }
+      // Another drawer is still closing: open this one as soon as it is home.
+      if (drawer.state === "closing" && drawer.closing) {
+        var want = v;
+        pendingOpen = want;
+        drawer.closing.then(function () { if (pendingOpen === want && drawer.state === "closed") { pendingOpen = null; openDrawer(want); } });
+      }
     });
   }
 
@@ -505,6 +511,7 @@
   // springs are re-targeted from where they are (keeping velocity), never restarted or stacked.
   var seq = 0;
   var releaseTrap = null;
+  var pendingOpen = null;
 
   function lockOthers(v, locked) {
     drawerViews.forEach(function (o) { if (o !== v) o.btn.tabIndex = locked ? -1 : 0; });
@@ -557,6 +564,12 @@
       var contents = SB.drawerContents && SB.drawerContents[v.d.id];
       if (!contents) return;
       drawer.state = "panel";
+      // Re-opened mid-close: the panel still holds its contents; bring it back as it is.
+      if (reopening && SB.panel.id() === v.d.id) {
+        return SB.panel.open({ id: v.d.id, onCloseRequest: requestClose }).then(function () {
+          if (my === seq) announce(v.d.title + " drawer open.");
+        });
+      }
       return SB.panel.open({
         id: v.d.id, call: v.d.call, title: v.d.title, sub: v.d.sub,
         render: function (body, api) { contents.render(body, api, opts); },
@@ -586,7 +599,7 @@
     setHint("");
     setItemsReachable([]);
     var dropped = wasPanel ? SB.panel.close() : choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0));
-    return dropped.then(function () {
+    var done = dropped.then(function () {
       if (my !== seq) return;
       return ui.flat() ? null : v.openS.to(0);
     }).then(function () {
@@ -596,9 +609,11 @@
       chosen = -1;
       v.btn.setAttribute("aria-expanded", "false");
       lockOthers(v, false);
-      v.btn.focus({ preventScroll: true });
+      if (!pendingOpen) v.btn.focus({ preventScroll: true });
       announce(v.d.title + " drawer closed.");
     });
+    drawer.closing = done;
+    return done;
   }
   function requestClose() { return closeDrawer(); }
 
