@@ -15,7 +15,8 @@ export function watch(page) {
 
 export async function gotoApp(page, opts = {}) {
   if (opts.size) await page.setViewportSize(opts.size);
-  await page.goto("/" + (opts.query || ""));
+  // #shelf deep-links past the library room to the shelf scene (the room has its own spec).
+  await page.goto("/" + (opts.query || "") + (opts.room ? "" : "#shelf"));
   await page.waitForFunction(() => document.querySelectorAll(".book").length === 3 && document.querySelectorAll(".dslot").length === 6);
   await page.evaluate(() => document.fonts.ready);
   await settle(page);

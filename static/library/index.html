@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="library.css">
 <link rel="stylesheet" href="cabinet.css">
 <link rel="stylesheet" href="drawers.css">
+<link rel="stylesheet" href="room.css">
 </head>
 <body>
 <div class="library" id="library">
@@ -23,6 +24,7 @@
       </svg>
       <span class="brand__name" translate="no">SkillBridge</span>
     </a>
+    <button class="room-link" id="to-room" type="button" hidden><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Library</button>
     <p class="learner" id="learner"><span class="learner__initials" aria-hidden="true">PN</span><span><span class="learner__name">Priya Nair</span> · Saved on this device</span></p>
   </header>
 
@@ -154,6 +156,53 @@
   </div>
 </div>
 
+<!-- The library room: the home screen. Each station zooms in to its scene. -->
+<section class="room" id="room" aria-labelledby="room-title" hidden>
+  <div class="room__inner">
+    <header class="room__head">
+      <p class="room__brand" translate="no">SkillBridge</p>
+      <h1 class="room__title" id="room-title" tabindex="-1">The library</h1>
+      <p class="room__lede">Learn from your mistakes, apply what you learn, then practise until it sticks.</p>
+    </header>
+    <div class="room__stage">
+      <span class="room__wall" aria-hidden="true"></span>
+      <span class="room__window" aria-hidden="true"></span>
+      <span class="room__floor" aria-hidden="true"></span>
+
+      <button class="station station--shelf" type="button" data-scene="learn">
+        <span class="mini-shelf" aria-hidden="true">
+          <span class="mini-shelf__book" style="--c:var(--physics);--h:78%"></span>
+          <span class="mini-shelf__book" style="--c:var(--chemistry);--h:68%"></span>
+          <span class="mini-shelf__book" style="--c:var(--biology);--h:74%"></span>
+          <span class="mini-shelf__gap"></span>
+          <span class="mini-shelf__board"></span>
+        </span>
+        <span class="station__label"><span class="station__verb">Learn</span><span class="station__name">The bookshelf</span><span class="station__sub">See what trips you up and why</span></span>
+      </button>
+
+      <button class="station station--desk" type="button" data-scene="apply" aria-describedby="room-note">
+        <span class="mini-desk" aria-hidden="true">
+          <span class="mini-desk__lamp"><span class="mini-desk__shade"></span><span class="mini-desk__arm"></span></span>
+          <span class="mini-desk__book"></span>
+          <span class="mini-desk__top"></span>
+          <span class="mini-desk__leg mini-desk__leg--l"></span>
+          <span class="mini-desk__leg mini-desk__leg--r"></span>
+        </span>
+        <span class="station__label"><span class="station__verb">Apply</span><span class="station__name">The reading desk</span><span class="station__sub">Coming next</span></span>
+      </button>
+
+      <button class="station station--catalog" type="button" data-scene="practice">
+        <span class="mini-cab" aria-hidden="true">
+          <span class="mini-cab__d"></span><span class="mini-cab__d"></span><span class="mini-cab__d"></span>
+          <span class="mini-cab__d"></span><span class="mini-cab__d"></span><span class="mini-cab__d"></span>
+        </span>
+        <span class="station__label"><span class="station__verb">Practice</span><span class="station__name">The card catalog</span><span class="station__sub">Six drawers of practice</span></span>
+      </button>
+    </div>
+    <p class="room__note" id="room-note" aria-live="polite"></p>
+  </div>
+</section>
+
 <!-- Drawer panel: a tray over the room on desktop, a bottom sheet under 820px -->
 <div class="sheet-scrim" id="sheet-scrim" hidden></div>
 <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
@@ -197,5 +246,6 @@
 <script src="drawers.js"></script>
 <script src="interiors.js"></script>
 <script src="cabinet.js"></script>
+<script src="room.js"></script>
 </body>
 </html>

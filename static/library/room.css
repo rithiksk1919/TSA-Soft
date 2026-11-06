@@ -1,0 +1,120 @@
+/* The library room: home screen with three stations, drawn flat so it stays light. */
+
+.room {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  overflow-y: auto;
+  background: var(--page);
+  transform-origin: 50% 50%;
+}
+.room[hidden] { display: none; }
+.room__inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-block: 28px 40px;
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+}
+.room__brand { margin: 0; font-family: var(--serif); font-weight: 600; font-size: 19px; }
+.room__title { margin: 28px 0 0; font-family: var(--serif); font-weight: 600; font-size: 36px; line-height: 1.15; }
+.room__title:focus { outline: none; }
+.room__title:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.room__lede { margin: 10px 0 0; font-size: 16px; color: var(--muted); max-width: 60ch; }
+
+.room__stage {
+  position: relative;
+  margin-top: 28px;
+  min-height: 430px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 24px;
+  padding: 40px 24px 28px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.room__wall, .room__floor, .room__window { position: absolute; display: block; pointer-events: none; }
+.room__wall { inset: 0 0 26% 0; background-color: var(--recess); background-image: repeating-linear-gradient(to right, transparent 0 159px, rgba(27, 31, 36, .04) 159px 160px); }
+.room__floor { left: 0; right: 0; bottom: 0; height: 26%; background-color: var(--floor); background-image: repeating-linear-gradient(to right, transparent 0 119px, var(--floor-seam) 119px 120px); border-top: 1px solid var(--floor-edge); }
+.room__window { left: 50%; top: 24px; width: 120px; height: 120px; margin-left: -60px; background: #F7F5F0; border: 6px solid var(--board); border-radius: 2px; box-shadow: inset 0 0 0 1px var(--board-edge); }
+.room__window::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--board); }
+.room__note { min-height: 22px; margin: 14px 0 0; font-size: 14px; color: var(--ink); text-align: center; }
+
+.station {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 8px 10px;
+  font: inherit;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 220ms var(--ease);
+}
+.station:hover { transform: translateY(-4px); }
+.station:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.station__label {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 14px 10px;
+  background: var(--label-card);
+  border-radius: 3px;
+  box-shadow: 0 0 0 3px var(--brass), 0 0 0 4px var(--brass-dark);
+  text-align: center;
+}
+.station__verb { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.station__name { font-family: var(--serif); font-weight: 600; font-size: 17px; }
+.station__sub { font-size: 12.5px; color: var(--muted); }
+.station--desk .station__sub { color: var(--ink); font-style: italic; }
+
+/* Miniature shelf */
+.mini-shelf { position: relative; display: flex; align-items: flex-end; gap: 6px; width: 190px; height: 150px; padding: 0 16px 14px; background: var(--recess); box-shadow: inset 0 14px 20px -12px rgba(27, 31, 36, .3); border-radius: 3px 3px 0 0; }
+.mini-shelf__book { display: block; width: 30px; height: var(--h); background: var(--c); border-radius: 2px; box-shadow: inset -3px 0 0 rgba(0, 0, 0, .15), inset 0 6px 0 rgba(255, 255, 255, .08); }
+.mini-shelf__gap { display: block; width: 30px; height: 66%; border: 1.5px dashed #A79F90; border-radius: 2px; }
+.mini-shelf__board { position: absolute; left: -8px; right: -8px; bottom: -10px; height: 14px; background: var(--board-edge); border-radius: 0 0 3px 3px; }
+
+/* Miniature desk with lamp and open book */
+.mini-desk { position: relative; display: block; width: 220px; height: 150px; }
+.mini-desk__top { position: absolute; left: 0; right: 0; top: 78px; height: 14px; background: var(--cab-body); border-radius: 2px; }
+.mini-desk__leg { position: absolute; top: 92px; width: 12px; height: 58px; background: var(--wood-dark); }
+.mini-desk__leg--l { left: 14px; }
+.mini-desk__leg--r { right: 14px; }
+.mini-desk__book { position: absolute; left: 70px; top: 62px; width: 92px; height: 16px; background: var(--paper); border-radius: 2px; box-shadow: inset 46px 0 0 -45px var(--hairline), 0 0 0 1px var(--board-edge); transform: skewX(-12deg); }
+.mini-desk__lamp { position: absolute; left: 20px; top: 0; width: 60px; height: 78px; }
+.mini-desk__arm { position: absolute; left: 22px; top: 22px; width: 4px; height: 56px; background: var(--brass-dark); }
+.mini-desk__shade { position: absolute; left: 0; top: 4px; width: 48px; height: 22px; background: var(--brass); border-radius: 24px 24px 2px 2px; }
+
+/* Miniature card catalog */
+.mini-cab { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 200px; padding: 12px; background: var(--cab-body); border-radius: 3px; box-shadow: inset 0 -10px 0 rgba(0, 0, 0, .1); }
+.mini-cab__d { position: relative; display: block; height: 46px; background: var(--drawer-face); border-radius: 2px; }
+.mini-cab__d::before { content: ""; position: absolute; left: 22%; right: 22%; top: 9px; height: 13px; background: var(--label-card); box-shadow: 0 0 0 2px var(--brass); }
+.mini-cab__d::after { content: ""; position: absolute; left: 36%; right: 36%; bottom: 7px; height: 4px; background: var(--brass); border-radius: 2px; }
+
+/* Header link back to the room */
+.room-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 0 12px 0 8px;
+  font: inherit; font-size: 14px; font-weight: 500; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--hairline); border-radius: 999px; cursor: pointer;
+  margin-left: auto; margin-right: 12px;
+}
+.room-link svg { width: 16px; height: 16px; }
+.room-link:hover { border-color: var(--board); }
+.room-link:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+@media (max-width: 819px) {
+  .room__stage { grid-template-columns: minmax(0, 1fr); align-items: center; padding: 20px 16px; }
+  .room__wall { inset: 0; }
+  .room__floor, .room__window { display: none; }
+  .station { flex-direction: row; justify-content: flex-start; gap: 16px; }
+  .station__label { align-items: flex-start; text-align: left; }
+  .mini-shelf, .mini-desk, .mini-cab { transform: scale(.55); transform-origin: left center; margin-right: -80px; }
+  .room__title { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { .station { transition: none; } .station:hover { transform: none; } }

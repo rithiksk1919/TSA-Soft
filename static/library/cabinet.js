@@ -95,6 +95,15 @@
   if (el.segLearn) el.segLearn.addEventListener("click", function () { go(0); });
   if (el.segPractice) el.segPractice.addEventListener("click", function () { go(1); });
   SB.goScene = go;
+  // Land in a scene with no camera move (the library room zooms in on top of it).
+  SB.jumpScene = function (t) {
+    cameraTarget = t;
+    syncSeg(t);
+    [el.sceneA, el.sceneB].forEach(function (n) { n.style.visibility = "visible"; });
+    [el.headA, el.headB].forEach(function (n) { n.style.visibility = "visible"; });
+    cam.jump(t);
+    settleScene(t);
+  };
 
   el.sceneB.inert = true;
   el.headB.setAttribute("aria-hidden", "true");
