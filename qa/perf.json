@@ -1,26 +1,26 @@
 {
   "cls": 0,
   "book open (1.9s sequence)": {
-    "frames": 122,
-    "avgFps": 57.6,
+    "frames": 123,
+    "avgFps": 58.1,
     "p95FrameMs": 16.7,
-    "worstMs": 100
+    "worstMs": 66.7
   },
   "camera move to cabinet": {
-    "frames": 58,
-    "avgFps": 44.6,
-    "p95FrameMs": 33.4,
-    "worstMs": 49.9
+    "frames": 59,
+    "avgFps": 45.4,
+    "p95FrameMs": 50,
+    "worstMs": 50
   },
   "flashcards drawer open + pop": {
-    "frames": 87,
-    "avgFps": 47.9,
+    "frames": 84,
+    "avgFps": 46.2,
     "p95FrameMs": 33.4,
-    "worstMs": 33.4
+    "worstMs": 33.5
   },
   "flashcards drawer close": {
-    "frames": 87,
-    "avgFps": 55,
+    "frames": 89,
+    "avgFps": 55.1,
     "p95FrameMs": 33.3,
     "worstMs": 33.4
   }

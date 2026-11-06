@@ -6,7 +6,7 @@
   inset: 0;
   z-index: 15;
   overflow: hidden;
-  background: #2A241D;   /* the dark beyond the room's open front edge */
+  background: #4A3B2C;   /* beyond the room's edges: a dark wood tone, so any gap reads as shadow */
 }
 .room[hidden] { display: none; }
 
@@ -52,7 +52,7 @@
 .wall { background-color: #E7E1D6; background-image: repeating-linear-gradient(to right, transparent 0 199px, rgba(27, 31, 36, .035) 199px 200px); }
 .wall--side { background-color: #DDD6C9; }
 .wall--right { background-color: #D3CBBD; }
-.ceiling { background: #EFEBE3; box-shadow: inset 0 0 0 40px #E4DED3; }
+.ceiling { background: #ECE7DE; }
 .wainscot { background-color: #7A6247; background-image: repeating-linear-gradient(to right, transparent 0 116px, rgba(30, 20, 10, .3) 116px 120px), linear-gradient(transparent 0 0); box-shadow: inset 0 0 0 1px rgba(30, 20, 10, .3); }
 .wainscot--right { filter: none; background-color: #6F5940; }
 .rail .f3, .skirting .f3, .trim .f3 { background: #5E4A36; }
@@ -226,9 +226,13 @@ html.room-practice .foot,
 html.room-practice .layer,
 html.room-practice .nav-arrow,
 html.room-practice #scene-a { visibility: hidden !important; }
-html.room-practice .station3--catalog { visibility: hidden; }
+html.room-practice .station3--catalog .cat-body { visibility: hidden; }
 html.room-practice .room__head, html.room-practice .rnav { visibility: hidden; }
 
 /* At a station the room's own heading steps aside */
 .room.at-station .room__head { visibility: hidden; }
 html.room-practice .heading, html.room-practice .headings { visibility: hidden !important; }
+
+/* The cabinet over the room can extend below the page's .world box. Chrome hit-tests overflow-x: clip
+   in both axes, so the bottom-row drawers took no clicks; the clip is not needed in this mode. */
+html.room-practice .world { overflow: visible; }

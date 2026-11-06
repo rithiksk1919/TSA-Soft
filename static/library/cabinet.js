@@ -221,6 +221,7 @@
   // inside the rig's own transform (a 2D transform on an ancestor would break 3D hit-testing).
   var lastRigView = null;
   SB.renderCabinet = function () { renderRig(lastRigView); };
+  SB.cabinetWidth = function () { return G.W * G.fit; };
   function renderRig(v) {
     lastRigView = v;
     var ov = SB.cabOverlay;
@@ -243,7 +244,7 @@
     var f = G.fit * k;
     el.rig.style.transform = pre +
       "translate3d(" + (tx * k).toFixed(2) + "px," + (ty * k).toFixed(2) + "px,0) scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") " +
-      "rotateX(" + (-6 - 12 * q).toFixed(3) + "deg) rotateY(" + (-8 * (1 - clamp(q, 0, 1))).toFixed(3) + "deg)";
+      "rotateX(" + ((ov && typeof ov.rx === "number" ? ov.rx : -6) - 12 * q).toFixed(3) + "deg) rotateY(" + ((ov && typeof ov.ry === "number" ? ov.ry : -8) * (1 - clamp(q, 0, 1))).toFixed(3) + "deg)";
     el.scrim.style.opacity = (0.18 * clamp(q, 0, 1)).toFixed(3);
   }
 
@@ -384,7 +385,7 @@
 
   var FACE = 18;   // the rig is pitched -18deg with a drawer open; cards counter-rotate to face the camera
 
-  function halfRoom() { return (sw / 2 - 14) / (G.fit * G.mag); }
+  function halfRoom() { return (sw / 2 - 14) / (G.fit * G.mag * (SB.cabOverlay ? SB.cabOverlay.s : 1)); }
   function fanSpacing() { var cw = G.dw - 16; return clamp(halfRoom() - cw / 2, cw * 0.5, cw + 60); }
 
   function groupsPose(it) {

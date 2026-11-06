@@ -399,7 +399,28 @@
 
   /* ---------- Open / close ---------- */
 
-  // roomOpts (from the 3D library room): { focusEl, onClosed }. The book has already slid out of the
+  // From the room: the closed book (paused at the hand-off frame) springs between the room book's
+  // turned cover and its own place in the reader. dir 1: from the cover in; dir 0: back onto it.
+  function stageFlip(coverRect, dir) {
+    var stage = el.stage;
+    stage.style.transform = "";
+    var R = $("#leaf-cover").getBoundingClientRect(), F = coverRect(), S = stage.getBoundingClientRect();
+    if (!R.width || !F.width) return Promise.resolve();
+    var dx = (F.left + F.width / 2) - (R.left + R.width / 2), dy = (F.top + F.height / 2) - (R.top + R.height / 2);
+    var sc = F.height / R.height;
+    stage.style.transformOrigin = (R.left + R.width / 2 - S.left).toFixed(1) + "px " + (R.top + R.height / 2 - S.top).toFixed(1) + "px";
+    var sp = window.SkillBridge.createSpring(window.SkillBridge.PRESETS.drawer, function (k) {
+      stage.style.transform = "translate(" + (dx * k).toFixed(2) + "px," + (dy * k).toFixed(2) + "px) scale(" + (1 + (sc - 1) * k).toFixed(4) + ")";
+    }, dir ? 1 : 0);
+    sp.jump(dir ? 1 : 0);
+    sp.to(dir ? 0 : 1);
+    return sp.near(0.01).then(function () {
+      sp.jump(dir ? 0 : 1);   // stop the spring's tail so it cannot write the transform back
+      if (dir) { stage.style.transform = ""; stage.style.transformOrigin = ""; }
+    });
+  }
+
+  // roomOpts (from the 3D library room): { focusEl, coverRect, onHandoff, onReturn, onClosed }. The book has already slid out of the
   // room's shelf, so the sequence starts at the hand-off (the closed cover) and the open spread dims
   // the room behind it instead of covering it with the page.
   var room = null;
@@ -423,9 +444,19 @@
       slot.classList.add("is-flying");
       el.reader.classList.add("is-flying");
       running = build3D(slot, lifted);
-      if (room) running.forEach(function (a) { a.currentTime = HANDOFF_MS; });   // skip the shelf pull
+      if (room) {
+        // Skip the shelf pull and hold the closed book; it grows out of the room book's cover first.
+        running.forEach(function (a) { a.pause(); a.currentTime = HANDOFF_MS; });
+        var held = running.slice();
+        requestAnimationFrame(function () {
+          var go = room && room.coverRect ? stageFlip(room.coverRect, 1) : Promise.resolve();
+          if (room && room.onHandoff) room.onHandoff();
+          go.then(function () { held.forEach(function (a) { if (a.playState === "paused") a.play(); }); });
+        });
+      }
     } else {
       el.reader.classList.add("is-open");
+      if (room && room.onHandoff) room.onHandoff();
       running = [el.reader.animate([{ opacity: 0 }, { opacity: 1 }], { duration: m === "reduce" ? 150 : 320, easing: EASE, fill: "both" })];
     }
 
@@ -441,12 +472,15 @@
       $("#where-title").focus({ preventScroll: true });
       announce(s.name + " book opened");
       busy = false;
+      if (pendingClose) { pendingClose = false; close(); }
     });
   }
 
+  var pendingClose = false, closing = false;
   function close() {
     if (busy || !current) return;
     busy = true;
+    closing = true;
     var s = current, btn = opener, slot = btn.closest(".slot");
     if (releaseTrap) { releaseTrap(); releaseTrap = null; }
     if (el.reader.contains(document.activeElement)) document.activeElement.blur();
@@ -468,11 +502,18 @@
     }
 
     // From the room the close stops at the hand-off: the room's book slides home from there.
+    var r0 = room;
     var done = room && m === "3d" ? new Promise(function (resolve) {
       (function watch() {
         if (!running.length || running[0].currentTime <= HANDOFF_MS + 5) { resolve(); return; }
         requestAnimationFrame(watch);
       })();
+    }).then(function () {
+      running.forEach(function (a) { a.pause(); a.currentTime = HANDOFF_MS; });
+      return r0.coverRect ? stageFlip(r0.coverRect, 0) : null;
+    }).then(function () {
+      if (r0.onReturn) r0.onReturn();
+      el.stage.style.transform = ""; el.stage.style.transformOrigin = "";
     }) : settle(running);
 
     done.then(function () {
@@ -486,7 +527,7 @@
       el.reader.classList.remove("over-room");
       var r = room;
       room = null;
-      current = null; opener = null; busy = false;
+      current = null; opener = null; busy = false; closing = false;
       if (r) { if (r.focusEl) r.focusEl.focus({ preventScroll: true }); if (r.onClosed) r.onClosed(); }
       else btn.focus({ preventScroll: true });
       announce(s.name + " book closed");
@@ -537,7 +578,12 @@
   });
   el.back.addEventListener("click", close);
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && current) { e.preventDefault(); close(); }
+    if (e.key === "Escape" && current) {
+      e.preventDefault();
+      // Esc while the book is still opening: close as soon as it has opened, rather than dropping it.
+      if (busy && el.reader.classList.contains("is-active") && !closing) { pendingClose = true; return; }
+      close();
+    }
   });
 
   /* ---------- Boot ---------- */

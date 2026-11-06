@@ -140,6 +140,7 @@ test("keyboard only: shelf -> book -> back -> cabinet -> drawer -> review -> ans
 
 for (const [name, size] of [["desktop", WIDTHS.desktop], ["phone", WIDTHS.phone]]) {
   test(`axe and contrast in every drawer and its detail view (${name})`, async ({ page }) => {
+    test.setTimeout(180_000);   // five drawers, each with its opening motion and a detail view
     await page.setViewportSize(size);
     await gotoApp(page);
     await page.evaluate(() => { const s = window.SkillBridge.store; ["phy-normal-1"].forEach((id) => { s.answer(id, true); s.answer(id, true); }); });

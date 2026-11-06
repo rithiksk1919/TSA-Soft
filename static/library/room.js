@@ -33,6 +33,23 @@
     return e;
   }
 
+  // A large surface as a grid of tiles in its own group. One huge plane, magnified on a wide screen,
+  // can exceed what the compositor will draw and drop out as a black hole; tiles keep layers small.
+  function tiled(parent, o, cols, rows) {
+    var g = node("g3 " + (o.gcls || ""));
+    g.style.transform = "translate3d(" + px(o.x || 0) + "," + px(o.y || 0) + "," + px(o.z || 0) + ")" +
+      (o.ry ? " rotateY(" + o.ry + "deg)" : "") + (o.rx ? " rotateX(" + o.rx + "deg)" : "");
+    parent.appendChild(g);
+    var tw = o.w / cols, th = o.h / rows;
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+      var ox = c * tw, oy = r * th;
+      var e = node("p3 " + (o.cls || ""), "width:" + px(tw + 1) + ";height:" + px(th + 1) + ";left:" + px(-o.w / 2 + ox) + ";top:" + px(-o.h / 2 + oy) +
+        ";background-position:" + px(-ox) + " " + px(-oy));
+      g.appendChild(e);
+    }
+    return g;
+  }
+
   // A cuboid whose bottom rests at y, centred on x and z. `faces` lists which faces to draw.
   function box(parent, o) {
     var g = node("g3 " + (o.cls || ""));
@@ -74,16 +91,16 @@
 
   function buildShell() {
     var s = group(world, "shell");
-    plane(s, { cls: "floor", x: 0, y: 0, z: MIDZ, w: W, h: D, rx: 90 });
+    tiled(s, { cls: "floor", x: 0, y: 0, z: MIDZ, w: W, h: D, rx: 90 }, 10, 10);   // small tiles: a tile crossing the camera plane drops less
     plane(s, { cls: "rug", x: 40, y: -1, z: -170, w: 760, h: 470, rx: 90, html: '<span class="rug__border"></span>' });
     plane(s, { cls: "light-patch", x: -60, y: -2, z: -470, w: 300, h: 520, rx: 90, rz: -10 });
-    plane(s, { cls: "wall wall--back", x: 0, y: -H / 2, z: BACK, w: W, h: H });
-    plane(s, { cls: "wall wall--side", x: -W / 2, y: -H / 2, z: MIDZ, w: D, h: H, ry: 90 });
-    plane(s, { cls: "wall wall--side wall--right", x: W / 2, y: -H / 2, z: MIDZ, w: D, h: H, ry: -90 });
-    plane(s, { cls: "ceiling", x: 0, y: -H, z: MIDZ, w: W, h: D, rx: -90 });
-    plane(s, { cls: "wainscot", x: 0, y: -150, z: BACK + 1, w: W, h: 300 });
-    plane(s, { cls: "wainscot", x: -W / 2 + 1, y: -150, z: MIDZ, w: D, h: 300, ry: 90 });
-    plane(s, { cls: "wainscot wainscot--right", x: W / 2 - 1, y: -150, z: MIDZ, w: D, h: 300, ry: -90 });
+    tiled(s, { cls: "wall wall--back", x: 0, y: -H / 2, z: BACK, w: W, h: H }, 5, 3);
+    tiled(s, { cls: "wall wall--side", x: -W / 2, y: -H / 2, z: MIDZ, w: D, h: H, ry: 90 }, 4, 3);
+    tiled(s, { cls: "wall wall--side wall--right", x: W / 2, y: -H / 2, z: MIDZ, w: D, h: H, ry: -90 }, 4, 3);
+    tiled(s, { cls: "ceiling", x: 0, y: -H, z: MIDZ, w: W, h: D, rx: -90 }, 5, 4);
+    tiled(s, { cls: "wainscot", x: 0, y: -150, z: BACK + 1, w: W, h: 300 }, 5, 1);
+    tiled(s, { cls: "wainscot", x: -W / 2 + 1, y: -150, z: MIDZ, w: D, h: 300, ry: 90 }, 4, 1);
+    tiled(s, { cls: "wainscot wainscot--right", x: W / 2 - 1, y: -150, z: MIDZ, w: D, h: 300, ry: -90 }, 4, 1);
     box(s, { cls: "rail", x: 0, y: -296, z: BACK + 6, w: W, h: 12, d: 12, faces: "front top" });
     box(s, { cls: "rail", x: -W / 2 + 6, y: -296, z: MIDZ, w: 12, h: 12, d: D, faces: "right top" });
     box(s, { cls: "rail", x: W / 2 - 6, y: -296, z: MIDZ, w: 12, h: 12, d: D, faces: "left top" });
@@ -138,7 +155,7 @@
     plane(g, { cls: "case-back", x: x0, y: -h / 2, z: z0 - d / 2 + 2, w: w - 40, h: h - 30 });
     var shelves = [40, 225, 410, 595];
     shelves.forEach(function (sy, i) {
-      if (i > 0) box(g, { cls: "wood", x: x0, y: -sy, z: z0, w: w - 48, h: 14, d: d - 8, faces: "front top" });
+      if (i > 0) box(g, { cls: "wood", x: x0, y: -sy, z: z0, w: w - 48, h: 14, d: d - 8, faces: "front top bottom" });
       var room = (i < 3 ? shelves[i + 1] : h - 26) - sy - 14;
       fillShelf(g, x0 - (w - 48) / 2 + 4, x0 + (w - 48) / 2 - 4, -sy - (i > 0 ? 14 : 0), z0 + 4, room, i);
     });
@@ -214,6 +231,8 @@
     var g = group(world, "station3 station3--catalog", { "data-station": "practice" });
     box(g, { cls: "wood wood--dark", x: x0, y: -lift + 20, z: z0, w: w - 20, h: 20, d: d - 20, faces: "front top" });
     [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (s) { box(g, { cls: "wood wood--dark", x: x0 + s[0] * (w / 2 - 30), y: 0, z: z0 + s[1] * (d / 2 - 30), w: 18, h: lift, d: 18, faces: "front left right" }); });
+    var stand = g;
+    g = group(g, "cat-body");
     var labels = ["FC 01", "MI 02", "WE 03", "DG 04", "HI 05", "LE 06"], drawers = "";
     labels.forEach(function (l) { drawers += '<span class="cat__d"><span class="cat__l">' + l + '</span><span class="cat__p"></span></span>'; });
     box(g, { cls: "cabinet3", x: x0, y: -lift, z: z0, w: w, h: h, d: d, faces: "front top left right", html: { front: '<span class="cat__grid">' + drawers + "</span>" } });
@@ -221,6 +240,7 @@
     box(g, { cls: "wood", x: x0 - 130, y: -lift - h - 14, z: z0, w: 120, h: 20, d: 80, faces: "front top left right" });
     for (var c = 0; c < 6; c++) plane(g, { cls: "card3", x: x0 - 130, y: -lift - h - 50, z: z0 - 28 + c * 10, w: 108, h: 56, rx: -8 });
     plane(g, { cls: "plaque", x: x0 + 40, y: -lift - h - 110, z: z0 + 60, w: 220, h: 50, html: '<span class="plaque__verb">Practice</span><span class="plaque__name">The card catalog</span>' });
+    void stand;
     // The plant in the corner
     var pl = group(world, "plant", null, "translate3d(" + px(W / 2 - 130) + ",0," + px(BACK + 150) + ")");
     box(pl, { cls: "pot", x: 0, y: 0, z: 0, w: 96, h: 110, d: 96, faces: "front left right top" });
@@ -231,7 +251,10 @@
      Camera: a pose (position, yaw, pitch); the world moves by the inverse
      ===================================================================== */
 
+  // The perspective scales with the window width, so the framing (field of view) is the same on a
+  // laptop and on a 2560px monitor; a fixed 900px saw past the room's walls on wide screens.
   var PERSPECTIVE = 900;
+  var CATALOG = { x: 560, front: BACK + 120 + 100, w: 520, cy: -240 };
   var POSES = {
     overview: { x: 0, y: -440, z: 1020, yaw: 0, pitch: -10 },
     learn: { x: -560, y: -430, z: -150, yaw: 0, pitch: -4 },
@@ -312,9 +335,12 @@
       return;
     }
     if (name === "learn") {
+      room.classList.add("at-station");
       flyTo("learn").then(function () {
         state = "learn";
         room.classList.add("is-learn", "at-station");
+        if (release) release();
+        release = ui.isolate([room, stationBack]);   // the Back button must stay reachable
         showBack(true);
         var first = $(".rbooks__btn", room);
         if (first) first.focus({ preventScroll: true });
@@ -323,6 +349,8 @@
       return;
     }
     if (name === "practice") {
+      POSES.practice = practicePose();
+      room.classList.add("at-station");
       flyTo("practice").then(function () { enterPractice(); });
       return;
     }
@@ -401,7 +429,7 @@
   function pullSpring(b) {
     if (!pulls[b.dataset.book]) {
       pulls[b.dataset.book] = SB.createSpring(P.drawer, function (k) {
-        b.style.transform = b.dataset.base + " translate3d(0," + (-26 * k).toFixed(2) + "px," + (96 * k).toFixed(2) + "px)";
+        b.style.transform = b.dataset.base + " translate3d(0," + (-22 * k).toFixed(2) + "px," + (120 * k).toFixed(2) + "px) rotateY(" + (-72 * k).toFixed(2) + "deg)";
       }, 0);
     }
     return pulls[b.dataset.book];
@@ -413,12 +441,17 @@
     if (!b) return;
     state = "reading";
     var sp = pullSpring(b);
+    var cover = $(".f3--right", b);   // turned toward the camera, this face is the front cover
     sp.to(1);
-    sp.near(0.05).then(function () {
+    sp.near(0.03).then(function () {
       SB.jumpScene(0);   // the book engine lives on the shelf scene, behind the room
       var ok = SB.openBookFromRoom(id, {
         focusEl: btn,
+        coverRect: function () { return cover.getBoundingClientRect(); },
+        onHandoff: function () { b.style.visibility = "hidden"; },      // the open book takes its place
+        onReturn: function () { b.style.visibility = ""; },             // back in the hand, before it slides home
         onClosed: function () {
+          b.style.visibility = "";
           sp.to(0);
           state = "learn";
           if (release) release();
@@ -430,26 +463,38 @@
   }
 
   // Practice: the working cabinet is laid over the room's catalog; the room stays in view behind it.
-  // Two passes: scale to the room catalog's width, then move centre onto centre.
+  // The cabinet scene uses the room's perspective, centred on the screen like the room's camera, and
+  // faces the camera squarely. The scene box is moved (layout, not a transform) so the cabinet's
+  // front lands on the room catalog's front; a final scale inside the rig trims any residue.
   function alignCabinet() {
-    var target = $(".station3--catalog .cabinet3 .f3--front", world);
-    var vis = target.closest(".station3").style.visibility;
-    target.closest(".station3").style.visibility = "visible";
-    var t = target.getBoundingClientRect();
-    target.closest(".station3").style.visibility = vis;
-    SB.cabOverlay = null; SB.renderCabinet();
-    var a = $("#cab-front").getBoundingClientRect();
-    SB.cabOverlay = { dx: 0, dy: 0, s: t.width / a.width }; SB.renderCabinet();
-    a = $("#cab-front").getBoundingClientRect();
-    SB.cabOverlay.dx = t.left + t.width / 2 - (a.left + a.width / 2);
-    SB.cabOverlay.dy = t.top + t.height / 2 - (a.top + a.height / 2);
+    if (!document.documentElement.classList.contains("room-practice")) return;
+    var scene = $("#cab-scene");
+    var body = $(".station3--catalog .cat-body", world);
+    var front = $(".station3--catalog .cabinet3 .f3--front", world);
+    body.style.visibility = "visible";
+    var t = front.getBoundingClientRect();
+    body.style.visibility = "";
+    scene.style.left = scene.style.right = scene.style.top = "";
+    scene.style.perspective = PERSPECTIVE.toFixed(1) + "px";
+    SB.cabOverlay = { dx: 0, dy: 0, s: 1, rx: -4, ry: 0 };
     SB.renderCabinet();
+    var a = $("#cab-front").getBoundingClientRect();
+    SB.cabOverlay.s = t.width / a.width;
+    SB.renderCabinet();
+    a = $("#cab-front").getBoundingClientRect();
+    var dx = t.left + t.width / 2 - (a.left + a.width / 2), dy = t.top + t.height / 2 - (a.top + a.height / 2);
+    scene.style.left = dx.toFixed(1) + "px";
+    scene.style.right = (-dx).toFixed(1) + "px";
+    scene.style.top = dy.toFixed(1) + "px";
+    var box = scene.getBoundingClientRect();
+    scene.style.perspectiveOrigin = (innerWidth / 2 - box.left).toFixed(1) + "px " + (innerHeight / 2 - box.top).toFixed(1) + "px";
   }
   function enterPractice() {
     window.scrollTo(0, 0);
     SB.jumpScene(1);
     document.documentElement.classList.add("room-practice");
     alignCabinet();
+    requestAnimationFrame(alignCabinet);   // once more after the class settles layout
     if (release) { release(); release = null; }
     room.inert = true;
     release = ui.isolate([$("#library"), stationBack]);
@@ -461,6 +506,8 @@
   }
   function leavePractice() {
     document.documentElement.classList.remove("room-practice");
+    var scene = $("#cab-scene");
+    ["left", "right", "top", "perspective", "perspectiveOrigin", "transform", "transformOrigin"].forEach(function (k) { scene.style[k] = ""; });
     SB.cabOverlay = null; SB.renderCabinet();
     room.inert = false;
   }
@@ -499,11 +546,25 @@
 
   // Narrow viewports pull the camera back so the whole room stays in frame.
   function fit() {
-    var narrow = innerWidth < 820;
-    POSES.overview = narrow
-      ? { x: 0, y: -560, z: 2100, yaw: 0, pitch: -12 }
-      : { x: 0, y: -440, z: 1020 + Math.max(0, 1300 - innerWidth) * 0.7, yaw: 0, pitch: -10 };
+    PERSPECTIVE = Math.max(240, innerWidth * 0.66);
+    $("#env").style.perspective = PERSPECTIVE.toFixed(1) + "px";
+    var tall = innerHeight / innerWidth > 1.1;   // phones: stand back a little to see the floor
+    POSES.overview = tall ? { x: 0, y: -520, z: 1500, yaw: 0, pitch: -12 } : { x: 0, y: -440, z: 1020, yaw: 0, pitch: -10 };
+    POSES.practice = practicePose();
     if (state === "overview" && !fly.moving()) { pose = Object.assign({}, POSES.overview); applyCamera(); }
+    if (state === "practice") { pose = Object.assign({}, POSES.practice); applyCamera(); alignCabinet(); }
+    if (state === "learn" || state === "reading") { pose = Object.assign({}, POSES.learn); applyCamera(); }
+  }
+  // Stand back exactly far enough that the room's catalog appears at the working cabinet's natural
+  // size: then the cabinet replaces it at scale 1, and its drawers and fan keep their real size.
+  function practicePose() {
+    var natural = SB.cabinetWidth ? SB.cabinetWidth() : 760;
+    // About half the window, within limits: labels stay readable and the fan stays on screen.
+    var target = Math.max(600, Math.min(innerWidth * 0.48, 1000));
+    void natural;
+    var dist = CATALOG.w * PERSPECTIVE / Math.max(200, target);
+    // Framed low, so the Flashcards fan has room to rise above the cabinet.
+    return { x: CATALOG.x, y: CATALOG.cy - 150, z: CATALOG.front + dist, yaw: 0, pitch: -3 };
   }
 
   buildShell();

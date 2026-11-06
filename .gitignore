@@ -6,3 +6,5 @@ qa/traces/*.json
 # Agent tooling, not part of the app
 .agents/
 .aider-desk/
+qa/test-results-*/
+qa/traces/
