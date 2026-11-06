@@ -182,3 +182,53 @@
   .rnav { flex-direction: column; width: calc(100% - 32px); }
   .rnav__btn { flex-direction: row; align-items: baseline; gap: 10px; min-height: 44px; }
 }
+
+/* ---------- In-room stations ---------- */
+
+/* Learn: the camera stays at the bookcase; the subject books are the controls */
+.rbooks { display: none; }
+.room.is-learn .rnav { display: none; }
+.room.is-learn .rbooks {
+  position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); z-index: 2;
+  transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 6px;
+  background: rgba(27, 31, 36, .86); border-radius: 12px; max-width: calc(100% - 32px);
+}
+.rbooks__btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
+  font: inherit; font-size: 14px; font-weight: 500; color: #FBFAF7;
+  background: transparent; border: 0; border-radius: 8px; cursor: pointer;
+}
+.rbooks__btn::before { content: ""; width: 10px; height: 20px; border-radius: 2px; background: var(--c); box-shadow: 0 0 0 1px rgba(255, 255, 255, .3); }
+.rbooks__btn:hover { background: rgba(251, 250, 247, .14); }
+.rbooks__btn:focus-visible { outline: 3px solid #FBFAF7; outline-offset: 2px; }
+.room.is-learn [data-book] { cursor: pointer; }
+.room.is-learn [data-book]:hover .f3--front { box-shadow: inset 0 0 0 2px rgba(255, 241, 201, .8); }
+
+.station-back {
+  position: fixed; top: max(16px, env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); z-index: 30;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px 0 10px;
+  font: inherit; font-size: 14px; font-weight: 500; color: #FBFAF7;
+  background: rgba(27, 31, 36, .88); border: 0; border-radius: 999px; cursor: pointer;
+}
+.station-back[hidden] { display: none; }
+.station-back svg { width: 16px; height: 16px; }
+.station-back:focus-visible { outline: 3px solid #FBFAF7; outline-offset: 3px; }
+
+/* Practice: the page's own room (wall, floor, headings) steps aside; the cabinet sits over the
+   room's catalog, which is hidden while the working one is in its place. */
+html.room-practice .library { position: relative; z-index: 16; }
+html.room-practice .top,
+html.room-practice .headings,
+html.room-practice .heading,
+html.room-practice .seg,
+html.room-practice .foot,
+html.room-practice .layer,
+html.room-practice .nav-arrow,
+html.room-practice #scene-a { visibility: hidden !important; }
+html.room-practice .station3--catalog { visibility: hidden; }
+html.room-practice .room__head, html.room-practice .rnav { visibility: hidden; }
+
+/* At a station the room's own heading steps aside */
+.room.at-station .room__head { visibility: hidden; }
+html.room-practice .heading, html.room-practice .headings { visibility: hidden !important; }

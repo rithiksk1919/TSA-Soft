@@ -9,7 +9,7 @@
   var ui = SB.ui, P = SB.PRESETS, $ = ui.$, $$ = ui.$$, lerp = ui.lerp;
 
   var room = $("#room"), cam = $("#cam3"), world = $("#world3");
-  var link = $("#to-room"), note = $("#desk-note"), backBtn = $("#desk-back");
+  var link = $("#to-room");
 
   /* =====================================================================
      Builders: planes and cuboids in world space (x right, y down, z toward the viewer)
@@ -156,7 +156,7 @@
 
   function fillShelf(g, xa, xb, yBase, z, space, shelfIndex) {
     var x = xa;
-    var special = shelfIndex === 2 ? [{ c: "#2D4A6E", t: "Physics", h: 0.92 }, { c: "#7B3F36", t: "Chemistry", h: 0.84 }, { c: "#2F5B47", t: "Biology", h: 0.88 }] : [];
+    var special = shelfIndex === 2 ? [{ id: "physics", c: "#2D4A6E", t: "Physics", h: 0.92 }, { id: "chemistry", c: "#7B3F36", t: "Chemistry", h: 0.84 }, { id: "biology", c: "#2F5B47", t: "Biology", h: 0.88 }] : [];
     var placed = 0;
     while (x < xb - 14) {
       var sp = special.length && placed >= 4 ? special.shift() : null;
@@ -167,6 +167,7 @@
       var b = box(g, { cls: "book3" + (sp ? " book3--subject" : ""), x: x + bw / 2, y: yBase, z: z, w: bw, h: bh, d: 92, faces: "front right top",
         html: { front: '<span class="book3__band"></span>' + (sp ? '<span class="book3__t">' + sp.t + "</span>" : "") } });
       b.style.setProperty("--c", col);
+      if (sp) { b.setAttribute("data-book", sp.id); b.dataset.base = b.style.transform; }
       x += bw + (rnd() < 0.12 ? 10 : 1);
       placed++;
       if (rnd() < 0.06 && x < xb - 80) {   // a book lying flat
@@ -193,7 +194,7 @@
     box(g, { cls: "lamp-shade", x: x0 - 140, y: -372, z: z0 - 50, w: 96, h: 40, d: 56, rz: 12, faces: "front left right top bottom" });
     // The open notebook: what Apply will be
     plane(g, { cls: "page3", x: x0 - 22, y: -228, z: z0 + 12, w: 124, h: 164, rx: 90, rz: -4, html: '<span class="nb__h">Find the wrong step</span><span class="nb__l">N = mg</span><span class="nb__l nb__l--x">N = mg cos 30°</span><span class="nb__l">= 17.0 N</span>' });
-    plane(g, { cls: "page3", x: x0 + 102, y: -228, z: z0 + 20, w: 124, h: 164, rx: 90, rz: -4, html: '<span class="nb__h">Coming next</span><span class="nb__p">Solve a real scenario here, step by step.</span>' });
+    plane(g, { cls: "page3", x: x0 + 102, y: -228, z: z0 + 20, w: 124, h: 164, rx: 90, rz: -4, html: '<span class="nb__h">With the tutor</span><span class="nb__p">Check a classmate’s solution, step by step, and fix it.</span>' });
     box(g, { cls: "pencil", x: x0 + 184, y: -228, z: z0 + 34, w: 110, h: 5, d: 5, ry: 30, faces: "front top" });
     [["#3E4A57", 0], ["#7B3F36", 5], ["#8C7B64", -4]].forEach(function (b, i) {
       box(g, { cls: "book3", x: x0 + 172 + b[1], y: -226 - i * 22, z: z0 - 64, w: 120, h: 22, d: 84, ry: b[1] * 2, faces: "front right top" }).style.setProperty("--c", b[0]);
@@ -283,7 +284,7 @@
      Stations: enter, leave, the desk close-up
      ===================================================================== */
 
-  function busy() { return (SB.bookOpen && SB.bookOpen()) || (SB.debug && SB.debug.drawer() !== "closed"); }
+  function busy() { return (SB.bookOpen && SB.bookOpen()) || (SB.debug && SB.debug.drawer() !== "closed") || (SB.desk && SB.desk.isOpen()); }
 
   function highlight(name) {
     $$(".station3", world).forEach(function (s) { s.classList.toggle("is-hot", s.dataset.station === name); });
@@ -302,12 +303,27 @@
     settleLook();
     state = "flying";
     if (name === "apply") {
-      flyTo("apply").then(function () {
-        state = "desk";
-        note.hidden = false;
-        backBtn.focus({ preventScroll: true });
-        ui.announce("The reading desk. Coming next: solve a real scenario here, step by step.");
+      // The reading desk is its own scene (desk.js); it calls SB.room.back() when it closes.
+      flyTo("apply").then(function () { return SB.desk.open(); }).then(function () {
+        room.hidden = true;
+        state = "away";
+        if (release) { release(); release = null; }
       });
+      return;
+    }
+    if (name === "learn") {
+      flyTo("learn").then(function () {
+        state = "learn";
+        room.classList.add("is-learn", "at-station");
+        showBack(true);
+        var first = $(".rbooks__btn", room);
+        if (first) first.focus({ preventScroll: true });
+        ui.announce("The bookshelf. Choose a book to open it.");
+      });
+      return;
+    }
+    if (name === "practice") {
+      flyTo("practice").then(function () { enterPractice(); });
       return;
     }
     flyTo(name).then(function () {
@@ -321,18 +337,6 @@
       history.replaceState(null, "", name === "practice" ? "#practice" : "#shelf");
       $(name === "practice" ? "#h-b" : "#h-a").focus({ preventScroll: true });
       ui.announce(name === "practice" ? "The card catalog. Practice your mistakes." : "The bookshelf. Learn your mistakes.");
-    });
-  }
-
-  function leaveDesk() {
-    if (state !== "desk") return;
-    note.hidden = true;
-    state = "flying";
-    flyTo("overview").then(function () {
-      state = "overview";
-      highlight(null);
-      var b = $('.rnav__btn[data-station="apply"]', room);
-      if (b) b.focus({ preventScroll: true });
     });
   }
 
@@ -373,13 +377,118 @@
     b.addEventListener("focus", function () { if (state === "overview") highlight(b.dataset.station); });
     b.addEventListener("pointerenter", function () { if (state === "overview") highlight(b.dataset.station); });
   });
-  backBtn.addEventListener("click", leaveDesk);
   link.addEventListener("click", backToRoom);
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
-    if (state === "desk") { e.preventDefault(); leaveDesk(); return; }
+    if (state === "learn" && !busy()) { e.preventDefault(); leaveStation(); return; }
+    if (state === "practice" && !busy() && !SB.review.isOpen() && !(SB.panel && SB.panel.isOpen())) { e.preventDefault(); leaveStation(); return; }
     if (state === "away" && !busy() && !SB.review.isOpen() && !(SB.panel && SB.panel.isOpen())) backToRoom();
   });
+
+  /* ---------- In-room stations: open books on the room's shelf, drawers over the room's catalog ---------- */
+
+  var stationBack = document.createElement("button");
+  stationBack.type = "button";
+  stationBack.className = "station-back";
+  stationBack.hidden = true;
+  stationBack.innerHTML = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to the Library';
+  document.body.appendChild(stationBack);
+  stationBack.addEventListener("click", function () { if (!busy()) leaveStation(); });
+  function showBack(on) { stationBack.hidden = !on; }
+
+  // Learn: a subject book slides out of the room's shelf, then the open-book sequence takes over.
+  var pulls = {};
+  function pullSpring(b) {
+    if (!pulls[b.dataset.book]) {
+      pulls[b.dataset.book] = SB.createSpring(P.drawer, function (k) {
+        b.style.transform = b.dataset.base + " translate3d(0," + (-26 * k).toFixed(2) + "px," + (96 * k).toFixed(2) + "px)";
+      }, 0);
+    }
+    return pulls[b.dataset.book];
+  }
+  function openRoomBook(id) {
+    if (state !== "learn" || busy()) return;
+    var b = $('[data-book="' + id + '"]', world);
+    var btn = $('.rbooks__btn[data-book="' + id + '"]', room);
+    if (!b) return;
+    state = "reading";
+    var sp = pullSpring(b);
+    sp.to(1);
+    sp.near(0.05).then(function () {
+      SB.jumpScene(0);   // the book engine lives on the shelf scene, behind the room
+      var ok = SB.openBookFromRoom(id, {
+        focusEl: btn,
+        onClosed: function () {
+          sp.to(0);
+          state = "learn";
+          if (release) release();
+          release = ui.isolate([room, stationBack]);
+        }
+      });
+      if (!ok) { sp.to(0); state = "learn"; }
+    });
+  }
+
+  // Practice: the working cabinet is laid over the room's catalog; the room stays in view behind it.
+  // Two passes: scale to the room catalog's width, then move centre onto centre.
+  function alignCabinet() {
+    var target = $(".station3--catalog .cabinet3 .f3--front", world);
+    var vis = target.closest(".station3").style.visibility;
+    target.closest(".station3").style.visibility = "visible";
+    var t = target.getBoundingClientRect();
+    target.closest(".station3").style.visibility = vis;
+    SB.cabOverlay = null; SB.renderCabinet();
+    var a = $("#cab-front").getBoundingClientRect();
+    SB.cabOverlay = { dx: 0, dy: 0, s: t.width / a.width }; SB.renderCabinet();
+    a = $("#cab-front").getBoundingClientRect();
+    SB.cabOverlay.dx = t.left + t.width / 2 - (a.left + a.width / 2);
+    SB.cabOverlay.dy = t.top + t.height / 2 - (a.top + a.height / 2);
+    SB.renderCabinet();
+  }
+  function enterPractice() {
+    window.scrollTo(0, 0);
+    SB.jumpScene(1);
+    document.documentElement.classList.add("room-practice");
+    alignCabinet();
+    if (release) { release(); release = null; }
+    room.inert = true;
+    release = ui.isolate([$("#library"), stationBack]);
+    state = "practice";
+    showBack(true);
+    var first = $('.dslot[data-id="flashcards"] .drawer');
+    if (first) first.focus({ preventScroll: true });
+    ui.announce("The card catalog. Choose a drawer.");
+  }
+  function leavePractice() {
+    document.documentElement.classList.remove("room-practice");
+    SB.cabOverlay = null; SB.renderCabinet();
+    room.inert = false;
+  }
+
+  function leaveStation() {
+    if (state !== "learn" && state !== "practice") return;
+    var name = state;
+    if (name === "practice") leavePractice();
+    room.classList.remove("is-learn", "at-station");
+    showBack(false);
+    if (release) release();
+    release = ui.isolate([room]);
+    state = "flying";
+    flyTo("overview").then(function () {
+      state = "overview";
+      highlight(null);
+      var b = $('.rnav__btn[data-station="' + name + '"]', room);
+      if (b) b.focus({ preventScroll: true });
+      ui.announce("The library.");
+    });
+  }
+
+  $$(".rbooks__btn", room).forEach(function (b) { b.addEventListener("click", function () { openRoomBook(b.dataset.book); }); });
+  world.addEventListener("click", function (e) {
+    var book = e.target.closest("[data-book]");
+    if (book && state === "learn") { e.stopPropagation(); openRoomBook(book.dataset.book); }
+  }, true);
+  window.addEventListener("resize", function () { if (state === "practice") alignCabinet(); });
 
   // The wall clock keeps real time.
   function tick() {
@@ -414,6 +523,11 @@
     lastStation = hash === "practice" ? "practice" : "learn";
     link.hidden = false;
     if (hash === "practice") SB.store.ready.then(function () { SB.jumpScene(1); });
+  } else if (hash === "desk") {
+    room.hidden = true;
+    state = "away";
+    lastStation = "apply";
+    SB.desk.open({ instant: true });
   } else {
     room.hidden = false;
     release = ui.isolate([room]);

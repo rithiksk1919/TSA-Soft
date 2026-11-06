@@ -4,6 +4,7 @@
   "use strict";
 
   var OPEN_MS = 1900;
+  var HANDOFF_MS = 900;   // the frame where the shelf book hands off to the closed cover
   var CLOSE_MS = 1400;
   var EASE = "cubic-bezier(.2,.7,.2,1)";
   var PITCH = -6;              // resting scene tilt, so the shelf's top surfaces show
@@ -372,7 +373,7 @@
     });
 
     // The room behind turns to page, the way back appears
-    A.push(seg(el.bg, [{ opacity: 0 }, { opacity: 1 }], 1400, 1900, { easing: EASE }));
+    A.push(seg(el.bg, [{ opacity: 0 }, { opacity: room ? 0.62 : 1 }], 1400, 1900, { easing: EASE }));   // from the room: dim, not cover
     A.push(seg(el.back, [{ opacity: 0 }, { opacity: 1 }], 1560, 1900, { easing: "ease-out" }));
 
     willChange([book, mover, carry, el.rig, el.cam, el.tilt, el.spread, el.leaf]);
@@ -398,16 +399,21 @@
 
   /* ---------- Open / close ---------- */
 
-  function open(id, btn) {
+  // roomOpts (from the 3D library room): { focusEl, onClosed }. The book has already slid out of the
+  // room's shelf, so the sequence starts at the hand-off (the closed cover) and the open spread dims
+  // the room behind it instead of covering it with the page.
+  var room = null;
+  function open(id, btn, roomOpts) {
     if (busy || current || !atShelf()) return;
     var s = subjects.find(function (x) { return x.id === id; });
     if (!s) return;
     var slot = btn.closest(".slot");
     var lifted = btn.matches(":hover") || btn.matches(":focus-visible");
 
-    busy = true; current = s; opener = btn;
+    busy = true; current = s; opener = btn; room = roomOpts || null;
     stopParallax();
     renderReader(s);
+    el.reader.classList.toggle("over-room", !!room);
     el.reader.classList.add("is-active");
     el.library.style.pointerEvents = "none";
     btn.setAttribute("aria-expanded", "true");
@@ -417,6 +423,7 @@
       slot.classList.add("is-flying");
       el.reader.classList.add("is-flying");
       running = build3D(slot, lifted);
+      if (room) running.forEach(function (a) { a.currentTime = HANDOFF_MS; });   // skip the shelf pull
     } else {
       el.reader.classList.add("is-open");
       running = [el.reader.animate([{ opacity: 0 }, { opacity: 1 }], { duration: m === "reduce" ? 150 : 320, easing: EASE, fill: "both" })];
@@ -460,7 +467,15 @@
       running = [el.reader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: m === "reduce" ? 150 : 260, easing: EASE, fill: "both" })];
     }
 
-    settle(running).then(function () {
+    // From the room the close stops at the hand-off: the room's book slides home from there.
+    var done = room && m === "3d" ? new Promise(function (resolve) {
+      (function watch() {
+        if (!running.length || running[0].currentTime <= HANDOFF_MS + 5) { resolve(); return; }
+        requestAnimationFrame(watch);
+      })();
+    }) : settle(running);
+
+    done.then(function () {
       cancelAll();
       clearWillChange();
       el.reader.classList.remove("is-open", "is-active", "is-flying");
@@ -468,14 +483,25 @@
       el.reader.scrollTop = 0;
       el.library.style.pointerEvents = "";
       btn.setAttribute("aria-expanded", "false");
-      btn.focus({ preventScroll: true });
-      announce(s.name + " book closed");
+      el.reader.classList.remove("over-room");
+      var r = room;
+      room = null;
       current = null; opener = null; busy = false;
+      if (r) { if (r.focusEl) r.focusEl.focus({ preventScroll: true }); if (r.onClosed) r.onClosed(); }
+      else btn.focus({ preventScroll: true });
+      announce(s.name + " book closed");
     });
   }
 
   window.SkillBridge = window.SkillBridge || {};
   window.SkillBridge.bookOpen = function () { return !!current || busy; };
+  // Open a book from the 3D library room (its own book has already slid out of the shelf).
+  window.SkillBridge.openBookFromRoom = function (id, roomOpts) {
+    var btn = $('.book[data-id="' + id + '"]');
+    if (!btn || current || busy) return false;
+    open(id, btn, roomOpts || {});
+    return true;
+  };
   // Open a subject's book from anywhere: go to the shelf first if needed.
   window.SkillBridge.openBook = function (id) {
     var btn = $('.book[data-id="' + id + '"]');

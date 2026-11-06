@@ -786,3 +786,8 @@ body {
 /* Spine and cover lettering is painted from data-text: it decorates the spine button, whose name is
    its aria-label ("Open the Physics book"); a text node there would break label-in-name. */
 .spine__title::before, .spine__score::before, .cover__title::before, .cover__meta::before { content: attr(data-text); }
+
+/* Opened from the 3D library room: the room stays in view, dimmed, behind the open book. */
+.reader.over-room .reader__bg { background: #1B1712; }
+.reader.over-room.is-open .reader__bg { opacity: .62; }
+.reader.over-room .back { opacity: 1; }

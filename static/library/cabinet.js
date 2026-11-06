@@ -99,8 +99,8 @@
   SB.jumpScene = function (t) {
     cameraTarget = t;
     syncSeg(t);
-    [el.sceneA, el.sceneB].forEach(function (n) { n.style.visibility = "visible"; });
-    [el.headA, el.headB].forEach(function (n) { n.style.visibility = "visible"; });
+    [el.sceneA, el.sceneB].forEach(function (n) { n.inert = false; n.style.visibility = "visible"; });
+    [el.headA, el.headB].forEach(function (n) { n.style.visibility = "visible"; n.removeAttribute("aria-hidden"); });
     cam.jump(t);
     settleScene(t);
   };
@@ -217,10 +217,18 @@
     updateCounts();
   }
 
+  // SB.cabOverlay = { dx, dy, s }: places the cabinet over the 3D library room's catalog. It is applied
+  // inside the rig's own transform (a 2D transform on an ancestor would break 3D hit-testing).
+  var lastRigView = null;
+  SB.renderCabinet = function () { renderRig(lastRigView); };
   function renderRig(v) {
+    lastRigView = v;
+    var ov = SB.cabOverlay;
+    var pre = ov ? "translate3d(" + ov.dx.toFixed(2) + "px," + ov.dy.toFixed(2) + "px,0) " : "";
+    var k = ov ? ov.s : 1;
     var q = v ? clamp(v.open, -0.2, 1.2) : 0;
     if (ui.flat()) {
-      el.rig.style.transform = "scale(" + G.fit.toFixed(4) + ")";
+      el.rig.style.transform = pre + "scale(" + (G.fit * k).toFixed(4) + ")";
       el.scrim.style.opacity = "0";
       return;
     }
@@ -232,8 +240,9 @@
       // height of the top row so every drawer opens in view (not below the fold or the footer).
       ty = (-64 - (r.y - G.pad) * G.fit) * q;
     }
-    el.rig.style.transform =
-      "translate3d(" + tx.toFixed(2) + "px," + ty.toFixed(2) + "px,0) scale3d(" + G.fit.toFixed(4) + "," + G.fit.toFixed(4) + "," + G.fit.toFixed(4) + ") " +
+    var f = G.fit * k;
+    el.rig.style.transform = pre +
+      "translate3d(" + (tx * k).toFixed(2) + "px," + (ty * k).toFixed(2) + "px,0) scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") " +
       "rotateX(" + (-6 - 12 * q).toFixed(3) + "deg) rotateY(" + (-8 * (1 - clamp(q, 0, 1))).toFixed(3) + "deg)";
     el.scrim.style.opacity = (0.18 * clamp(q, 0, 1)).toFixed(3);
   }

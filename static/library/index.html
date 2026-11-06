@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="cabinet.css">
 <link rel="stylesheet" href="drawers.css">
 <link rel="stylesheet" href="room.css">
+<link rel="stylesheet" href="desk.css">
 </head>
 <body>
 <div class="library" id="library">
@@ -171,10 +172,80 @@
     <button class="rnav__btn" type="button" data-station="apply"><span class="rnav__verb">Apply</span><span class="rnav__name">The reading desk</span></button>
     <button class="rnav__btn" type="button" data-station="practice"><span class="rnav__verb">Practice</span><span class="rnav__name">The card catalog</span></button>
   </nav>
-  <div class="desk-note" id="desk-note" role="status" hidden>
-    <p class="desk-note__k">Apply · The reading desk</p>
-    <p class="desk-note__t">Coming next: solve a real scenario here, step by step.</p>
-    <button class="desk-note__back" id="desk-back" type="button">Back to the Library</button>
+  <nav class="rbooks" aria-label="Books on the shelf">
+    <button class="rbooks__btn" type="button" data-book="physics" style="--c:#2D4A6E">Open the Physics book</button>
+    <button class="rbooks__btn" type="button" data-book="chemistry" style="--c:#7B3F36">Open the Chemistry book</button>
+    <button class="rbooks__btn" type="button" data-book="biology" style="--c:#2F5B47">Open the Biology book</button>
+  </nav>
+</section>
+
+<!-- The reading desk (Apply): a 3D tabletop where a classmate's solution is checked step by step,
+     with a tutor beside it. The tutor is scripted for now (data/desk.json); no AI is connected. -->
+<section class="desk" id="desk" aria-labelledby="desk-title" hidden>
+  <header class="desk__bar">
+    <button class="desk__back" id="desk-close" type="button"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Library</button>
+    <div class="desk__heading">
+      <p class="desk__verb">Apply</p>
+      <h1 class="desk__title" id="desk-title" tabindex="-1">The reading desk</h1>
+    </div>
+    <div class="desk__tabs chip-row" id="desk-tabs" role="group" aria-label="Choose a scenario"></div>
+  </header>
+  <ol class="desk__phases" aria-label="Progress">
+    <li class="desk__phase">Read</li>
+    <li class="desk__phase">Check</li>
+    <li class="desk__phase">Fix</li>
+    <li class="desk__phase">Reflect</li>
+  </ol>
+  <div class="desk__body">
+    <div class="dk-stage" id="dk-stage">
+      <div class="dk-cam" id="dk-cam">
+        <div class="dk-top" id="dk-top">
+          <span class="dk-floor" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--bl" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--br" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--fl" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--fr" aria-hidden="true"></span>
+          <span class="dk-edge" aria-hidden="true"></span>
+          <div class="dk-props" aria-hidden="true">
+            <span class="dk-books">
+              <span class="dk-book" style="--c:#2D4A6E"><i class="dk-book__t"></i><i class="dk-book__f"></i><i class="dk-book__p"></i></span>
+              <span class="dk-book" style="--c:#7B3F36"><i class="dk-book__t"></i><i class="dk-book__f"></i><i class="dk-book__p"></i></span>
+              <span class="dk-book" style="--c:#2F5B47"><i class="dk-book__t"></i><i class="dk-book__f"></i><i class="dk-book__p"></i></span>
+            </span>
+            <span class="dk-pencil"></span>
+            <span class="dk-lamp" id="dk-lamp">
+              <span class="dk-lamp__base"></span>
+              <span class="dk-lamp__swing" id="dk-swing"><i class="dk-lamp__post"></i><i class="dk-lamp__arm"></i><i class="dk-lamp__glow"></i><i class="dk-lamp__shade"></i></span>
+            </span>
+          </div>
+          <article class="dk-paper" id="dk-paper" aria-label="The problem"></article>
+          <div class="dk-steps">
+            <h2 class="dk-steps__h">Classmate’s working</h2>
+            <ol class="dk-cards" id="dk-cards"></ol>
+          </div>
+          <span class="dk-lightbox" aria-hidden="true"><span class="dk-spot" id="dk-spot"></span></span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="tutor" id="tutor" aria-labelledby="tutor-name">
+      <header class="tutor__head">
+        <span class="tutor__avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 21h12M12 21v-7M8.5 9.5 12 14l3.5-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h14L16 3H8L5 9.5Z" fill="currentColor"/></svg></span>
+        <div class="tutor__who">
+          <h2 class="tutor__name" id="tutor-name">Tutor</h2>
+          <p class="tutor__status" id="tutor-status">Getting the desk ready</p>
+        </div>
+        <span class="tutor__badge" title="Replies are scripted for this demo. No AI is connected yet.">Demo · scripted</span>
+      </header>
+      <div class="tutor__log" id="tutor-log" role="region" aria-label="Conversation with the tutor" tabindex="0"></div>
+      <div class="tutor__choices" id="tutor-choices"></div>
+      <form class="tutor__compose" id="tutor-form">
+        <button class="ibtn" id="tutor-hint" type="button">Hint</button>
+        <label class="visually-hidden" for="tutor-input">Ask the tutor</label>
+        <input class="tutor__input" id="tutor-input" name="question" type="text" autocomplete="off" spellcheck="true" placeholder="Ask the tutor…" enterkeyhint="send">
+        <button class="ibtn ibtn--primary" type="submit">Send</button>
+      </form>
+    </aside>
   </div>
 </section>
 
@@ -221,6 +292,7 @@
 <script src="drawers.js"></script>
 <script src="interiors.js"></script>
 <script src="cabinet.js"></script>
+<script src="desk.js"></script>
 <script src="room.js"></script>
 </body>
 </html>
