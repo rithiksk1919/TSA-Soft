@@ -3,24 +3,24 @@
   "book open (1.9s sequence)": {
     "frames": 122,
     "avgFps": 57.6,
-    "p95FrameMs": 16.8,
-    "worstMs": 83.2
+    "p95FrameMs": 16.7,
+    "worstMs": 100
   },
   "camera move to cabinet": {
-    "frames": 55,
-    "avgFps": 42.3,
+    "frames": 58,
+    "avgFps": 44.6,
     "p95FrameMs": 33.4,
-    "worstMs": 116.6
+    "worstMs": 49.9
   },
   "flashcards drawer open + pop": {
-    "frames": 84,
-    "avgFps": 46.2,
+    "frames": 87,
+    "avgFps": 47.9,
     "p95FrameMs": 33.4,
     "worstMs": 33.4
   },
   "flashcards drawer close": {
     "frames": 87,
-    "avgFps": 53.8,
+    "avgFps": 55,
     "p95FrameMs": 33.3,
     "worstMs": 33.4
   }

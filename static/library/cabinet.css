@@ -570,3 +570,81 @@ button.fitem:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px;
 @media (prefers-reduced-motion: reduce) {
   .nav-arrow__circle, .drawer, .drawer__card, .dtip { transition: none; }
 }
+
+/* ---------- Drawer interiors (interiors.js): decorative planes inside each drawer ---------- */
+
+.ipiece {
+  position: absolute;
+  display: block;
+  transform-origin: 50% 100%;
+  border-radius: 3px;
+  pointer-events: none;
+  backface-visibility: hidden;
+}
+.ipiece > span { position: absolute; display: block; }
+
+/* Shared paper: an index card with faint ruling */
+.icard3, .isheet, .itile, .irec, .ilearn {
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 39px, rgba(45, 74, 110, .09) 39px 40px, transparent 40px 58px);
+  box-shadow: 0 0 0 1px rgba(27, 31, 36, .1), 0 1px 2px rgba(27, 31, 36, .06);
+}
+
+/* Mistakes index: a tab per mistake that reads "5x" */
+.icard3 { border-top: 3px solid var(--sub); }
+.icard3__tab {
+  top: -21px; height: 20px; padding-top: 3px;
+  background: var(--sub); color: var(--paper);
+  font-family: var(--mono); font-size: 11px; font-weight: 500; text-align: center;
+  border-radius: 4px 4px 0 0;
+}
+.icard3__call { left: 8px; top: 8px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+/* Worked examples: numbered step sheets; the mistake step carries a red tab and outline */
+.isheet { background-color: #FCFBF8; }
+.isheet__tab {
+  top: -19px; height: 18px; padding-top: 2px;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--mono); font-size: 11px; text-align: center;
+  border-radius: 4px 4px 0 0;
+}
+.isheet--mistake { box-shadow: 0 0 0 2px var(--no), 0 1px 2px rgba(27, 31, 36, .06); }
+.isheet--mistake .isheet__tab { background: var(--no); }
+.isheet__rule { left: 12px; right: 12px; height: 2px; background: rgba(27, 31, 36, .12); border-radius: 1px; }
+.isheet__rule:nth-of-type(2) { top: 16px; right: 40%; }
+.isheet__rule:nth-of-type(3) { top: 26px; }
+.isheet__rule:nth-of-type(4) { top: 36px; right: 25%; }
+
+/* Diagnostic: narrow question tiles, coloured by subject */
+.itile { border-top: 3px solid var(--sub); }
+.itile__n { left: 0; right: 0; top: 6px; text-align: center; font-family: var(--mono); font-size: 10.5px; color: var(--ink); }
+
+/* History: month dividers and attempt cards with a result clip */
+.idiv { background: #E9E3D6; box-shadow: 0 0 0 1px rgba(27, 31, 36, .14); }
+.idiv__tab {
+  top: -21px; height: 20px; padding: 3px 10px 0;
+  background: var(--ink); color: var(--paper);
+  font-size: 11.5px; font-weight: 600;
+  border-radius: 4px 4px 0 0;
+}
+.irec { border-top: 3px solid var(--sub); }
+.irec__clip { top: -7px; right: 18px; width: 10px; height: 16px; border-radius: 2px; }
+.irec__clip--ok { background: var(--ok); }
+.irec__clip--no { background: var(--no); }
+
+/* Learned: mastered-skill cards take the ink stamp */
+.ilearn { border-top: 3px solid var(--sub); }
+.ilearn--mastered { background-color: var(--paper); }
+.ilearn__name { left: 10px; right: 10px; top: 8px; font-family: var(--serif); font-weight: 600; font-size: 13px; color: var(--ink); }
+.ilearn__ink {
+  left: 50%; top: 30px;
+  margin-left: -42px; width: 84px;
+  padding: 2px 0;
+  text-align: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--no); border: 2px solid var(--no); border-radius: 3px;
+  transform-origin: 50% 50%;
+}
+.istamp { width: 60px; height: 64px; transform-origin: 50% 50%; }
+.istamp__knob { left: 20px; top: 0; width: 20px; height: 34px; background: #3B3127; border-radius: 10px 10px 4px 4px; }
+.istamp__base { left: 0; top: 30px; width: 60px; height: 30px; background: var(--brass); border-radius: 4px; box-shadow: inset 0 -4px 0 var(--brass-dark), inset 0 0 0 1px var(--brass-dark); }

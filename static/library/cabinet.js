@@ -179,7 +179,7 @@
       var r = drawerRect(i);
       return '<div class="dslot" data-i="' + i + '" data-id="' + esc(d.id) + '" style="left:' + r.x + "px;top:" + r.y + "px;width:" + r.w + "px;height:" + r.h + 'px">' +
         boxHTML(r) +
-        (d.id === "flashcards" ? '<div class="dcontents" id="dcontents"></div>' : "") +
+        (d.id === "flashcards" ? '<div class="dcontents" id="dcontents"></div>' : '<div class="dcontents dcontents--' + esc(d.id) + '" aria-hidden="true"></div>') +
         '<button class="drawer" type="button" aria-expanded="false"' + (d.active ? ' aria-haspopup="dialog"' : ' aria-disabled="true"') + ">" + holderHTML(d) +
         '<span class="visually-hidden"> drawer' + (d.active ? "" : ", not available yet") + "</span></button>" +
         pullHTML(r) +
@@ -533,6 +533,7 @@
     v.hoverS.to(0);
     lockOthers(v, true);
     var flat = ui.flat();
+    if (!usesFan(v) && !reopening && !flat && SB.interiors) SB.interiors.build(v.d.id, $(".dcontents", v.slot), G);
     var slid = flat ? Promise.resolve() : (v.openS.to(1), v.openS.near(0.03).then(function () { return my === seq && wait(250); }));
     return slid.then(function () {
       if (my !== seq) return;
@@ -563,14 +564,21 @@
       }
       var contents = SB.drawerContents && SB.drawerContents[v.d.id];
       if (!contents) return;
-      drawer.state = "panel";
       // Re-opened mid-close: the panel still holds its contents; bring it back as it is.
       if (reopening && SB.panel.id() === v.d.id) {
+        drawer.state = "panel";
         return SB.panel.open({ id: v.d.id, onCloseRequest: requestClose }).then(function () {
           if (my === seq) announce(v.d.title + " drawer open.");
         });
       }
-      return SB.panel.open({
+      // The drawer's own motion plays first, in full view; the panel then opens over the room.
+      var signature = SB.interiors && !flat ? Promise.race([SB.interiors.play(v.d.id), wait(1700)]) : Promise.resolve();
+      return signature.then(function () {
+        if (my !== seq) return;
+        drawer.state = "panel";
+        return openPanel();
+      });
+      function openPanel() { return SB.panel.open({
         id: v.d.id, call: v.d.call, title: v.d.title, sub: v.d.sub,
         render: function (body, api) { contents.render(body, api, opts); },
         onCloseRequest: requestClose
@@ -581,7 +589,7 @@
           var mm = store.mistake(opts.mistake);
           reviewCards(store.cards({ mistake: mm.id }), mm.title, $('#sheet [data-review="' + mm.id + '"]'));
         }
-      });
+      }); }
     });
   }
 
@@ -598,7 +606,11 @@
     el.bar.hidden = true;
     setHint("");
     setItemsReachable([]);
-    var dropped = wasPanel ? SB.panel.close() : choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0));
+    var dropped = usesFan(v)
+      ? choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0))
+      : (wasPanel ? SB.panel.close() : Promise.resolve()).then(function () {
+          if (my === seq && SB.interiors) return SB.interiors.reset(v.d.id);
+        });
     var done = dropped.then(function () {
       if (my !== seq) return;
       return ui.flat() ? null : v.openS.to(0);

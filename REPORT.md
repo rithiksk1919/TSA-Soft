@@ -139,3 +139,17 @@ Each state is captured at 390, 820 and 1360px (33 files: `<state>-<width>.png`):
 - `04-drawer-learned`
 - `05-review-front`
 - `05-review-back`
+
+## 9. Added after the overnight run: a signature motion for every drawer
+
+Each of the five panel drawers now holds its own contents inside the 3D drawer, as Flashcards does, and plays one spring-driven motion as it slides out. The panel opens only after that motion, so the tray never covers it. Code: `static/library/interiors.js`; tests: `tests/e2e/interiors.spec.mjs`.
+
+| Drawer | What the motion shows |
+|---|---|
+| Mistakes index | One card per mistake; each rises by how often that mistake was made (a bar chart in card, most frequent tallest) |
+| Worked examples | Numbered step sheets riffle back like pages; step 3, the common mistake, stands up red-outlined |
+| Diagnostic | 15 question tiles in three subject columns climb to their difficulty, question by question |
+| History | A thumb-through wave from newest to oldest, with green/red result clips; then the month dividers lift |
+| Learned | The mastered-skill card rises and a brass stamp comes forward and presses the "Verified" ink |
+
+Closing reverses it: the panel drops, the pieces go home, then the drawer slides back. Below 820px and with reduced motion there are no interiors; the sheet opens straight away.
