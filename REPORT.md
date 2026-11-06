@@ -153,3 +153,25 @@ Each of the five panel drawers now holds its own contents inside the 3D drawer, 
 | Learned | The mastered-skill card rises and a brass stamp comes forward and presses the "Verified" ink |
 
 Closing reverses it: the panel drops, the pieces go home, then the drawer slides back. Below 820px and with reduced motion there are no interiors; the sheet opens straight away.
+
+## 10. The 3D library room (home screen), and the night-of-Nov-6 fixes
+
+The home screen is a CSS 3D library room. Its three stations play inside the room: the bookcase (Learn), the reading desk (Apply, built by a separate session), and the card catalog (Practice).
+
+**Problems reported, root causes and fixes:**
+
+| Reported | Root cause | Fix |
+|---|---|---|
+| Flashcards fan huge, cabinet skewed (practice in the room) | The room's perspective was a fixed 900px, so on a 2560px screen the catalog projected about 1.4× the cabinet's size. The cabinet was scaled up to match, but kept its own perspective origin. | The room's perspective scales with the window width. The camera stands back so the catalog appears at the cabinet's chosen size (about half the window, 600–1000px). The cabinet uses the room's perspective, faces the camera and sits on the room's stand. The fan spacing accounts for the scale. |
+| Bottom-row drawers did nothing at 2560px | Chrome hit-tests `.world { overflow-x: clip }` as if it clipped both axes, and the cabinet extends below that box. | The clip is lifted while the room overlay is active. |
+| Black hole in the back wall on wide screens | One 2000×1000 plane, magnified, was dropped by the compositor. | Walls, floor and ceiling are built from tiles. |
+| Book animation wrong | The room book slid out, then the reader cut to a closed cover in the centre. Shelves also had no bottom faces. | The book slides out and turns its cover; the closed book grows out of that cover (a spring on the reader stage) and opens. Closing reverses onto the shelf. Shelves now have bottom faces. |
+| (found) Back button unreachable at the bookcase | The room's focus trap made it inert. | Learn re-isolates with the Back button included. |
+| (found) Esc during a book opening was dropped | Close ignored keys while busy. | Esc during an opening is queued. |
+| (found) "storage blocked" test passed for the wrong reason | The helper's `/#shelf` navigation was a same-document hash change, so the init script never ran. | The helper loads `about:blank` first. |
+
+**Tests:** `tests/e2e/room.spec.mjs` (13 tests) covers 1360px, 2560×1300 and 390px: every book from the room shelf, every drawer in the room, cabinet alignment within 8px, the fan staying on screen, Back, Esc, deep links and reduced motion.
+
+**Full suite, final run:** 42/42 unit tests and 97/97 e2e tests passed (`qa/run4-*.log`). The previous run had 2 failures (the storage helper, and the a11y timeout); both were fixed before the final run.
+
+The reading desk (`desk.js`, `desk.css`, `tests/e2e/desk.spec.mjs`, and edits to `data.test.cjs`) was built by another Claude session and is still uncommitted. Its tests ran in the full suite and passed.
