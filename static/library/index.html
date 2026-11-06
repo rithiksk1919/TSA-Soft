@@ -156,50 +156,25 @@
   </div>
 </div>
 
-<!-- The library room: the home screen. Each station zooms in to its scene. -->
+<!-- The library: a CSS 3D room, the home screen. Stations fly the camera in to their scenes. -->
 <section class="room" id="room" aria-labelledby="room-title" hidden>
-  <div class="room__inner">
-    <header class="room__head">
-      <p class="room__brand" translate="no">SkillBridge</p>
-      <h1 class="room__title" id="room-title" tabindex="-1">The library</h1>
-      <p class="room__lede">Learn from your mistakes, apply what you learn, then practise until it sticks.</p>
-    </header>
-    <div class="room__stage">
-      <span class="room__wall" aria-hidden="true"></span>
-      <span class="room__window" aria-hidden="true"></span>
-      <span class="room__floor" aria-hidden="true"></span>
-
-      <button class="station station--shelf" type="button" data-scene="learn">
-        <span class="mini-shelf" aria-hidden="true">
-          <span class="mini-shelf__book" style="--c:var(--physics);--h:78%"></span>
-          <span class="mini-shelf__book" style="--c:var(--chemistry);--h:68%"></span>
-          <span class="mini-shelf__book" style="--c:var(--biology);--h:74%"></span>
-          <span class="mini-shelf__gap"></span>
-          <span class="mini-shelf__board"></span>
-        </span>
-        <span class="station__label"><span class="station__verb">Learn</span><span class="station__name">The bookshelf</span><span class="station__sub">See what trips you up and why</span></span>
-      </button>
-
-      <button class="station station--desk" type="button" data-scene="apply" aria-describedby="room-note">
-        <span class="mini-desk" aria-hidden="true">
-          <span class="mini-desk__lamp"><span class="mini-desk__shade"></span><span class="mini-desk__arm"></span></span>
-          <span class="mini-desk__book"></span>
-          <span class="mini-desk__top"></span>
-          <span class="mini-desk__leg mini-desk__leg--l"></span>
-          <span class="mini-desk__leg mini-desk__leg--r"></span>
-        </span>
-        <span class="station__label"><span class="station__verb">Apply</span><span class="station__name">The reading desk</span><span class="station__sub">Coming next</span></span>
-      </button>
-
-      <button class="station station--catalog" type="button" data-scene="practice">
-        <span class="mini-cab" aria-hidden="true">
-          <span class="mini-cab__d"></span><span class="mini-cab__d"></span><span class="mini-cab__d"></span>
-          <span class="mini-cab__d"></span><span class="mini-cab__d"></span><span class="mini-cab__d"></span>
-        </span>
-        <span class="station__label"><span class="station__verb">Practice</span><span class="station__name">The card catalog</span><span class="station__sub">Six drawers of practice</span></span>
-      </button>
-    </div>
-    <p class="room__note" id="room-note" aria-live="polite"></p>
+  <div class="env" id="env" aria-hidden="true">
+    <div class="cam3" id="cam3"><div class="world3" id="world3"></div></div>
+  </div>
+  <header class="room__head">
+    <p class="room__brand" translate="no">SkillBridge</p>
+    <h1 class="room__title" id="room-title" tabindex="-1">The library</h1>
+    <p class="room__lede">Learn from your mistakes, apply what you learn, then practise until it sticks.</p>
+  </header>
+  <nav class="rnav" aria-label="Stations">
+    <button class="rnav__btn" type="button" data-station="learn"><span class="rnav__verb">Learn</span><span class="rnav__name">The bookshelf</span></button>
+    <button class="rnav__btn" type="button" data-station="apply"><span class="rnav__verb">Apply</span><span class="rnav__name">The reading desk</span></button>
+    <button class="rnav__btn" type="button" data-station="practice"><span class="rnav__verb">Practice</span><span class="rnav__name">The card catalog</span></button>
+  </nav>
+  <div class="desk-note" id="desk-note" role="status" hidden>
+    <p class="desk-note__k">Apply · The reading desk</p>
+    <p class="desk-note__t">Coming next: solve a real scenario here, step by step.</p>
+    <button class="desk-note__back" id="desk-back" type="button">Back to the Library</button>
   </div>
 </section>
 

@@ -1,0 +1,15 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch(); const errs = [];
+const p = await b.newPage({ viewport: { width: 1360, height: 860 } });
+p.on("pageerror", (e) => errs.push(e.message)); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
+await p.goto("http://127.0.0.1:5180/"); await p.waitForTimeout(1500);
+await p.screenshot({ path: "qa/screens/00-room-1360.png" });
+await p.click('.rnav__btn[data-station="apply"]'); await p.waitForTimeout(1800);
+await p.screenshot({ path: "qa/traces/room3d-desk.png" });
+await p.click("#desk-back"); await p.waitForTimeout(1600);
+await p.click('.rnav__btn[data-station="learn"]'); await p.waitForTimeout(700);
+await p.screenshot({ path: "qa/traces/room3d-fly.png" }); await p.waitForTimeout(1500);
+console.log(await p.evaluate(() => ({ room: document.getElementById("room").hidden, scene: window.SkillBridge.debug.scene(), planes: document.querySelectorAll("#world3 .p3, #world3 .f3").length })));
+const q = await b.newPage({ viewport: { width: 390, height: 844 } }); await q.goto("http://127.0.0.1:5180/"); await q.waitForTimeout(1500);
+await q.screenshot({ path: "qa/screens/00-room-390.png" });
+console.log("errors", JSON.stringify(errs)); await b.close();
