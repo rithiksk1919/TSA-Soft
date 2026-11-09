@@ -94,9 +94,27 @@ for (const [name, size] of Object.entries(SIZES)) {
           const out = await page.evaluate(() => [...document.querySelectorAll("#dcontents .fcard:not(.fcard--filler), #dcontents .fdivider")].map((n) => n.getBoundingClientRect())
             .filter((r) => r.left < -4 || r.right > innerWidth + 4 || r.top < -4).length);
           expect(out).toBe(0);
+          // The cards stand on the cabinet top: each divider's bottom edge meets the cornice, and the
+          // cabinet itself has not moved off its stand.
+          const onTop = await page.evaluate(() => {
+            const top = document.querySelector(".cab__cornice").getBoundingClientRect().top;
+            return [...document.querySelectorAll("#dcontents .fdivider")].map((n) => Math.abs(n.getBoundingClientRect().bottom - top));
+          });
+          for (const d of onTop) expect(d).toBeLessThan(14);
+          // A real click on a divider (Chrome's elementsFromPoint misorders this 3D stack, so not locator.click).
+          const box = await page.locator("#dcontents .fdivider").first().boundingBox();
+          await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
+          await settle(page);
+          expect(await page.evaluate(() => window.SkillBridge.debug.drawer())).toBe("subject");
+          const sub = await page.evaluate(() => [...document.querySelectorAll('#dcontents .fcard[data-subject="physics"]:not(.fcard--filler)')].map((n) => n.getBoundingClientRect())
+            .filter((r) => r.left < 0 || r.right > innerWidth || r.top < 0).length);
+          expect(sub).toBe(0);
         }
-        await page.keyboard.press("Escape");
-        await settle(page);
+        // Escape steps back one level at a time (a chosen subject, then the drawer).
+        for (let k = 0; k < 3 && (await page.evaluate(() => window.SkillBridge.debug.drawer())) !== "closed"; k++) {
+          await page.keyboard.press("Escape");
+          await settle(page);
+        }
         expect(await page.evaluate(() => window.SkillBridge.debug.drawer())).toBe("closed");
       }
       await page.keyboard.press("Escape");

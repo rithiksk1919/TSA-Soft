@@ -236,3 +236,13 @@ html.room-practice .heading, html.room-practice .headings { visibility: hidden !
 /* The cabinet over the room can extend below the page's .world box. Chrome hit-tests overflow-x: clip
    in both axes, so the bottom-row drawers took no clicks; the clip is not needed in this mode. */
 html.room-practice .world { overflow: visible; }
+
+/* Cards standing on the cabinet top: the divider's subject tab sits inside its top edge (a tab
+   overflowing the divider's box is not painted by Chrome in this pose), the count beneath it. */
+html.room-practice .fdivider__tab { top: 0; border-radius: 3px 3px 4px 0; }
+html.room-practice .fdivider__count { top: 30px; }
+
+/* In the room the drawer bar sits along the bottom of the window (the floor band can be off screen
+   on short windows, or over the cards on tall ones); its hint just above it. */
+html.room-practice .drawer-bar { top: var(--room-bar-top, calc(var(--floor-y) + 10px)); }
+html.room-practice .drawer-hint { top: calc(var(--room-bar-top, calc(var(--floor-y) + 40px)) - 40px); }

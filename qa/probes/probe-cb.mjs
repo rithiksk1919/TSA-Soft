@@ -1,0 +1,10 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1024, height: 700 } });
+await p.goto("http://127.0.0.1:5180/");
+await p.waitForFunction(() => window.SkillBridge && window.SkillBridge.room);
+await p.locator('.rnav__btn[data-station="practice"]').click();
+await p.waitForFunction(() => window.SkillBridge.room.state() === "practice");
+await p.waitForTimeout(1200);
+console.log(await p.evaluate(() => { const o = []; for (let n = document.getElementById("drawer-bar").parentElement; n; n = n.parentElement) { const cs = getComputedStyle(n); const r = n.getBoundingClientRect(); o.push(`${n.tagName}.${n.className}#${n.id} t=${cs.transform.slice(0, 30)} pos=${cs.position} top=${Math.round(r.top)} h=${Math.round(r.height)} ch=${n.clientHeight}`); } return o.join("\n"); }));
+await b.close();

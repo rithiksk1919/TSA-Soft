@@ -199,7 +199,7 @@
     drawerViews = $$(".dslot", el.drawers).map(function (slot, i) {
       var v = { i: i, slot: slot, btn: $(".drawer", slot), tip: $(".dtip", slot), d: ds[i], hover: 0, shake: 0, open: 0 };
       v.render = function () {
-        var z = ui.flat() ? 0 : 1 + v.hover * 10 + v.open * G.openZ;
+        var z = ui.flat() ? 0 : 1 + v.hover * 10 + v.open * openZOf(v);
         slot.style.transform = "translate3d(" + (v.shake * 3).toFixed(2) + "px,0," + z.toFixed(2) + "px)";
         slot.classList.toggle("is-hover", v.hover > 0.5 && drawer.state === "closed");
       };
@@ -222,8 +222,13 @@
   var lastRigView = null;
   SB.renderCabinet = function () { renderRig(lastRigView); };
   SB.cabinetWidth = function () { return G.W * G.fit; };
+  // In the room, the Flashcards drawer comes out a short way and its cards stand on the cabinet top.
+  var ROOM_OPENZ = 110;
+  function onTable(v) { return !!SB.cabOverlay && !!v && v.d.id === "flashcards" && !ui.flat(); }
+  function openZOf(v) { return onTable(v) ? ROOM_OPENZ : G.openZ; }
   function renderRig(v) {
     lastRigView = v;
+    var f;
     var ov = SB.cabOverlay;
     var pre = ov ? "translate3d(" + ov.dx.toFixed(2) + "px," + ov.dy.toFixed(2) + "px,0) " : "";
     var k = ov ? ov.s : 1;
@@ -234,6 +239,13 @@
       return;
     }
     var tx = 0, ty = 0;
+    if (v && onTable(v)) {
+      // In the room the cabinet stays put on its stand; the cards come up onto its top instead.
+      f = G.fit * k;
+      el.rig.style.transform = pre + "scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") rotateX(" + ov.rx.toFixed(3) + "deg) rotateY(" + ov.ry.toFixed(3) + "deg)";
+      el.scrim.style.opacity = "0";
+      return;
+    }
     if (v) {
       var r = drawerRect(v.i);
       tx = -((r.x + r.w / 2) - G.W / 2) * q * G.fit;
@@ -241,7 +253,7 @@
       // height of the top row so every drawer opens in view (not below the fold or the footer).
       ty = (-64 - (r.y - G.pad) * G.fit) * q;
     }
-    var f = G.fit * k;
+    f = G.fit * k;
     el.rig.style.transform = pre +
       "translate3d(" + (tx * k).toFixed(2) + "px," + (ty * k).toFixed(2) + "px,0) scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") " +
       "rotateX(" + ((ov && typeof ov.rx === "number" ? ov.rx : -6) - 12 * q).toFixed(3) + "deg) rotateY(" + ((ov && typeof ov.ry === "number" ? ov.ry : -8) * (1 - clamp(q, 0, 1))).toFixed(3) + "deg)";
@@ -337,6 +349,12 @@
         html += '<span class="fitem fcard fcard--filler" style="--sub:' + s.accent + ";width:" + cw + "px;height:" + ch + 'px;left:8px;top:18px"></span>';
       }
     });
+    // A stepped wooden card stand per subject, shown on the cabinet top in the room.
+    store.subjects().forEach(function (s, g) {
+      for (var j = 1; j <= 2; j++) ["front", "top", "side", "side"].forEach(function (f) {
+        html += '<span class="fstand fstand--' + f + '" data-g="' + g + '" data-j="' + j + '" aria-hidden="true"></span>';
+      });
+    });
     box.innerHTML = html;
     var nodes = $$(".fitem", box);
     var n = list.length;
@@ -388,12 +406,58 @@
   function halfRoom() { return (sw / 2 - 14) / (G.fit * G.mag * (SB.cabOverlay ? SB.cabOverlay.s : 1)); }
   function fanSpacing() { var cw = G.dw - 16; return clamp(halfRoom() - cw / 2, cw * 0.5, cw + 60); }
 
+  // The cabinet top, in the Flashcards slot's own coordinates (cards stand on it in the room).
+  var STAND = { step: 70, zStep: 40, z0: -26, lean: 8 };
+  function table() {
+    var v = drawerViews.filter(function (x) { return x.d.id === "flashcards"; })[0];
+    var r = drawerRect(v.i), cw = G.dw - 16;
+    return {
+      cw: cw, sp: cw + 14,
+      slotZ: 1 + ROOM_OPENZ,
+      top: -14 - r.y,          // the cabinet top (the cornice rises 14px above the front)
+      cx: G.W / 2 - r.x,       // the cabinet's centre line
+      back: -G.D + 12
+    };
+  }
+  function tablePose(it, j) {
+    var t = table();
+    // A card's left edge sits 8px into the slot; its bottom edge (the transform origin) stands on step j.
+    return {
+      x: t.cx + (it.g - 1) * t.sp - (8 + t.cw / 2),
+      y: t.top - (G.dh - 6) - j * STAND.step,
+      z: STAND.z0 - j * STAND.zStep - 6 - t.slotZ,
+      rx: STAND.lean, rz: 0
+    };
+  }
+  function layStand() {
+    var box = $("#dcontents");
+    if (!box || !SB.cabOverlay) return;
+    var t = table(), w = t.cw + 12;
+    $$(".fstand", box).forEach(function (n, i) {
+      var g = +n.dataset.g, j = +n.dataset.j, kind = n.className.split("--")[1];
+      var mid = t.cx + (g - 1) * t.sp, h = j * STAND.step;
+      var zf = STAND.z0 - j * STAND.zStep - t.slotZ, zb = t.back - t.slotZ, d = zf - zb, zm = (zf + zb) / 2;
+      var tr, ww = w, hh = h;
+      if (kind === "front") tr = "translate3d(" + (mid - w / 2) + "px," + (t.top - h) + "px," + zf + "px)";
+      else if (kind === "top") { hh = d; tr = "translate3d(" + (mid - w / 2) + "px," + (t.top - h - d / 2) + "px," + zm + "px) rotateX(90deg)"; }
+      else { ww = d; var sx = mid + (i % 2 ? w / 2 : -w / 2); tr = "translate3d(" + (sx - d / 2) + "px," + (t.top - h) + "px," + zm + "px) rotateY(90deg)"; }
+      n.style.width = ww + "px"; n.style.height = hh + "px"; n.style.transform = tr;
+    });
+  }
+  function showStand(on) {
+    var box = $("#dcontents");
+    if (!box) return;
+    if (on) layStand();
+    box.classList.toggle("is-stand", !!on && !!SB.cabOverlay);
+  }
+
   function groupsPose(it) {
     var gr = groups[it.g];
     var stack = [gr.divider].concat(gr.cards);
     var j = stack.indexOf(it), n = stack.length;
     var step = G.compact ? 30 : 46;   // enough to show the call number and title above the card in front
     if (j < 0) return it.home;
+    if (SB.cabOverlay) return tablePose(it, j);
     // Rising by `step` at the FACE pitch also brings a card step*sin(FACE) closer; step back more
     // than that, or the cards behind would sort in front of the one before them.
     var zStep = step * Math.sin(FACE * Math.PI / 180) + 8;
@@ -404,6 +468,11 @@
     var gr = groups[chosen];
     var m = gr.cards.length, k = gr.cards.indexOf(it), c = (m - 1) / 2;
     var cw = G.dw - 16;
+    if (SB.cabOverlay) {
+      // In the room: the chosen subject's cards stand side by side along the front of the cabinet top.
+      var t = table(), sx = m > 1 ? Math.min(cw + 20, (G.W - cw) / (m - 1)) : 0;
+      return { x: t.cx + (k - c) * sx - (8 + cw / 2), y: t.top - (G.dh - 6), z: STAND.z0 - 6 - k * 2 - t.slotZ, rx: STAND.lean, rz: 0 };
+    }
     var span = Math.max(0, Math.min(2 * (halfRoom() - cw / 2), (cw + 22) * (m - 1)));
     var stepX = m > 1 ? span / (m - 1) : 0;
     return { x: (k - c) * stepX, y: -(G.dh + 10) + Math.abs(k - c) * 10, z: 70 + k * 2, rx: FACE, rz: (k - c) * 3 };
@@ -453,6 +522,7 @@
     syncBar();
     var gr = groups[g];
     setHint("Choose a mistake to review");
+    showStand(false);
     var sinking = items.filter(function (it) { return it.g !== g && it.kind !== "filler"; }).concat([gr.divider]);
     var moves = staggerMoves(sinking.reverse(), function (it) { return it.home; }, 18, 0)
       .concat(staggerMoves(gr.cards, subjectPose, 35, -14));
@@ -470,6 +540,7 @@
     chosen = -1;
     syncBar();
     setHint("Choose a subject");
+    showStand(true);
     choreograph(staggerMoves(popOrder(), groupsPose, 20, 0));
     setItemsReachable(dividers(), groupItems());
     var first = $(".chip-btn", el.subjects);
@@ -557,6 +628,7 @@
     return slid.then(function () {
       if (my !== seq) return;
       if (usesFan(v)) {
+        showStand(true);
         return choreograph(staggerMoves(popOrder(), groupsPose, 35, -26)).then(function () {
           if (my !== seq) return;
           drawer.state = "groups";
@@ -625,6 +697,7 @@
     el.bar.hidden = true;
     setHint("");
     setItemsReachable([]);
+    showStand(false);
     var dropped = usesFan(v)
       ? choreograph(staggerMoves(popOrder().reverse(), function (it) { return it.home; }, 22, 0))
       : (wasPanel ? SB.panel.close() : Promise.resolve()).then(function () {

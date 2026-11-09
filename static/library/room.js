@@ -488,6 +488,10 @@
     scene.style.top = dy.toFixed(1) + "px";
     var box = scene.getBoundingClientRect();
     scene.style.perspectiveOrigin = (innerWidth / 2 - box.left).toFixed(1) + "px " + (innerHeight / 2 - box.top).toFixed(1) + "px";
+    // The drawer bar is laid out against the scene track, which starts below the hidden headings:
+    // cap its top so it stays above the bottom of the window.
+    var track = $("#track");
+    if (track) $("#library").style.setProperty("--room-bar-top", (innerHeight - track.getBoundingClientRect().top - 64).toFixed(1) + "px");
   }
   function enterPractice() {
     window.scrollTo(0, 0);
@@ -509,6 +513,7 @@
     var scene = $("#cab-scene");
     ["left", "right", "top", "perspective", "perspectiveOrigin", "transform", "transformOrigin"].forEach(function (k) { scene.style[k] = ""; });
     SB.cabOverlay = null; SB.renderCabinet();
+    $("#library").style.removeProperty("--room-bar-top");
     room.inert = false;
   }
 
@@ -563,8 +568,8 @@
     var target = Math.max(600, Math.min(innerWidth * 0.48, 1000));
     void natural;
     var dist = CATALOG.w * PERSPECTIVE / Math.max(200, target);
-    // Framed low, so the Flashcards fan has room to rise above the cabinet.
-    return { x: CATALOG.x, y: CATALOG.cy - 150, z: CATALOG.front + dist, yaw: 0, pitch: -3 };
+    // Framed so the cabinet and the cards standing on its top sit just above the drawer bar.
+    return { x: CATALOG.x, y: CATALOG.cy - 110, z: CATALOG.front + dist, yaw: 0, pitch: -3 };
   }
 
   buildShell();
