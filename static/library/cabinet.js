@@ -202,6 +202,7 @@
         var z = ui.flat() ? 0 : 1 + v.hover * 10 + v.open * openZOf(v);
         slot.style.transform = "translate3d(" + (v.shake * 3).toFixed(2) + "px,0," + z.toFixed(2) + "px)";
         slot.classList.toggle("is-hover", v.hover > 0.5 && drawer.state === "closed");
+        slot.classList.toggle("is-out", z > 1.5);   // its box shows only once it leaves the opening
       };
       v.hoverS = SB.createSpring(P.drawerTravel, function (x) { v.hover = x; v.render(); }, 0);
       v.shakeS = SB.createSpring(P.stuck, function (x) { v.shake = x; v.render(); }, 0);
@@ -224,6 +225,12 @@
   SB.cabinetWidth = function () { return G.W * G.fit; };
   // In the room, the Flashcards drawer comes out a short way and its cards stand on the cabinet top.
   var ROOM_OPENZ = 110;
+  var rootMarks = {};
+  function markRoot(name, on) {
+    if (rootMarks[name] === on) return;
+    rootMarks[name] = on;
+    document.documentElement.classList.toggle(name, on);
+  }
   function onTable(v) { return !!SB.cabOverlay && !!v && v.d.id === "flashcards" && !ui.flat(); }
   function openZOf(v) { return onTable(v) ? ROOM_OPENZ : G.openZ; }
   function renderRig(v) {
@@ -239,8 +246,10 @@
       return;
     }
     var tx = 0, ty = 0;
-    if (v && onTable(v)) {
-      // In the room the cabinet stays put on its stand; the cards come up onto its top instead.
+    if (ov) {
+      // In the room only the drawers are drawn here: they sit in the room catalog's own holes (its
+      // carcass is the body), so the rig never moves. A drawer simply slides out toward you; the
+      // Flashcards cards come up onto the catalog's top.
       f = G.fit * k;
       el.rig.style.transform = pre + "scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") rotateX(" + ov.rx.toFixed(3) + "deg) rotateY(" + ov.ry.toFixed(3) + "deg)";
       el.scrim.style.opacity = "0";
@@ -449,6 +458,7 @@
     if (!box) return;
     if (on) layStand();
     box.classList.toggle("is-stand", !!on && !!SB.cabOverlay);
+    markRoot("cab-stand", !!on && !!SB.cabOverlay);
   }
 
   function groupsPose(it) {

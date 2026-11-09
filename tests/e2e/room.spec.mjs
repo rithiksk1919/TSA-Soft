@@ -151,9 +151,9 @@ test("a drawer open blocks leaving; closing it first then Back works", async ({ 
   await waitRoom(page, "overview");
 });
 
-test("deep links #shelf and #practice skip the room; Library brings it back", async ({ page }) => {
+test("test-only deep links #test-shelf and #test-practice skip the room; Library brings it back", async ({ page }) => {
   await page.setViewportSize(SIZES.laptop);
-  await page.goto("/#practice");
+  await page.goto("/#test-practice");
   await page.waitForFunction(() => window.SkillBridge.debug && window.SkillBridge.debug.scene() === 1);
   await settle(page);
   await expect(page.locator("#room")).toBeHidden();
@@ -164,6 +164,27 @@ test("deep links #shelf and #practice skip the room; Library brings it back", as
   await page.locator("#to-room").click();
   await waitRoom(page, "overview");
   await expect(page.locator("#room")).toBeVisible();
+});
+
+test("deep links #practice, #shelf and #book-<id> fly into the room's stations, never the flat scenes", async ({ page }) => {
+  await page.setViewportSize(SIZES.laptop);
+  await page.goto("/#practice");
+  await waitRoom(page, "practice");
+  await expect(page.locator("html")).toHaveClass(/room-practice/);
+  await expect(page.locator("#h-b")).toBeHidden();
+  expect(new URL(page.url()).hash).toBe("");
+
+  await page.goto("about:blank");
+  await page.goto("/#shelf");
+  await waitRoom(page, "learn");
+  await expect(page.locator("#room")).toBeVisible();
+  await expect(page.locator(".station-back")).toBeVisible();
+
+  await page.goto("about:blank");
+  await page.goto("/#book-chemistry");
+  await page.waitForFunction(() => document.getElementById("reader").classList.contains("is-open"), null, { timeout: 8000 });
+  await page.keyboard.press("Escape");
+  await waitRoom(page, "learn");
 });
 
 test("reduced motion: stations open without flights and still work", async ({ page }) => {

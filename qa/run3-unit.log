@@ -1,0 +1,54 @@
+
+> skillbridge-library@1.0.0 test:unit
+> node --test "tests/unit/*.test.cjs"
+
+✔ cards.json: 6 mistakes, 12 cards, every answer index valid, ids unique (0.8086ms)
+✔ mistakes.json: extras for exactly the 6 mistakes, call numbers match (0.6328ms)
+✔ worked.json: one example per mistake, 4-6 steps, exactly one common-mistake step, valid check (0.1922ms)
+✔ worked examples: the arithmetic is right (0.1484ms)
+✔ diagnostic.json: 15 questions, 5 per subject, difficulty in 0..1, valid answers (0.1754ms)
+✔ history.json: 12 attempts, newest first, outcome scores follow the formula (0.4801ms)
+✔ drawers.json: six drawers with a count kind each (0.1055ms)
+✔ desk.json: one scenario per subject's next problem, every question and step well formed (0.244ms)
+✔ desk scenarios: the arithmetic is right (0.2262ms)
+✔ outcomeScore: unsolved is 0 whatever the attempts and hints (0.7876ms)
+✔ outcomeScore: first try, no hints is 1 (0.1051ms)
+✔ outcomeScore: 0.2 per extra attempt, 0.15 per hint (0.1578ms)
+✔ outcomeScore: the 0.4 floor (0.5909ms)
+✔ outcomeScore: bad input is normalised (attempts >= 1, hints >= 0) (0.1345ms)
+✔ diagnosticMastery: all correct gives 1.0 on every skill (0.2244ms)
+✔ diagnosticMastery: all wrong gives the 0.3 floor (0.1153ms)
+✔ diagnosticMastery: mixed answers are weighted by difficulty (0.171ms)
+✔ diagnosticMastery: zero difficulty falls back to the plain share (0.1293ms)
+✔ diagnosticMastery: empty input gives no skills (0.563ms)
+✔ sortMistakes: most frequent, ties broken by most recent (0.2642ms)
+✔ frequencyShare and relativeDays (0.1213ms)
+✔ historySummary (0.1791ms)
+✔ averageMastery: mean of the skills (1.1215ms)
+✔ averageMastery: empty or missing list is 0 (0.1564ms)
+✔ averageMastery: shelf data matches the spec's sample averages (1.2857ms)
+✔ levelLabel: thresholds 0.4 / 0.6 / 0.8 are lower bounds (0.195ms)
+✔ levelLabel: mastered flag wins over the number (0.1566ms)
+✔ nextBox: all 6 transitions of the three-box Leitner system (0.1528ms)
+✔ nextBox: out-of-range input is clamped, not trusted (0.1112ms)
+✔ nextBox: two correct answers in a row reach Learned (0.097ms)
+✔ leitnerCounts: missing ids count as box 1 (0.1933ms)
+✔ leitnerCounts: counts per box and total (0.1881ms)
+✔ leitnerCounts: ignores boxes for cards not in the list, clamps bad values (0.1574ms)
+✔ boxName (0.1204ms)
+✔ drawer close with a stop never passes closed (30 fps) (0.9612ms)
+✔ drawer close with a stop never passes closed (60 fps) (0.1331ms)
+✔ drawer close with a stop never passes closed (120 fps) (0.7704ms)
+✔ drawer close with a stop never passes closed (144 fps) (0.1296ms)
+✔ root cause: without the stop, the close undershoots behind the cabinet front at 120 fps (0.2214ms)
+✔ stepSpring: restitution reflects velocity at the stop (0.214ms)
+✔ presets keep their documented damping ratios (0.2975ms)
+✔ camera preset settles from 0 to 1 within about 1.1 s with about 2% overshoot (0.2267ms)
+ℹ tests 42
+ℹ suites 0
+ℹ pass 42
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.4468

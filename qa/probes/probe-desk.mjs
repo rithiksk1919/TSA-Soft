@@ -6,7 +6,8 @@ const tag = W + (reduce ? "-rm" : "");
 const b = await chromium.launch(); const errs = [];
 const p = await b.newPage({ viewport: { width: W, height: H }, reducedMotion: reduce ? "reduce" : "no-preference" });
 p.on("pageerror", (e) => errs.push(e.message)); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
-await p.goto("http://127.0.0.1:5180/"); await p.evaluate(() => localStorage.removeItem("sb_desk")); await p.waitForTimeout(1200);
+await p.goto("http://127.0.0.1:5180/"); await p.evaluate(() => localStorage.removeItem("sb_desk")); await p.waitForFunction(() => window.SkillBridge.room && window.SkillBridge.room.state() === "overview");
+await (async () => {
 await p.click('.rnav__btn[data-station="apply"]');
 await p.waitForTimeout(700); await p.screenshot({ path: `qa/traces/desk-enter-${tag}.png` });
 const choose = async (text) => { const c = p.locator(".tchoice", { hasText: text }); await c.waitFor({ timeout: 15000 }); await c.click(); };
@@ -33,3 +34,10 @@ console.log(JSON.stringify(await p.evaluate(() => ({ dbg: window.SkillBridge.des
 await p.screenshot({ path: `qa/traces/desk-next-${tag}.png` });
 await p.goBack().catch(() => {});
 console.log("errors", JSON.stringify(errs)); await b.close();
+})().catch(async (e) => {
+  console.log("FAIL", e.message.split(/\r?\n/)[0]);
+  console.log(JSON.stringify(await p.evaluate(() => ({ dbg: window.SkillBridge.desk.debug(), open: window.SkillBridge.desk.isOpen(), room: window.SkillBridge.room.state(),
+    deskHidden: document.getElementById("desk").hidden, log: [...document.querySelectorAll(".tmsg")].map((m) => m.textContent.slice(0, 50)), cards: document.querySelectorAll(".dk-card").length }))));
+  await p.screenshot({ path: "qa/traces/desk-fail.png" });
+  console.log("errors", JSON.stringify(errs)); await b.close();
+});

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkillBridge Dashboard</title>
+<meta name="description" content="Your mistakes, what you're likely to repeat, and what to review next.">
+<meta name="theme-color" content="#FBFAF7">
+<link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ibm-plex-sans-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="app">
+  <!-- Top bar -->
+  <header class="topbar">
+    <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <a class="brand" href="dashboard.html" aria-label="SkillBridge dashboard">
+      <svg class="brand__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M2.5 17.5h19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M4.5 17.5c0-6 3.4-10 7.5-10s7.5 4 7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8.5 17.5v-5.2M12 17.5V7.5M15.5 17.5v-5.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="brand__name" translate="no">SkillBridge</span>
+    </a>
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><span id="crumb-learner">Priya Nair</span></li>
+        <li aria-current="page">Dashboard</li>
+      </ol>
+    </nav>
+    <form class="search" role="search" id="search-form">
+      <label class="visually-hidden" for="search">Search mistakes and activity</label>
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="m13.2 13.2 3.3 3.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="search" name="q" type="search" placeholder="Search mistakes…" autocomplete="off" spellcheck="false">
+    </form>
+    <span class="avatar" id="avatar" aria-hidden="true"></span>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Main">
+    <nav>
+      <ul class="nav">
+        <li><a class="nav__item" href="dashboard.html" aria-current="page">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.6"/><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.6"/><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.6"/><rect x="11" y="11" width="6.5" height="6.5" rx="1.6"/></svg>
+          Dashboard</a></li>
+        <li><a class="nav__item" href="index.html">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 16.5h14M4.5 16.5V5h3v11.5M8.5 16.5V3.5h3v13M12.8 16.3l-1-8.6 2.9-.4 1.1 8.7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          Library</a></li>
+        <li><a class="nav__item" href="index.html#practice">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="6" width="11" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 3.5h9.5A1.5 1.5 0 0 1 17 5v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Practice<span class="nav__count" id="nav-due"></span></a></li>
+        <li><button class="nav__item" type="button" id="settings-btn" aria-describedby="settings-note">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v2M10 15.5v2M17.5 10h-2M4.5 10h-2M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4M15.3 15.3l-1.4-1.4M6.1 6.1 4.7 4.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Settings</button></li>
+      </ul>
+      <p class="nav__note" id="settings-note" role="status" hidden>Settings will open here once the extension is connected.</p>
+    </nav>
+
+    <section class="next-test" aria-labelledby="next-test-title">
+      <p class="next-test__label" id="next-test-title">Next test</p>
+      <p class="next-test__name" id="next-test-name"></p>
+      <p class="next-test__when" id="next-test-when"></p>
+    </section>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="main" id="main">
+    <section class="hello" aria-labelledby="greeting">
+      <div class="hello__text">
+        <h1 class="hello__title" id="greeting">Welcome back</h1>
+        <p class="hello__summary" id="summary"></p>
+        <h2 class="visually-hidden" id="week-title">This week</h2>
+        <dl class="stats" id="stats"></dl>
+      </div>
+      <figure class="hello__shelf">
+        <ul class="books3d" id="books3d" aria-label="Your subject books"></ul>
+        <figcaption class="hello__cap" id="books-cap"></figcaption>
+      </figure>
+    </section>
+
+    <section class="card card--repeat" aria-labelledby="repeat-title">
+      <div class="card__head">
+        <h2 class="card__title" id="repeat-title">Most likely to repeat</h2>
+        <p class="card__sub">Ranked by how often each mistake recurs and how recently it was caught.</p>
+      </div>
+      <div class="table" role="table" aria-labelledby="repeat-title">
+        <div class="table__head" role="rowgroup">
+          <div class="row row--repeat" role="row">
+            <span role="columnheader">Mistake</span>
+            <span role="columnheader">Times</span>
+            <span role="columnheader">Caught on</span>
+            <span role="columnheader">Risk</span>
+            <span role="columnheader"><span class="visually-hidden">Actions</span></span>
+          </div>
+        </div>
+        <div role="rowgroup" id="repeat-rows"></div>
+      </div>
+      <p class="empty" id="repeat-empty" hidden></p>
+    </section>
+
+    <section class="card card--trend" aria-labelledby="trend-title">
+      <div class="card__head">
+        <h2 class="card__title" id="trend-title">Mistakes by week</h2>
+        <p class="card__sub" id="trend-sub"></p>
+      </div>
+      <figure class="chart" id="trend-chart"></figure>
+    </section>
+
+    <section class="card card--due" aria-labelledby="due-title">
+      <div class="card__head">
+        <h2 class="card__title" id="due-title">Due for review</h2>
+        <p class="card__sub" id="due-sub"></p>
+      </div>
+      <ul class="due" id="due-rows"></ul>
+      <a class="btn btn--primary btn--block" href="index.html#practice" id="due-all">Review all cards</a>
+    </section>
+
+    <section class="card card--log" aria-labelledby="log-title">
+      <div class="card__head">
+        <h2 class="card__title" id="log-title">Reading log</h2>
+        <p class="card__sub">Recent study sessions and newly caught mistakes.</p>
+      </div>
+      <div class="table" role="table" aria-labelledby="log-title">
+        <div class="table__head" role="rowgroup">
+          <div class="row row--log" role="row">
+            <span role="columnheader">Date</span>
+            <span role="columnheader">Activity</span>
+            <span role="columnheader">Result</span>
+            <span role="columnheader">Type</span>
+          </div>
+        </div>
+        <div role="rowgroup" id="log-rows"></div>
+      </div>
+      <p class="empty" id="log-empty" hidden></p>
+    </section>
+
+    <section class="card card--library" aria-labelledby="library-title">
+      <div class="card__head">
+        <h2 class="card__title" id="library-title">The library</h2>
+        <p class="card__sub">Review a mistake, apply it to a problem, then drill it with flashcards.</p>
+      </div>
+      <a class="preview" href="index.html" aria-label="Open the library"><div class="diorama" id="diorama" aria-hidden="true"></div></a>
+      <ul class="stations">
+        <li><a class="station" href="index.html#shelf"><span class="station__verb">Learn</span><span class="station__name">The bookshelf</span></a></li>
+        <li><a class="station" href="index.html#desk"><span class="station__verb">Apply</span><span class="station__name">The reading desk</span></a></li>
+        <li><a class="station" href="index.html#practice"><span class="station__verb">Practice</span><span class="station__name">The card catalog</span></a></li>
+      </ul>
+    </section>
+
+    <p class="foot">Showing sample data. Type: IBM Plex Sans and IBM Plex Mono (IBM) and Source Serif 4 (Adobe), SIL Open Font License 1.1.</p>
+  </main>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

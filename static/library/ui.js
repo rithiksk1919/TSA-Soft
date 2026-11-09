@@ -64,7 +64,7 @@
         n = n.parentElement;
       }
     });
-    var layer = { changed: changed, keep: keep };
+    var layer = { changed: changed, keep: keep, lifted: lifted };
     stack.push(layer);
     return function release() {
       var i = stack.indexOf(layer);
@@ -72,8 +72,13 @@
       stack.splice(i, 1);
       changed.forEach(function (sib) { sib.inert = false; });
       lifted.forEach(function (n) { n.inert = true; });
-      // Re-apply outer layers in case they shared nodes with this one.
-      stack.forEach(function (l) { l.changed.forEach(function (sib) { sib.inert = true; }); });
+      // Re-apply the layers still open, outermost first, in case they shared nodes with this one.
+      // Each also re-lifts its own path, so an outer layer cannot re-freeze an inner one that is
+      // still open (the room's Practice trap over a drawer sheet, after a review on it closes).
+      stack.forEach(function (l) {
+        l.changed.forEach(function (sib) { sib.inert = true; });
+        l.lifted.forEach(function (n) { n.inert = false; });
+      });
     };
   };
 
