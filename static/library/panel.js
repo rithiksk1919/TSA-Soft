@@ -41,9 +41,11 @@
     return node._pop;
   }
 
-  function pop(container, gap) {
+  // Animates the .pop elements inside container; with self, the container itself too (when it is one).
+  function pop(container, gap, self) {
     var my = ++popSeq;
     var nodes = $$(".pop", container || el.body);
+    if (self && container && container.classList.contains("pop")) nodes.unshift(container);
     if (SB.reducedMotion()) { nodes.forEach(function (n) { itemSpring(n).jump(1); }); return Promise.resolve(); }
     nodes.forEach(function (n) { itemSpring(n).jump(0); });
     return Promise.all(nodes.map(function (n, i) {

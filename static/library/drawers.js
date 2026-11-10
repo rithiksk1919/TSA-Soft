@@ -245,7 +245,7 @@
           box.hidden = false;
           box.innerHTML = '<h4 class="check__title">Check yourself</h4><p class="check__q">' + esc(e.check.question) + "</p>" + optionsHTML(e.check.options) + '<p class="check__result" data-result aria-live="polite"></p>';
           box.classList.add("pop");
-          api.pop(body.querySelector(".detail"));
+          api.pop(box, 0, true);   // only the new box: popping .detail reset every step already shown
           $$(".ropt", box).forEach(function (b) {
             b.addEventListener("click", function () {
               var k = +b.dataset.k, ok = k === e.check.answer;
