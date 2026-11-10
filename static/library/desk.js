@@ -91,8 +91,14 @@
   }
   window.addEventListener("resize", fit);
   if (window.ResizeObserver) {
+    // The tutor grows a line at a time while it streams. fit() only depends on its height when it is
+    // docked under the desk, so refit only when that height changes.
+    var dockH = null;
     new ResizeObserver(function () {
-      el.style.setProperty("--dock-h", (innerWidth < 1100 ? tutorEl.offsetHeight : 0) + "px");
+      var h = innerWidth < 1100 ? tutorEl.offsetHeight : 0;
+      if (h === dockH) return;
+      dockH = h;
+      el.style.setProperty("--dock-h", h + "px");
       if (isOpen && !ui.flat()) fit();
     }).observe(tutorEl);
   }
