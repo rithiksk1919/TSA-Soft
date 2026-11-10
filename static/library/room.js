@@ -806,6 +806,7 @@
       });
     }
   }
+  document.documentElement.classList.remove("room-boot");
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(safeFrame);
 
   SB.room = { state: function () { return state; }, enter: enter, back: backToRoom };

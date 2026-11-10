@@ -8,6 +8,11 @@
 <meta name="theme-color" content="#F4F2EE">
 <link rel="preload" href="assets/fonts/source-serif-4-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  /* Show the 3D room from the first paint: the scripts that build and reveal it run at the end of
+     <body>, and without this the flat library page can flash first. Test and desk links start elsewhere. */
+  (function () { var h = location.hash; if (h !== "#test-shelf" && h !== "#test-practice" && h !== "#desk") document.documentElement.classList.add("room-boot"); })();
+</script>
 <link rel="stylesheet" href="library.css">
 <link rel="stylesheet" href="cabinet.css">
 <link rel="stylesheet" href="drawers.css">

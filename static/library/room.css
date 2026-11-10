@@ -9,6 +9,7 @@
   background: #4A3B2C;   /* beyond the room's edges: a dark wood tone, so any gap reads as shadow */
 }
 .room[hidden] { display: none; }
+html.room-boot .room[hidden] { display: block; }   /* until room.js decides (see index.html) */
 
 .env {
   position: absolute;
