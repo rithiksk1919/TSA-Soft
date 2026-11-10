@@ -563,6 +563,25 @@ button { font: inherit; }
   .due__pull { width: 36px; }
   .card--library .preview { min-height: 210px; }
 }
+/* ---------- Space held for data before it loads (no layout shift) ----------
+   Heights are the rendered sizes of the sample data at each layout; they apply only while a region is
+   still empty, so real data of any length simply replaces them. */
+.card--trend { container-type: inline-size; }
+.chart:empty { min-height: 210px; }
+@container (min-width: 472px) { .chart:empty { min-height: 276px; } }   /* drawChart: H = 276 once the plot is 420px+ */
+#stats:empty { min-height: 126px; }
+#repeat-rows:empty { min-height: 446px; }
+#due-rows:empty { min-height: 236px; }
+#log-rows:empty { min-height: 438px; }
+#summary:empty::before, #next-test-name:empty::before, #next-test-when:empty::before { content: " a0"; }
+@media (max-width: 1280px) { #stats:empty { min-height: 226px; } }
+@media (max-width: 1180px) { #repeat-rows:empty { min-height: 725px; } #summary:empty { min-height: 3em; } }
+@media (max-width: 720px) {
+  #stats:empty { min-height: 253px; }
+  #repeat-rows:empty { min-height: 1045px; }
+  #log-rows:empty { min-height: 763px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .book3d__link, .due__link, .diorama .world { transition: none; }
   *, *::before, *::after { transition-duration: 0ms !important; }

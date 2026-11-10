@@ -222,7 +222,6 @@
         '<span class="visually-hidden">Open the ' + esc(t.s.name) + " book: " + plural(t.n, "mistake") + " caught in four weeks</span>" +
         cuboid(44, h, 118, "book", spine) + "</a></li>";
     }).join("");
-    $("books-cap").textContent = "Taller books hold more mistakes from the last four weeks. Open one to review.";
   }
 
   function renderDiorama() {
