@@ -684,11 +684,14 @@
   }, true);
   window.addEventListener("resize", function () { if (state === "practice") alignCabinet(); });
 
-  // The wall clock keeps real time.
+  // The wall clock keeps real time. It skips work while nobody can see it (room hidden, tab in the
+  // background); the next tick after it shows again puts the hands right.
+  var hands;
   function tick() {
+    if (room.hidden || document.hidden) return;
     var d = new Date(), s = d.getSeconds(), m = d.getMinutes() + s / 60, h = (d.getHours() % 12) + m / 60;
-    var set = function (sel, deg) { var n = $(sel, world); if (n) n.style.transform = "rotate(" + deg.toFixed(1) + "deg)"; };
-    set(".clock__h", h * 30); set(".clock__m", m * 6); set(".clock__s", s * 6);
+    hands = hands || [$(".clock__h", world), $(".clock__m", world), $(".clock__s", world)];
+    [h * 30, m * 6, s * 6].forEach(function (deg, i) { if (hands[i]) hands[i].style.transform = "rotate(" + deg.toFixed(1) + "deg)"; });
   }
 
   // Narrow viewports pull the camera back so the whole room stays in frame.
