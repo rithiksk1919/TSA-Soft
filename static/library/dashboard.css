@@ -229,7 +229,6 @@ button { font: inherit; }
 }
 .book .f-right, .book .f-left { background: linear-gradient(90deg, rgba(0,0,0,.3), rgba(0,0,0,.08)), var(--c); }
 .book .f-top, .book .f-bottom { background: repeating-linear-gradient(90deg, #F3EFE6 0 2px, #DCD2C0 2px 3px); box-shadow: inset 0 0 0 3px var(--c); }
-.book .f-back { background: var(--c); filter: brightness(.7); }
 .book3d__link:focus-visible .f-front { outline: 2px solid var(--brass); outline-offset: 3px; }
 .spine__band { width: 100%; height: 3px; background: var(--brass); box-shadow: 0 5px 0 rgba(183, 165, 122, .55); }
 .spine__band:last-child { box-shadow: 0 -5px 0 rgba(183, 165, 122, .55); }

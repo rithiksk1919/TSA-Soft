@@ -187,10 +187,14 @@
   // ---------- due for review ----------
 
   // ---------- 3D helpers ----------
-  // A CSS cuboid: six faces around the box's centre. Faces get classes f-front, f-back, f-left, f-right, f-top, f-bottom.
+  // A CSS cuboid around the box's centre. Faces get classes f-front, f-back, f-left, f-right, f-top, f-bottom.
+  // Every face is its own 3D layer, so only the faces the view can show are drawn: the shelf is seen
+  // turned left from above and the diorama from above-right, so both show front, right and top only.
+  var SEEN = "front right top";
   function cuboid(w, h, d, cls, front) {
     var hw = w / 2, hh = h / 2, hd = d / 2;
     function face(name, fw, fh, t) {
+      if (SEEN.indexOf(name) < 0) return "";
       return '<span class="f f-' + name + '" style="width:' + fw + "px;height:" + fh + "px;left:" + (w - fw) / 2 + "px;top:" + (h - fh) / 2 +
         "px;transform:" + t + '">' + (name === "front" && front ? front : "") + "</span>";
     }
