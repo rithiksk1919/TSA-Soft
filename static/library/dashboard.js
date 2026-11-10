@@ -168,21 +168,34 @@
     fig.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" aria-hidden="true">' + out.join("") + "</svg>" +
       table + '<div class="tip" id="trend-tip" hidden></div>';
 
-    var tip = $("trend-tip"), guide = $("trend-guide");
-    fig.querySelectorAll(".hit").forEach(function (r) {
-      r.addEventListener("pointerenter", function () {
-        var i = Number(r.getAttribute("data-i"));
-        guide.setAttribute("x1", x(i)); guide.setAttribute("x2", x(i)); guide.setAttribute("visibility", "visible");
-        tip.innerHTML = '<p class="tip__w">Week of ' + esc(weeks[i]) + "</p>" + keys.map(function (k) {
-          return '<p class="tip__row" style="--c:' + subj[k].color + '"><i></i>' + esc(subj[k].name) + "<b>" + d.trend.series[k][i] + "</b></p>";
-        }).join("");
-        tip.hidden = false;
-        var left = x(i) + 12;
-        if (left + 150 > W) left = x(i) - 12 - tip.offsetWidth;
-        tip.style.left = left + "px";
-        tip.style.top = pad.t + "px";
-      });
-      r.addEventListener("pointerleave", function () { tip.hidden = true; guide.setAttribute("visibility", "hidden"); });
+    // Hover is handled by listeners bound once on the figure (bindChartHover), not per redraw.
+    chartHover = { x: x, W: W, pad: pad, weeks: weeks, keys: keys, d: d, subj: subj };
+  }
+
+  var chartHover = null;
+  function bindChartHover() {
+    var fig = $("trend-chart");
+    function hit(n) { return n && n.closest ? n.closest(".hit") : null; }
+    fig.addEventListener("pointerover", function (e) {
+      var r = hit(e.target), c = chartHover;
+      if (!r || !c) return;
+      var i = Number(r.getAttribute("data-i")), tip = $("trend-tip"), guide = $("trend-guide");
+      guide.setAttribute("x1", c.x(i)); guide.setAttribute("x2", c.x(i)); guide.setAttribute("visibility", "visible");
+      tip.innerHTML = '<p class="tip__w">Week of ' + esc(c.weeks[i]) + "</p>" + c.keys.map(function (k) {
+        return '<p class="tip__row" style="--c:' + c.subj[k].color + '"><i></i>' + esc(c.subj[k].name) + "<b>" + c.d.trend.series[k][i] + "</b></p>";
+      }).join("");
+      tip.hidden = false;
+      // Near the right edge the tip sits left of the line: translateX(-100%) puts its right edge
+      // there without measuring its width (no forced layout).
+      var flip = c.x(i) + 12 + 150 > c.W;
+      tip.style.left = (flip ? c.x(i) - 12 : c.x(i) + 12) + "px";
+      tip.style.transform = flip ? "translateX(-100%)" : "";
+      tip.style.top = c.pad.t + "px";
+    });
+    fig.addEventListener("pointerout", function (e) {
+      if (!hit(e.target) || hit(e.relatedTarget)) return;   // moving between weeks: the next pointerover updates it
+      $("trend-tip").hidden = true;
+      $("trend-guide").setAttribute("visibility", "hidden");
     });
   }
 
@@ -349,6 +362,7 @@
     renderLog(d, subj);
     markLast($("repeat-rows")); markLast($("log-rows"));
     var fig = $("trend-chart"), lastW = 0;
+    bindChartHover();
     if ("ResizeObserver" in window) {
       new ResizeObserver(function () {
         var w = Math.round(fig.clientWidth);
