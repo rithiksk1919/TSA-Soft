@@ -573,7 +573,7 @@ button { font: inherit; }
 #repeat-rows:empty { min-height: 446px; }
 #due-rows:empty { min-height: 236px; }
 #log-rows:empty { min-height: 438px; }
-#summary:empty::before, #next-test-name:empty::before, #next-test-when:empty::before { content: " a0"; }
+#summary:empty::before, #next-test-name:empty::before, #next-test-when:empty::before { content: "\00a0"; }
 @media (max-width: 1280px) { #stats:empty { min-height: 226px; } }
 @media (max-width: 1180px) { #repeat-rows:empty { min-height: 725px; } #summary:empty { min-height: 3em; } }
 @media (max-width: 720px) {
