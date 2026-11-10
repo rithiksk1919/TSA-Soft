@@ -354,22 +354,34 @@
       }).observe(fig);
     }
     // fit the diorama's fixed 380x250 stage into its frame
-    var prev = document.querySelector(".preview"), dio = $("diorama");
+    var prev = document.querySelector(".preview"), dio = $("diorama"), world = dio.querySelector(".world");
+    var box = null;   // the frame's rect, measured when the pointer comes in (and after scroll or resize)
     function fit() {
       var sc = Math.min(prev.clientWidth / 380, prev.clientHeight / 250);
       dio.style.setProperty("--fit", sc.toFixed(3));
+      box = null;
     }
     fit();
     if ("ResizeObserver" in window) new ResizeObserver(fit).observe(prev);
-    // the room turns a little toward the pointer (not with reduced motion)
+    // the room turns a little toward the pointer (not with reduced motion). Pointer events can come
+    // faster than frames: keep the latest position and apply it once per frame, on the rotating
+    // element itself so only it restyles.
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      var at = null, queued = 0;
+      var apply = function () {
+        queued = 0;
+        if (!at) { world.style.removeProperty("--ry"); world.style.removeProperty("--rx"); return; }
+        world.style.setProperty("--ry", (-30 + at.x * 16).toFixed(1) + "deg");
+        world.style.setProperty("--rx", (-20 - at.y * 8).toFixed(1) + "deg");
+      };
+      var queue = function () { if (!queued) queued = requestAnimationFrame(apply); };
       prev.addEventListener("pointermove", function (e) {
-        var r = prev.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
-        dio.style.setProperty("--ry", (-30 + px * 16).toFixed(1) + "deg");
-        dio.style.setProperty("--rx", (-20 - py * 8).toFixed(1) + "deg");
+        box = box || prev.getBoundingClientRect();
+        at = { x: (e.clientX - box.left) / box.width - 0.5, y: (e.clientY - box.top) / box.height - 0.5 };
+        queue();
       });
-      prev.addEventListener("pointerleave", function () { dio.style.removeProperty("--ry"); dio.style.removeProperty("--rx"); });
+      prev.addEventListener("pointerleave", function () { at = null; box = null; queue(); });
+      window.addEventListener("scroll", function () { box = null; }, { passive: true });
     }
     document.documentElement.classList.add("is-ready");
   }).catch(showError);

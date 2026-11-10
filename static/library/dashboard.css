@@ -422,6 +422,7 @@ button { font: inherit; }
   transform-style: preserve-3d;
   transform: rotateX(var(--rx, -20deg)) rotateY(var(--ry, -30deg));
   transition: transform 500ms var(--ease);
+  will-change: transform;   /* turns with the pointer: keep it on its own layer */
 }
 .diorama .at { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
 .diorama .plane { position: absolute; display: block; }
