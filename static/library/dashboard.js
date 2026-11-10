@@ -108,7 +108,9 @@
     var first = totals[0], last = totals[totals.length - 1];
     $("trend-sub").textContent = last + " caught last week, " +
       (last < first ? "down from " : last > first ? "up from " : "same as ") + first + " four weeks ago.";
-    drawChart();
+    // The chart's ResizeObserver draws it (its first callback runs before paint), so the page is
+    // written once and measured once; without ResizeObserver, draw now.
+    if (!("ResizeObserver" in window)) drawChart();
   }
 
   function drawChart() {
@@ -361,7 +363,7 @@
       dio.style.setProperty("--fit", sc.toFixed(3));
       box = null;
     }
-    fit();
+    if (!("ResizeObserver" in window)) fit();   // otherwise its first callback fits it
     if ("ResizeObserver" in window) new ResizeObserver(fit).observe(prev);
     // the room turns a little toward the pointer (not with reduced motion). Pointer events can come
     // faster than frames: keep the latest position and apply it once per frame, on the rotating
