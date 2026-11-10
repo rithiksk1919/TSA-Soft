@@ -84,6 +84,8 @@
   // Swap the panel body to a new view: render, bind, pop the new items in, set what Esc does.
   function show(body, api, html, bind, opts) {
     opts = opts || {};
+    body._mount = null;      // a new view: end the old one's live subscription (live())
+    body.onkeydown = null;   // and its key handler, which some exits left behind
     body.innerHTML = html;
     if (bind) bind();
     api.setBack(opts.back || null);

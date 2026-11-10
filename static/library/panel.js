@@ -100,6 +100,8 @@
     el.title.textContent = opts.title || "";
     el.sub.textContent = opts.sub || "";
     el.body.innerHTML = "";
+    el.body._mount = null;      // ends the previous view's live store subscription (drawers.js live())
+    el.body.onkeydown = null;   // and any key handler it left on the shared body
     el.body.scrollTop = 0;
     sheet.hidden = false;
     scrim.hidden = false;
