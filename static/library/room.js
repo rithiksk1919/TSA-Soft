@@ -438,9 +438,15 @@
 
   function busy() { return (SB.bookOpen && SB.bookOpen()) || (SB.debug && SB.debug.drawer() !== "closed") || (SB.desk && SB.desk.isOpen()); }
 
+  // pointerover fires on every face the pointer crosses: do nothing unless the hot station changes,
+  // and look the stations and buttons up once, not by walking the whole world each time.
+  var hot, hotEls;
   function highlight(name) {
-    $$(".station3", world).forEach(function (s) { s.classList.toggle("is-hot", s.dataset.station === name); });
-    $$(".rnav__btn", room).forEach(function (b) { b.classList.toggle("is-hot", b.dataset.station === name); });
+    name = name || null;
+    if (name === hot) return;
+    hot = name;
+    hotEls = hotEls || $$(".station3", world).concat($$(".rnav__btn", room));
+    hotEls.forEach(function (s) { s.classList.toggle("is-hot", s.dataset.station === name); });
   }
   function crossfade(elm, a, b, ms) {
     if (SB.reducedMotion()) ms = 150;
