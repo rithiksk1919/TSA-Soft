@@ -8,3 +8,4 @@ qa/traces/*.json
 .aider-desk/
 qa/test-results-*/
 qa/traces/
+qa/poses/
