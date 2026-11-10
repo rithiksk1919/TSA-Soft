@@ -252,7 +252,7 @@
     var q = v ? clamp(v.open, -0.2, 1.2) : 0;
     if (ui.flat()) {
       el.rig.style.transform = pre + "scale(" + (G.fit * k).toFixed(4) + ")";
-      el.scrim.style.opacity = "0";
+      setScrim(0);
       return;
     }
     var tx = 0, ty = 0;
@@ -262,7 +262,7 @@
       // Flashcards cards come up onto the catalog's top.
       f = G.fit * k;
       el.rig.style.transform = pre + "scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") rotateX(" + ov.rx.toFixed(3) + "deg) rotateY(" + ov.ry.toFixed(3) + "deg)";
-      el.scrim.style.opacity = "0";
+      setScrim(0);
       return;
     }
     if (v) {
@@ -276,7 +276,13 @@
     el.rig.style.transform = pre +
       "translate3d(" + (tx * k).toFixed(2) + "px," + (ty * k).toFixed(2) + "px,0) scale3d(" + f.toFixed(4) + "," + f.toFixed(4) + "," + f.toFixed(4) + ") " +
       "rotateX(" + ((ov && typeof ov.rx === "number" ? ov.rx : -6) - 12 * q).toFixed(3) + "deg) rotateY(" + ((ov && typeof ov.ry === "number" ? ov.ry : -8) * (1 - clamp(q, 0, 1))).toFixed(3) + "deg)";
-    el.scrim.style.opacity = (0.18 * clamp(q, 0, 1)).toFixed(3);
+    setScrim(0.18 * clamp(q, 0, 1));
+  }
+  // The scrim is a huge plane in front of the cabinet; at opacity 0 it still costs a 3D layer, so
+  // it leaves the scene (visibility) whenever it is fully transparent.
+  function setScrim(a) {
+    el.scrim.style.opacity = a > 0 ? a.toFixed(3) : "0";
+    el.scrim.style.visibility = a > 0 ? "" : "hidden";
   }
 
   function bindDrawer(v) {
