@@ -15,11 +15,14 @@
   var popSeq = 0;
   var frameK = 0;
 
+  // The sheet's height, measured once when a motion starts (not every frame: reading it per frame
+  // forced a style and layout pass after the other springs' writes).
+  var sheetH = 0;
   var frame = SB.createSpring(P.drawer, function (k) {
     frameK = k;
     var c = ui.clamp(k, 0, 1.2);
     if (ui.narrow()) {
-      var h = sheet.offsetHeight || 600;
+      var h = sheetH || 600;
       sheet.style.transform = "translateY(" + ((1 - c) * (h + 24)).toFixed(1) + "px)";
       sheet.style.opacity = "";
       scrim.style.opacity = (0.38 * ui.clamp(k, 0, 1)).toFixed(3);
@@ -29,6 +32,20 @@
       scrim.style.opacity = "0";
     }
   }, 0);
+
+  // While the sheet moves it gets its own compositor layer (and the phone scrim too), so each frame
+  // moves a layer instead of repainting the sheet and its shadow. Cleared at rest: the resting
+  // rendering is unchanged.
+  function startMotion() {
+    sheetH = sheet.offsetHeight;
+    sheet.style.willChange = "transform, opacity";
+    if (ui.narrow()) scrim.style.willChange = "opacity";
+  }
+  function endMotion() {
+    if (frame.moving()) return;
+    sheet.style.willChange = "";
+    scrim.style.willChange = "";
+  }
 
   // Per-item pop: each .pop element gets its own spring, staggered 35ms.
   function itemSpring(node) {
@@ -88,7 +105,8 @@
       cur.release = ui.isolate([sheet]);
       ++popSeq;
       $$(".pop", el.body).forEach(function (n) { itemSpring(n).to(1); });
-      frame.to(1);
+      startMotion();
+      frame.to(1).then(endMotion);
       api.focusTitle();
       return frame.near(0.12);
     }
@@ -117,8 +135,9 @@
       shown = Promise.all([ui.fade(sheet, 0, 1), ui.narrow() ? ui.fade(scrim, 0, 1) : null]);
     } else {
       $$(".pop", el.body).forEach(function (n) { itemSpring(n).jump(0); });
+      startMotion();
       frame.jump(0);
-      frame.to(1);
+      frame.to(1).then(endMotion);
       shown = frame.near(0.12).then(function () { return pop(); });
     }
     api.focusTitle();
@@ -140,7 +159,7 @@
     if (SB.reducedMotion()) {
       done = Promise.all([ui.fade(sheet, 1, 0), ui.narrow() ? ui.fade(scrim, 1, 0) : null]);
     } else {
-      done = drop().then(function () { return frame.to(0); });
+      done = drop().then(function () { startMotion(); return frame.to(0).then(endMotion); });
     }
     c.closingPromise = done.then(function () {
       if (cur !== c || !c.closing) return;   // re-opened meanwhile
