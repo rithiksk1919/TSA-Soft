@@ -729,19 +729,19 @@
     var widths = signs.map(function (s) { return $(".plaque", s).getBoundingClientRect().width; });
     var mean = widths.reduce(function (a, b) { return a + b; }, 0) / (widths.length || 1);
     var target = Math.max(mean, innerWidth * (innerHeight / innerWidth > 1.1 ? 0.15 : 0.1));
+    // Signs scale independently, so each pass measures all of them, then writes all of them
+    // (one layout per pass instead of one per sign).
     for (var pass = 0; pass < 2; pass++) {
-      signs.forEach(function (s, i) {
-        var wNow = pass ? $(".plaque", s).getBoundingClientRect().width : widths[i];
-        if (wNow > 0) scaleSign(s, +s.dataset.k * target / wNow);
-      });
+      var now = pass ? signs.map(function (s) { return $(".plaque", s).getBoundingClientRect().width; }) : widths;
+      signs.forEach(function (s, i) { if (now[i] > 0) scaleSign(s, +s.dataset.k * target / now[i]); });
     }
     // Under perspective a screen offset moves distant things less than near ones, so converge on it.
-    var shift = 0;
+    var shift = 0, tops = $$(".plaque, .pendant .f3, .globe__disc", world);
     for (var i = 0; i < 4; i++) {
       pose.sh = Math.round(shift);
       applyCamera();
       var top = Infinity;
-      $$(".plaque, .pendant .f3, .globe__disc", world).forEach(function (e) {
+      tops.forEach(function (e) {
         var r = e.getBoundingClientRect();
         if (r.width) top = Math.min(top, r.top);
       });
