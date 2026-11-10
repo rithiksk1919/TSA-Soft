@@ -374,13 +374,14 @@
           "<div><dt>Average hints</dt><dd>" + sum.avgHints.toFixed(2) + "</dd></div>" +
           "<div><dt>Solved with no hints</dt><dd>" + sum.solvedNoHints + "</dd></div></dl>";
         if (!rows.length) html += '<p class="empty pop">No attempts match these filters.</p>';
-        var month = null;
-        rows.forEach(function (a) {
-          var mk = monthFmt.format(parseDate(a.date));
+        var month = null, months = rows.map(function (a) { return monthFmt.format(parseDate(a.date)); }), perMonth = {};
+        months.forEach(function (k) { perMonth[k] = (perMonth[k] || 0) + 1; });   // one pass, not one per month
+        rows.forEach(function (a, ri) {
+          var mk = months[ri];
           if (mk !== month) {
             if (month) html += "</div>";
             month = mk;
-            var inMonth = rows.filter(function (x) { return monthFmt.format(parseDate(x.date)) === mk; }).length;
+            var inMonth = perMonth[mk];
             html += '<div class="divider-row divider-row--month pop"><span class="divider-row__tab">' + esc(mk) + '</span><span class="divider-row__meta">' + ui.plural(inMonth, "attempt") + "</span></div><div class=\"icards\">";
           }
           html += '<button class="icard pop" type="button" style="--sub:' + a.subjectObj.accent + '" data-id="' + a.id + '">' +
