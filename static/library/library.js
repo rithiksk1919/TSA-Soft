@@ -588,11 +588,8 @@
 
   /* ---------- Boot ---------- */
 
-  fetch("data/subjects.json")
-    .then(function (r) {
-      if (!r.ok) throw new Error(r.status);
-      return r.json();
-    })
+  // Shared with the store (state.js), which loads the same file: one request, one parse.
+  window.SkillBridge.store.getJSON("data/subjects.json")
     .then(function (data) {
       subjects = data.subjects || [];
       if (data.learner) {

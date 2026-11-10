@@ -17,8 +17,10 @@
     try { window.localStorage.setItem(key, JSON.stringify(value)); return true; }
     catch (e) { persistOK = false; return false; }
   }
+  // One request per file per page load: library.js reads subjects.json through this too.
+  var jsonCache = {};
   function getJSON(path) {
-    return fetch(path).then(function (r) { if (!r.ok) throw new Error(path + " " + r.status); return r.json(); });
+    return jsonCache[path] || (jsonCache[path] = fetch(path).then(function (r) { if (!r.ok) throw new Error(path + " " + r.status); return r.json(); }));
   }
 
   var store = {
@@ -176,5 +178,6 @@
     if (next && next.v === 1) { store.review = next; emit("cards"); }
   });
 
+  store.getJSON = getJSON;
   SB.store = store;
 })();
