@@ -70,10 +70,20 @@
       settleScene(target);
       return;
     }
+    moving(true);
     cam.to(target).then(function () {
+      if (!cam.moving()) moving(false);
       if (cameraTarget !== target || cam.moving()) return;
       settleScene(target);
     });
+  }
+  // While the camera moves, the three depth layers and the two headings it writes every frame get
+  // their own compositor layers, so each frame moves layers instead of repainting the stage (wide
+  // wall and floor gradients, the blurred floor shadow) and both headings. Cleared at rest.
+  function moving(on) {
+    var wc = on ? "transform" : "";
+    layerEls.track.style.willChange = layerEls.wall.style.willChange = layerEls.floor.style.willChange = wc;
+    el.headA.style.willChange = el.headB.style.willChange = on ? "opacity" : "";
   }
 
   function settleScene(t) {
