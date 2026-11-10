@@ -594,6 +594,7 @@
     list.innerHTML = "";
     renderPaper(sc);
     renderTabs();
+    fit();   // measure the desk with its paper on it (open() fits before the first paper exists)
     requestAnimationFrame(function () {
       lampAt = centerIn(lampEl);
       var c = centerIn(paper);
