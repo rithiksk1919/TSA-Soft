@@ -52,24 +52,24 @@ Method: each area was read in full by a reviewer (five in parallel), and every h
 ## Findings
 
 ### static/library/index.html (298 lines)
-- **IX1 high** L161 — `#room` ships with `hidden` and is only shown by room.js, the last of 12 synchronous scripts at the end of `<body>`. On a cold load the browser can paint the flat "Learn your mistakes" page before the room covers it: a flash of the wrong screen. — status: open
+- **IX1 high** L161 — `#room` ships with `hidden` and is only shown by room.js, the last of 12 synchronous scripts at the end of `<body>`. On a cold load the browser can paint the flat "Learn your mistakes" page before the room covers it: a flash of the wrong screen. — status: fixed (207c347)
 - **IX2 medium** L9–10 — Only Source Serif 600 and Plex Sans 400 are preloaded; the first screen also uses Plex Mono 400 and Plex Sans 500 (`font-display: swap`). Late fonts cause FOUT, and room.js re-frames the camera on `fonts.ready`, so the 3D scene can jump. — status: open
 - Checked: dialogs start hidden; scripts at end of body.
 
 ### static/library/room.js (812 lines)
-- **RJ1 high** L18–73, L770–776 — The room is one `preserve-3d` context of several hundred 3D-transformed faces (72 shell tiles, ~80 shelf books × 3 faces plus bands, furniture). Every camera frame (`applyCamera`, L395–409) re-projects and composites all of them; the main frame-drop risk on integrated GPUs. — status: open
-- **RJ2 medium** L708–750 `safeFrame` — Interleaved writes and `getBoundingClientRect` reads (sign scaling passes, then up to 4 camera writes each followed by measuring every plaque): ~6–10 forced layouts per call; runs on boot, `fonts.ready` and every resize. — status: open
-- **RJ3 medium** L679, L779 — Two unthrottled `resize` listeners; in practice state `alignCabinet()` runs twice per event, plus `safeFrame`. — status: open
+- **RJ1 high** L18–73, L770–776 — The room is one `preserve-3d` context of several hundred 3D-transformed faces (72 shell tiles, ~80 shelf books × 3 faces plus bands, furniture). Every camera frame (`applyCamera`, L395–409) re-projects and composites all of them; the main frame-drop risk on integrated GPUs. — status: explained. Measured with the GPU on: flights 47–57 fps, pointer-look ~46–55, station hover ~41–45 at 1440×900 (they vary run to run with machine state; baseline and fixed builds measure the same when interleaved). Tried culling faces no pose can see: only 7 of 521 can be dropped safely, because the overview's safe-zone shift raises the eye by a window-dependent amount, so it was reverted. A real cut needs a design change (e.g. merging the shelf's ~80 books into a few pre-painted planes, or fewer books), which changes the look; left for you to decide. Check with DevTools Rendering > Layer borders and the Performance panel on target hardware.
+- **RJ2 medium** L708–750 `safeFrame` — Interleaved writes and `getBoundingClientRect` reads (sign scaling passes, then up to 4 camera writes each followed by measuring every plaque): ~6–10 forced layouts per call; runs on boot, `fonts.ready` and every resize. — status: fixed (c46d759)
+- **RJ3 medium** L679, L779 — Two unthrottled `resize` listeners; in practice state `alignCabinet()` runs twice per event, plus `safeFrame`. — status: fixed (aea8478)
 - **RJ4 medium** L604–636 `alignCabinet`/`enterPractice` — ~5 forced layouts plus a root class toggle on the hand-off frame, repeated the next frame. — status: open
 - **RJ5 medium** L809 — `fonts.ready → safeFrame` snaps a new `frameShift` onto the camera after fonts swap: the scene jumps. — status: open
 - **RJ6 medium** L465/494, L512–518 — The away-state room uses `hidden` (`display:none`), so returning rebuilds and re-rasters hundreds of layers on the first frame of the crossfade. — status: open
-- **RJ7 low** L533–537, L441–444 — `pointerover` on the world re-queries `.station3` and `.rnav__btn` on every face crossing. — status: open
-- **RJ8 low** L682–686, L778 — `setInterval(tick, 1000)` runs forever, even while the room is hidden or the tab is in the background; 3 `querySelector`s per tick. — status: open
+- **RJ7 low** L533–537, L441–444 — `pointerover` on the world re-queries `.station3` and `.rnav__btn` on every face crossing. — status: fixed (024d281)
+- **RJ8 low** L682–686, L778 — `setInterval(tick, 1000)` runs forever, even while the room is hidden or the tab is in the background; 3 `querySelector`s per tick. — status: fixed (fd51ae2)
 - **RJ9 low** L404–409, L416 — New pose object per camera frame; `fly.near()` adds a second rAF poll. — status: open
 - Checked: all motion is transform-only via rAF springs; pointer-look is rAF-coalesced and stops when settled; `syncCatalogLabels` writes only on change.
 
 ### static/library/room.css (410 lines)
-- **RC1 medium** L241–243 — `.glow3--edge`, a ~560×770 3D plane with `box-shadow: 0 0 80px 50px`, toggles `display:none ↔ block` on hover: re-raster of a large blur per station hover. — status: open
+- **RC1 medium** L241–243 — `.glow3--edge`, a ~560×770 3D plane with `box-shadow: 0 0 80px 50px`, toggles `display:none ↔ block` on hover: re-raster of a large blur per station hover. — status: explained. Measured: keeping the edge glow rendered at opacity 0 (no re-raster on hover) made pointer-look worse (53–55 → 43–46 fps) and did not help hover, confirming the original trade-off (display:none keeps it out of the per-frame 3D sort). Replacing the blur with a gradient would change the look.
 - **RC2 low** L205/219, L223/228 — `background-color`/`box-shadow` transitions on catalog drawers and plaques repaint textured 3D layers (small surfaces). — status: open
 - **RC3 low** L389–390 — opacity transitions on each `.cat-deco` face; can't move to the group without flattening preserve-3d. — status: open
 - Checked: no `transition: all`, no layout-property animation, the vignette is one static `::after`, reduced motion respected.
@@ -176,24 +176,24 @@ Method: each area was read in full by a reviewer (five in parallel), and every h
 - Checked: no DOM, timers or loops; sort copies first and is not per-frame.
 
 ### static/library/dashboard.html (161 lines)
-- **DH1 high** L76–137 — every data region starts empty and fills after `fetch()` resolves: the hero stats, chart (0 → 276 px), tables and due list all push content down at once (layout shift). — status: open
+- **DH1 high** L76–137 — every data region starts empty and fills after `fetch()` resolves: the hero stats, chart (0 → 276 px), tables and due list all push content down at once (layout shift). — status: fixed (09628b1, f2f512a): CLS 0.34/0.60/0.68 → 0.003/0.005/0.014 at 1440/1100/390
 - **DH2 low** L75 — "Welcome back" is replaced by a longer greeting, which can wrap. — status: open
-- **DH3 medium** L9–10 — Source Serif 600 (hero title, stat numbers) is not preloaded; FOUT on the largest above-the-fold text. — status: open
+- **DH3 medium** L9–10 — Source Serif 600 (hero title, stat numbers) is not preloaded; FOUT on the largest above-the-fold text. — status: fixed (7f19ac0)
 - **DH4 low** L159 — data request starts only after the script at the end of body runs. — status: open
 
 ### static/library/dashboard.css (569 lines)
-- **DC-1 high** L327–328 etc. — CSS half of DH1: no reserved space for the chart, stats, tables or due list. — status: open
-- **DC-2 medium** L371, L377–380 — `.due__link` animates a blurred `box-shadow` with `translateZ` on hover. — status: open
-- **DC-3 medium** L203–204 — every cuboid renders all 6 faces, including faces never visible (bottoms, backs): ~80 3D layers. — status: open
-- **DC-4 low** L232 — `filter: brightness()` on book back faces. — status: open
-- **DC-5 low** L421–425 — `--rx/--ry` set on `.diorama`, invalidating the whole subtree each pointermove; no `will-change` on `.world`. — status: open
-- **DC-6 low** L217–222 — `.book3d__link` animates transform without `will-change`. — status: open
+- **DC-1 high** L327–328 etc. — CSS half of DH1: no reserved space for the chart, stats, tables or due list. — status: fixed (09628b1)
+- **DC-2 medium** L371, L377–380 — `.due__link` animates a blurred `box-shadow` with `translateZ` on hover. — status: fixed (0f54b52)
+- **DC-3 medium** L203–204 — every cuboid renders all 6 faces, including faces never visible (bottoms, backs): ~80 3D layers. — status: fixed (d78e8b6): 78 → 39 face layers
+- **DC-4 low** L232 — `filter: brightness()` on book back faces. — status: fixed (d78e8b6): the face is no longer drawn
+- **DC-5 low** L421–425 — `--rx/--ry` set on `.diorama`, invalidating the whole subtree each pointermove; no `will-change` on `.world`. — status: fixed (caff1b0)
+- **DC-6 low** L217–222 — `.book3d__link` animates transform without `will-change`. — status: explained. will-change on elements with text changes how the text is rasterized (measured: the drawers' labels shifted 1–2 px when it was added), which is a visual change; the transforms are short hover transitions on 3 elements, so it stays off.
 
 ### static/library/dashboard.js (373 lines)
-- **DJS1 medium** L363–368 — `pointermove` reads `getBoundingClientRect` per event right after the previous style write; not rAF-coalesced. — status: open
-- **DJS2 medium** L111–118, L343–359 — first render interleaves writes and reads (two forced layouts) and the chart is drawn twice (sync, then the ResizeObserver's first callback). — status: open
-- **DJS3 medium** L348–351, L166–184 — the chart is rebuilt with `innerHTML` on every 1 px of resize, re-binding 8 listeners each time. — status: open
-- **DJS4 low** L177–180 — tooltip measures `offsetWidth` after unhiding. — status: open
+- **DJS1 medium** L363–368 — `pointermove` reads `getBoundingClientRect` per event right after the previous style write; not rAF-coalesced. — status: fixed (caff1b0)
+- **DJS2 medium** L111–118, L343–359 — first render interleaves writes and reads (two forced layouts) and the chart is drawn twice (sync, then the ResizeObserver's first callback). — status: fixed (c3a0265): chart draws on load 2 → 1
+- **DJS3 medium** L348–351, L166–184 — the chart is rebuilt with `innerHTML` on every 1 px of resize, re-binding 8 listeners each time. — status: fixed (3c08f89)
+- **DJS4 low** L177–180 — tooltip measures `offsetWidth` after unhiding. — status: fixed (3c08f89)
 - **DJS5 low** L311 — search not debounced (fine at 11 rows). — status: open
 
 ### static/library/data/*.json (59 KB in 9 files)
