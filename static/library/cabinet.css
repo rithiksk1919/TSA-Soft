@@ -484,9 +484,9 @@ button.fitem:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px;
 
 /* ---------- Review: the chosen card, flat and readable ---------- */
 
-.review { position: absolute; inset: 0; z-index: 6; }
+/* Position, inset and z-index of .review and .review__scrim come from drawers.css (loaded later). */
 .review[hidden] { display: none; }
-.review__scrim { position: absolute; inset: -40px -2000px; background: var(--ink); opacity: 0; }
+.review__scrim { background: var(--ink); opacity: 0; }
 .review__body {
   position: relative;
   height: 100%;
