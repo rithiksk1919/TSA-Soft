@@ -367,16 +367,19 @@ button { font: inherit; }
   border: 1px solid var(--brass-dark); border-radius: 6px;
   box-shadow: inset 0 -2px 0 rgba(43, 31, 20, .08);
   transform-style: preserve-3d;
-  transition: transform 260ms var(--ease), box-shadow 260ms var(--ease);
+  transition: transform 260ms var(--ease);
 }
 .due__link::before {   /* subject colour on the drawer's left edge */
   content: ""; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 6px;
   background: var(--c); border-radius: 6px 0 0 6px;
 }
-.due__link:hover, .due__link:focus-visible {
-  transform: translateZ(34px);
-  box-shadow: inset 0 -2px 0 rgba(43, 31, 20, .08), 0 14px 18px -12px rgba(0, 0, 0, .55);
+.due__link::after {   /* the pulled-out drawer's drop shadow: painted once, faded with opacity (no blur repaint per frame) */
+  content: ""; position: absolute; inset: -1px; border-radius: 6px; pointer-events: none;
+  box-shadow: 0 14px 18px -12px rgba(0, 0, 0, .55);
+  opacity: 0; transition: opacity 260ms var(--ease);
 }
+.due__link:hover, .due__link:focus-visible { transform: translateZ(34px); }
+.due__link:hover::after, .due__link:focus-visible::after { opacity: 1; }
 .due__link:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
 .due__tray {   /* the drawer's top: index cards, visible once it is pulled out */
   position: absolute; left: 8px; right: 8px; top: 0; height: 34px;
@@ -583,6 +586,6 @@ button { font: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .book3d__link, .due__link, .diorama .world { transition: none; }
+  .book3d__link, .due__link, .due__link::after, .diorama .world { transition: none; }
   *, *::before, *::after { transition-duration: 0ms !important; }
 }
