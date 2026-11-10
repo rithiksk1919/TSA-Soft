@@ -682,7 +682,6 @@
     var book = e.target.closest("[data-book]");
     if (book && state === "learn") { e.stopPropagation(); openRoomBook(book.dataset.book); }
   }, true);
-  window.addEventListener("resize", function () { if (state === "practice") alignCabinet(); });
 
   // The wall clock keeps real time. It skips work while nobody can see it (room hidden, tab in the
   // background); the next tick after it shows again puts the hands right.
@@ -785,7 +784,11 @@
   fit();
   tick();
   setInterval(tick, 1000);
-  window.addEventListener("resize", fit);
+  // One fit per frame however many resize events arrive (fit also realigns the cabinet in practice).
+  var fitQueued = 0;
+  window.addEventListener("resize", function () {
+    if (!fitQueued) fitQueued = requestAnimationFrame(function () { fitQueued = 0; fit(); });
+  });
 
   // Boot. Deep links for people (#shelf, #practice, #book-<subject>, from the dashboard) open the
   // room and fly into that station, so the flat scenes behind the room are never shown on their own.
