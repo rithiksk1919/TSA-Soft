@@ -166,8 +166,9 @@
     store.data.history = r[5];
     store.data.shelf = r[6];
     // Drop saved boxes for cards that no longer exist.
-    var ids = store.cards().map(function (c) { return c.id; });
-    Object.keys(store.review.boxes).forEach(function (id) { if (ids.indexOf(id) < 0) delete store.review.boxes[id]; });
+    var ids = Object.create(null);
+    store.cards().forEach(function (c) { ids[c.id] = true; });
+    Object.keys(store.review.boxes).forEach(function (id) { if (!ids[id]) delete store.review.boxes[id]; });
     return store;
   });
 
