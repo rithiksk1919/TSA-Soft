@@ -47,14 +47,21 @@
   var seat = SB.createSpring(P.camera, function (k) { view.k = k; paintCam(); }, 1);
   var yaw = SB.createSpring({ stiffness: 60, damping: 14 }, function (y) { view.yaw = y; paintCam(); }, 0);
 
+  // The desk turns a little toward the pointer. Pointer events can outpace frames and the layout is
+  // often dirty (streaming text), so: measure the stage once per hover (again after a scroll or
+  // fit), take the latest x, and re-aim the spring once per frame without queueing promises.
+  var stageBox = null, aimX = null, aimQueued = 0;
   stage.addEventListener("pointermove", function (e) {
     if (e.pointerType !== "mouse" || ui.flat()) return;
-    var r = stage.getBoundingClientRect();
-    yaw.to(((e.clientX - r.left) / r.width - 0.5) * -3.5);
+    stageBox = stageBox || stage.getBoundingClientRect();
+    aimX = (e.clientX - stageBox.left) / stageBox.width - 0.5;
+    if (!aimQueued) aimQueued = requestAnimationFrame(function () { aimQueued = 0; if (aimX !== null) yaw.aim(aimX * -3.5); });
   });
-  stage.addEventListener("pointerleave", function () { if (!ui.flat()) yaw.to(0); });
+  stage.addEventListener("pointerleave", function () { stageBox = null; aimX = null; if (!ui.flat()) yaw.to(0); });
+  el.addEventListener("scroll", function () { stageBox = null; }, { passive: true });
 
   function fit() {
+    stageBox = null;   // the stage may move or resize: the pointer handler measures it again
     if (!isOpen) return;
     if (ui.flat()) {
       view.fit = 1; stage.style.height = ""; stage.style.perspective = "";

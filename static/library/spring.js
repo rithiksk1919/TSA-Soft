@@ -63,6 +63,12 @@
       if (!s.raf) { s.last = performance.now(); active++; s.raf = requestAnimationFrame(frame); }
     }
 
+    // Re-aim without a promise: for targets that change continuously (pointer follow), where to()
+    // would queue one promise per event until the spring next comes to rest.
+    s.aim = function (target) {
+      s.target = target;
+      run();
+    };
     s.to = function (target, opts) {
       s.target = target;
       if (opts && typeof opts.velocity === "number") s.v = opts.velocity;
