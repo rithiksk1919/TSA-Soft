@@ -465,6 +465,11 @@
       el.library.classList.add("is-covered");
       el.library.inert = true;
       el.library.style.visibility = "hidden";
+      // The flight is over: stop the logos it set running (the shelf spine's, now hidden, and the
+      // cover's, turned away). They animate SVG on the main thread every frame. The live logo in
+      // the reader runs on its own (.logo--live); close() sets these running again for the flight back.
+      slot.classList.remove("is-flying");
+      el.reader.classList.remove("is-flying");
       cancelAll();
       clearWillChange();
       if (releaseTrap) releaseTrap();
@@ -491,6 +496,8 @@
 
     var m = mode();
     if (m === "3d") {
+      slot.classList.add("is-flying");
+      el.reader.classList.add("is-flying");
       resetParallax();
       running = build3D(slot, false);
       var rate = -(OPEN_MS / CLOSE_MS);
