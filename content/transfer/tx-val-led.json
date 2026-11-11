@@ -1,0 +1,26 @@
+{
+  "id": "tx-val-led",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The LED that is too bright",
+  "skills": [
+    "ck_value"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-val-led",
+  "scaffold": 0,
+  "prompt": "The design is 1 kilo-ohm on 9 V. The meter reads 90 mA.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Step 3 already found it: the fitted part is 100 ohm, ten times smaller, not bigger.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Expected I = 9 / 1000 = 9 mA",
+      "Measured 90 mA is ten times more",
+      "Actual R = 9 / 0.09 = 100 ohm",
+      "So the fitted resistor is 10 kilo-ohm"
+    ],
+    "answer": 3
+  }
+}

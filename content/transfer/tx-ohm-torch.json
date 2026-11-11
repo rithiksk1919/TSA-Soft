@@ -1,0 +1,26 @@
+{
+  "id": "tx-ohm-torch",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The torch bulb",
+  "skills": [
+    "ck_ohms"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ohm-torch",
+  "scaffold": 0,
+  "prompt": "A 3 V battery is connected across a 6 ohm bulb. Find the current.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "The numbers are swapped: I = V / R = 3 / 6 = 0.5 A.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Known: V = 3 V, R = 6 ohm",
+      "Ohm's law: I = V / R",
+      "I = 6 / 3 = 2 A",
+      "So 2 A flows"
+    ],
+    "answer": 2
+  }
+}

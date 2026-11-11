@@ -1,0 +1,27 @@
+{
+  "id": "tx-obo-seats",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Seat labels",
+  "skills": [
+    "py_off_by_one"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-obo-seats",
+  "scaffold": 0,
+  "prompt": "Make labels 'Seat 1' to 'Seat n' for a row of n seats.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "range(1, n) stops before n, so the last seat is missing. Use range(1, n + 1).",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def seat_labels(n):",
+      "    labels = []",
+      "    for seat in range(1, n):",
+      "        labels.append(\"Seat \" + str(seat))",
+      "    return labels"
+    ],
+    "answer": 2
+  }
+}

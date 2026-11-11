@@ -1,0 +1,27 @@
+{
+  "id": "tx-cond-grade",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "The pass mark",
+  "skills": [
+    "py_conditionals"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-cond-grade",
+  "scaffold": 0,
+  "prompt": "A score of 50 or more passes. Anything below 50 fails.",
+  "kicker": "Same idea, new story",
+  "hints": [],
+  "explanation": "A score of exactly 50 should pass, but score > 50 sends it to fail. Use score >= 50.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def result(score):",
+      "    if score > 50:",
+      "        return \"pass\"",
+      "    else:",
+      "        return \"fail\""
+    ],
+    "answer": 1
+  }
+}

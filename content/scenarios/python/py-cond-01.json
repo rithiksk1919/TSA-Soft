@@ -1,0 +1,73 @@
+{
+  "id": "py-cond-01",
+  "domain": "python",
+  "title": "Letter grades",
+  "skills": [
+    "py_conditionals"
+  ],
+  "difficulty": 0.2,
+  "surface_form": "numeric-thresholds",
+  "scaffold": 2,
+  "estimated_minutes": 4,
+  "prompt": "letter_grade(score) should return \"A\" for 90 and above, \"B\" for 80-89, \"C\" for 70-79 and \"F\" otherwise. Students who score exactly 90 are getting a B. Fix it.",
+  "starter": "def letter_grade(score):\n    # 90 and above -> \"A\", 80-89 -> \"B\", 70-79 -> \"C\", otherwise \"F\"\n    # Tip: test the exact boundary values 90, 80 and 70.\n    if score > 90:\n        return \"A\"\n    elif score > 80:\n        return \"B\"\n    elif score > 70:\n        return \"C\"\n    else:\n        return \"F\"\n",
+  "hints": [
+    "The failing cases are all exactly on a boundary: 90, 80 and 70.",
+    "Does '>' include the number itself? Compare 90 > 90 with 90 >= 90.",
+    "Change each '>' to '>=' so the boundary score falls into the higher grade."
+  ],
+  "explanation": "Each threshold used '>' instead of '>=', so boundary scores (90, 80, 70) fell into the grade below.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "letter_grade",
+    "sample": "print(letter_grade(90))",
+    "tests": [
+      {
+        "name": "95 is an A",
+        "expected": "A",
+        "args": [
+          95
+        ],
+        "visible": true
+      },
+      {
+        "name": "exactly 90 is an A",
+        "expected": "A",
+        "args": [
+          90
+        ],
+        "visible": true
+      },
+      {
+        "name": "exactly 80 is a B",
+        "expected": "B",
+        "args": [
+          80
+        ],
+        "visible": true
+      },
+      {
+        "name": "85 is a B",
+        "expected": "B",
+        "args": [
+          85
+        ]
+      },
+      {
+        "name": "exactly 70 is a C",
+        "expected": "C",
+        "args": [
+          70
+        ]
+      },
+      {
+        "name": "50 is an F",
+        "expected": "F",
+        "args": [
+          50
+        ]
+      }
+    ]
+  },
+  "solution": "def letter_grade(score):\n    if score >= 90:\n        return \"A\"\n    elif score >= 80:\n        return \"B\"\n    elif score >= 70:\n        return \"C\"\n    else:\n        return \"F\"\n"
+}

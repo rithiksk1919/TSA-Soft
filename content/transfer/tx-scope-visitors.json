@@ -1,0 +1,26 @@
+{
+  "id": "tx-scope-visitors",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Counting visitors",
+  "skills": [
+    "py_scope"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-scope-visitors",
+  "scaffold": 0,
+  "prompt": "Each call to add_visitor should add one to the visitor count.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "Assigning to visitors inside the function makes it a new local name, so reading it first raises UnboundLocalError. Pass the count in and return the new value.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "visitors = 0",
+      "def add_visitor():",
+      "    visitors = visitors + 1",
+      "    return visitors"
+    ],
+    "answer": 2
+  }
+}

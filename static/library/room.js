@@ -208,7 +208,7 @@
 
   function fillShelf(g, xa, xb, yBase, z, space, shelfIndex) {
     var x = xa;
-    var special = shelfIndex === 2 ? [{ id: "physics", c: "#2D4A6E", t: "Physics", h: 0.92 }, { id: "chemistry", c: "#7B3F36", t: "Chemistry", h: 0.84 }, { id: "biology", c: "#2F5B47", t: "Biology", h: 0.88 }] : [];
+    var special = shelfIndex === 2 ? [{ id: "python", c: "#2D4A6E", t: "Python", h: 0.92 }, { id: "circuits", c: "#7B3F36", t: "Circuits", h: 0.84 }] : [];
     var placed = 0, minNext = 0;
     while (x < xb - 14) {
       var sp = special.length && placed >= 4 ? special.shift() : null;
@@ -782,7 +782,7 @@
   // room and fly into that station, so the flat scenes behind the room are never shown on their own.
   // #test-shelf and #test-practice skip the room to those flat scenes; they exist for the test suite only.
   var hash = location.hash.slice(1);
-  var bookId = /^book-(physics|chemistry|biology)$/.test(hash) ? hash.slice(5) : null;
+  var bookId = /^book-(python|circuits)$/.test(hash) ? hash.slice(5) : null;
   var station = hash === "shelf" || bookId ? "learn" : hash === "practice" ? "practice" : null;
   if (hash === "test-shelf" || hash === "test-practice") {
     room.hidden = true;

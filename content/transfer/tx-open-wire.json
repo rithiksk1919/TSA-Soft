@@ -1,0 +1,26 @@
+{
+  "id": "tx-open-wire",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The broken wire",
+  "skills": [
+    "ck_open"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-open-wire",
+  "scaffold": 0,
+  "prompt": "A 6 V loop with one resistor reads 0 A.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "The whole 6 V appears across a break, because nothing else drops any voltage. The resistor reads 0 V since no current flows.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "0 A means there is no complete path",
+      "So something in the loop is open (a break)",
+      "Across the break, the meter reads 0 V",
+      "Across the resistor, the meter reads 0 V"
+    ],
+    "answer": 2
+  }
+}

@@ -8,3 +8,11 @@ qa/traces/*.json
 .aider-desk/
 qa/test-results-*/
 qa/traces/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+data/
+.env
+sim/output/summary.json

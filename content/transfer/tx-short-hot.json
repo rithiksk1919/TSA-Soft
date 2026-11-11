@@ -1,0 +1,26 @@
+{
+  "id": "tx-short-hot",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The hot resistor",
+  "skills": [
+    "ck_short"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-short-hot",
+  "scaffold": 0,
+  "prompt": "Two 50 ohm resistors are in series on 10 V, and R2 is shorted. Find the voltage across R1.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "0.2 x 50 is 10 V. With R2 shorted, R1 takes the whole supply.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "R2 is shorted: its resistance is about 0 ohm",
+      "Total R = 50 + 0 = 50 ohm",
+      "I = 10 / 50 = 0.2 A",
+      "V across R1 = 0.2 x 50 = 5 V"
+    ],
+    "answer": 3
+  }
+}

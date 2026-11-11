@@ -1,0 +1,70 @@
+{
+  "id": "py-cond-02",
+  "domain": "python",
+  "title": "Ticket pricing",
+  "skills": [
+    "py_conditionals"
+  ],
+  "difficulty": 0.45,
+  "surface_form": "combined-rules",
+  "scaffold": 1,
+  "estimated_minutes": 6,
+  "prompt": "ticket_price(age, is_student) implements the cinema's price list: under 12 pays 5, 65 and over pays 7, students pay 8, everyone else pays 12. Adults who are not students are being charged the student price.",
+  "starter": "def ticket_price(age, is_student):\n    # under 12 -> 5, 65 and over -> 7, students -> 8, everyone else -> 12\n    if age < 12:\n        return 5\n    if age >= 65:\n        return 7\n    if is_student or age < 65:\n        return 8\n    return 12\n",
+  "hints": [
+    "Trace ticket_price(30, False) line by line. Which return runs?",
+    "With 'or', the condition is True if either side is True. Is 30 < 65?",
+    "By the time that line runs, age is already known to be under 65. Only the student flag matters there."
+  ],
+  "explanation": "The student rule used 'is_student or age < 65'. Every remaining age is under 65, so the condition was always True and adults paid the student price.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "ticket_price",
+    "sample": "print(ticket_price(30, False))",
+    "tests": [
+      {
+        "name": "child price",
+        "expected": 5,
+        "args": [
+          8,
+          false
+        ],
+        "visible": true
+      },
+      {
+        "name": "senior price (even if a student)",
+        "expected": 7,
+        "args": [
+          70,
+          true
+        ]
+      },
+      {
+        "name": "student price",
+        "expected": 8,
+        "args": [
+          20,
+          true
+        ],
+        "visible": true
+      },
+      {
+        "name": "adult, not a student",
+        "expected": 12,
+        "args": [
+          30,
+          false
+        ]
+      },
+      {
+        "name": "64 year old, not a student",
+        "expected": 12,
+        "args": [
+          64,
+          false
+        ]
+      }
+    ]
+  },
+  "solution": "def ticket_price(age, is_student):\n    if age < 12:\n        return 5\n    if age >= 65:\n        return 7\n    if is_student:\n        return 8\n    return 12\n"
+}

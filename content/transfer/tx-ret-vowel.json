@@ -1,0 +1,27 @@
+{
+  "id": "tx-ret-vowel",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Does the word have a vowel?",
+  "skills": [
+    "py_returns"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ret-vowel",
+  "scaffold": 0,
+  "prompt": "Return True if the word has at least one vowel, otherwise False.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "return False sits inside the loop, so the function gives up after the first letter. It belongs after the loop.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def has_vowel(word):",
+      "    for letter in word:",
+      "        if letter in \"aeiou\":",
+      "            return True",
+      "        return False"
+    ],
+    "answer": 4
+  }
+}

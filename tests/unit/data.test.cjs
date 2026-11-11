@@ -89,42 +89,33 @@ test("drawers.json: six drawers with a count kind each", () => {
 
 const desk = load("desk.json"), shelf = load("subjects.json");
 
-test("desk.json: one scenario per subject's next problem, every question and step well formed", () => {
-  assert.deepEqual(desk.scenarios.map((s) => s.id), shelf.subjects.map((s) => s.next.id));
+test("desk.json: three find-the-wrong-step problems on circuits and Python, every question and step well formed", () => {
+  assert.deepEqual(desk.scenarios.map((s) => s.id), ["ck-series-current", "ck-parallel-total", "py-range-trace"]);
   for (const sc of desk.scenarios) {
-    assert.equal(sc.subject, shelf.subjects.find((s) => s.next.id === sc.id).id, sc.id);
+    assert.ok(["circuits", "python"].includes(sc.subject), sc.id);
     for (const q of [sc.read, sc.why, sc.fix]) {
       assert.ok(q.answer >= 0 && q.answer < q.options.length, sc.id + " " + q.question);
       for (const k of ["question", "right", "wrong"]) assert.ok(q[k].length > 5, sc.id + " " + k);
     }
     assert.equal(sc.steps.filter((s) => s.wrong).length, 1, sc.id + ": exactly one wrong step");
-    assert.ok(sc.steps[sc.steps.length - 1].wrong, sc.id + ": steps stop at the wrong one; the rest is in after");
     for (const st of sc.steps) {
       assert.ok(st.text && st.say && st.focus.length, sc.id);
       if (st.wrong) assert.ok(st.missed && st.caught, sc.id); else assert.ok(st.ok && st.nudge, sc.id);
     }
     for (const k of ["read", "check", "fix"]) assert.ok(sc.hints[k].length >= 2, sc.id + " hints " + k);
-    assert.ok(["incline", "chain", "codons"].includes(sc.figure), sc.id);
+    assert.ok(["series", "branches", "trace"].includes(sc.figure), sc.id);
     assert.ok(sc.fixed.length > 5 && sc.result && sc.rule && sc.after.length >= 1, sc.id);
   }
+  const text = JSON.stringify(desk).toLowerCase();
+  for (const bad of ["scripted demo", "physics", "chemistry", "biology"]) assert.ok(!text.includes(bad), bad);
 });
 
 test("desk scenarios: the arithmetic is right", () => {
-  // Physics: a = (mg sin 30 - mu mg cos 30) / m; the classmate used N = mg.
-  const m = 2.0, g = 9.8, mu = 0.2;
-  near((m * g * Math.sin(rad(30)) - mu * m * g * Math.cos(rad(30))) / m, 3.2, 0.01);
-  near((m * g * Math.sin(rad(30)) - mu * m * g) / m, 2.9, 0.05);
-  near(m * g * Math.cos(rad(30)), 17.0, 0.03);
-  // Chemistry: 8.0 g O2 -> 0.25 mol -> 0.50 mol H2O -> 9.0 g; the classmate divided: 0.028 g.
-  const nO2 = 8.0 / 32.0, nH2O = 2 * nO2;
-  near(nH2O * 18.02, 9.0, 0.02);
-  near(nH2O / 18.02, 0.028, 0.0005);
-  near(8.0 + nH2O * 2.016, 9.0, 0.02);
-  // Biology: transcribe the template, translate to the first stop.
-  const pair = { T: "A", A: "U", C: "G", G: "C" };
-  const mrna = "TAC AAG CCT ATT GCA".split(" ").map((c) => [...c].map((b) => pair[b]).join(""));
-  assert.deepEqual(mrna, ["AUG", "UUC", "GGA", "UAA", "CGU"]);
-  const code = { AUG: "Met", UUC: "Phe", GGA: "Gly", UAA: "Stop", CGU: "Arg" }, protein = [];
-  for (const c of mrna) { if (code[c] === "Stop") break; protein.push(code[c]); }
-  assert.equal(protein.join("–"), desk.scenarios[2].result);
+  near(12 / (100 + 200), 0.040, 1e-9);                 // series: resistances add
+  near(12 / (1 / (1 / 100 + 1 / 200)), 0.18, 0.005);   // the classmate's parallel rule
+  near(12 / (1 / (1 / 60 + 1 / 60)), 0.40, 1e-9);      // parallel pair
+  near(12 / (60 + 60), 0.10, 1e-9);                    // the classmate added them
+  let total = 0;
+  for (let i = 1; i < 5; i++) total += i;              // range(1, 5)
+  assert.equal(total, 10);
 });

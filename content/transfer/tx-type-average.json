@@ -1,0 +1,26 @@
+{
+  "id": "tx-type-average",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Average of the scores",
+  "skills": [
+    "py_types"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-type-average",
+  "scaffold": 0,
+  "prompt": "Return the average of a list of scores as a number.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "count is turned into text, so total / count raises TypeError. Keep it a number: count = len(scores).",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def average(scores):",
+      "    total = sum(scores)",
+      "    count = str(len(scores))",
+      "    return total / count"
+    ],
+    "answer": 2
+  }
+}

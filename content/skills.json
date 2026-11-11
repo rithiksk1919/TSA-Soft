@@ -1,0 +1,202 @@
+{
+  "domains": [
+    {
+      "id": "python",
+      "name": "Python Debugging",
+      "short": "Python",
+      "description": "Fix real buggy Python. Your code runs against hidden tests in a sandbox.",
+      "icon": "code",
+      "instructor": "SkillBridge Python"
+    },
+    {
+      "id": "circuits",
+      "name": "Circuit Troubleshooting",
+      "short": "Circuits",
+      "description": "Probe DC circuits with a virtual multimeter and find the fault with Ohm's law.",
+      "icon": "zap",
+      "instructor": "SkillBridge Electronics"
+    }
+  ],
+  "skills": [
+    {
+      "id": "py_conditionals", "name": "Conditional logic", "domain": "python", "prereqs": [],
+      "description": "Comparison operators, boundaries, and/or, if vs elif.",
+      "worked_example": {
+        "title": "A boundary that is one comparison off",
+        "before": "def can_vote(age):\n    # 18 and over may vote\n    return age > 18",
+        "after": "def can_vote(age):\n    # 18 and over may vote\n    return age >= 18",
+        "steps": [
+          "Read the rule in the comment and write down the boundary value: 18.",
+          "Test exactly at the boundary: can_vote(18) returns False, but the rule says True.",
+          "'>' excludes the boundary and '>=' includes it. The rule says 'and over', so it includes 18.",
+          "Re-check one value on each side (17 gives False, 19 gives True) to confirm nothing else changed."
+        ]
+      }
+    },
+    {
+      "id": "py_loops", "name": "Loop conditions", "domain": "python", "prereqs": ["py_conditionals"],
+      "description": "While/for conditions, termination, guards that run in the right order.",
+      "worked_example": {
+        "title": "A loop that never ends",
+        "before": "def halve_until_one(n):\n    steps = 0\n    while n > 1:\n        steps += 1\n    return steps",
+        "after": "def halve_until_one(n):\n    steps = 0\n    while n > 1:\n        n = n // 2\n        steps += 1\n    return steps",
+        "steps": [
+          "A while loop stops only when its condition becomes False, so find what the condition depends on: n.",
+          "Look for any line inside the body that changes n. There is none, so the condition never changes.",
+          "Add the update that moves n toward the exit (n = n // 2).",
+          "Trace a small input by hand: n=4 goes 4, 2, 1 and stops after 2 steps."
+        ]
+      }
+    },
+    {
+      "id": "py_off_by_one", "name": "Off-by-one errors", "domain": "python", "prereqs": ["py_loops"],
+      "description": "range() bounds, slice indices, first/last element handling.",
+      "worked_example": {
+        "title": "range() stops one early",
+        "before": "def squares_up_to(n):\n    return [i * i for i in range(1, n)]",
+        "after": "def squares_up_to(n):\n    return [i * i for i in range(1, n + 1)]",
+        "steps": [
+          "range(a, b) includes a but excludes b.",
+          "List what the loop actually visits for n=3: 1, 2. The 3 is missing.",
+          "To include n, the stop value must be n + 1.",
+          "Check the edges: n=1 gives [1] and n=0 gives []."
+        ]
+      }
+    },
+    {
+      "id": "py_returns", "name": "Function return values", "domain": "python", "prereqs": [],
+      "description": "Missing returns, returning too early, using a method's return value.",
+      "worked_example": {
+        "title": "Printing is not returning",
+        "before": "def double(x):\n    print(x * 2)",
+        "after": "def double(x):\n    return x * 2",
+        "steps": [
+          "Call the function and use the result: y = double(4). y is None.",
+          "A function without a return statement returns None. print only shows text on screen.",
+          "Replace print with return so the caller receives the value.",
+          "Also watch for list methods like .sort() and .append(): they change the list in place and return None."
+        ]
+      }
+    },
+    {
+      "id": "py_scope", "name": "Variable scope", "domain": "python", "prereqs": ["py_returns"],
+      "description": "Local vs global, nonlocal in closures, loop variables, shared defaults.",
+      "worked_example": {
+        "title": "Assigning inside a function makes a new local",
+        "before": "score = 0\n\ndef add_point():\n    score = score + 1",
+        "after": "score = 0\n\ndef add_point():\n    global score\n    score = score + 1",
+        "steps": [
+          "Python decides scope when it compiles the function. Any assignment to a name makes it local.",
+          "So 'score' inside add_point is local, and reading it before it is assigned raises UnboundLocalError.",
+          "Declare 'global score' for a module variable, or 'nonlocal' for an enclosing function's variable.",
+          "Better still, pass the value in and return the new value, so no shared state is needed."
+        ]
+      }
+    },
+    {
+      "id": "py_types", "name": "Type errors", "domain": "python", "prereqs": [],
+      "description": "str vs int, None where a value is expected, converting input.",
+      "worked_example": {
+        "title": "Adding text to a number",
+        "before": "def label(item, qty):\n    return item + ': ' + qty",
+        "after": "def label(item, qty):\n    return item + ': ' + str(qty)",
+        "steps": [
+          "Read the error: TypeError: can only concatenate str (not \"int\") to str.",
+          "Find the expression that mixes types: 'item + ...' is a str and qty is an int.",
+          "Convert explicitly with str(qty), or use an f-string: f'{item}: {qty}'.",
+          "For the opposite direction, text to number, use int() or float()."
+        ]
+      }
+    },
+    {
+      "id": "ck_ohms", "name": "Ohm's law", "domain": "circuits", "prereqs": [],
+      "description": "V = I x R, unit conversions (mA, k ohm).",
+      "worked_example": {
+        "title": "Find a current from a voltage and a resistance",
+        "before": "A 6 V battery is connected across a 300 ohm resistor. What current flows?",
+        "after": "I = V / R = 6 V / 300 ohm = 0.02 A = 20 mA",
+        "steps": [
+          "Write Ohm's law in the form you need: I = V / R.",
+          "Put every value in base units first: 6 V and 300 ohm.",
+          "Divide: 0.02 A.",
+          "Convert to the unit asked for: 0.02 A x 1000 = 20 mA."
+        ]
+      }
+    },
+    {
+      "id": "ck_series", "name": "Series circuits", "domain": "circuits", "prereqs": ["ck_ohms"],
+      "description": "Resistances add, current is shared, voltage divides.",
+      "worked_example": {
+        "title": "A voltage divider",
+        "before": "12 V across R1 = 1 k ohm in series with R2 = 3 k ohm. What is the voltage across R2?",
+        "after": "I = 12 / 4000 = 3 mA, so V_R2 = 3 mA x 3 k ohm = 9 V",
+        "steps": [
+          "In series the total resistance is the sum: 1 k + 3 k = 4 k ohm.",
+          "The same current flows through every part: I = 12 V / 4 k ohm = 3 mA.",
+          "The voltage across each resistor is I x R: V_R2 = 3 mA x 3 k ohm = 9 V.",
+          "Check: the voltages add back to the source, 3 V + 9 V = 12 V."
+        ]
+      }
+    },
+    {
+      "id": "ck_parallel", "name": "Parallel circuits", "domain": "circuits", "prereqs": ["ck_series"],
+      "description": "Every branch sees the same voltage, branch currents add.",
+      "worked_example": {
+        "title": "Branch currents add",
+        "before": "9 V across two parallel branches, 1 k ohm and 3 k ohm. Total current?",
+        "after": "9 mA + 3 mA = 12 mA",
+        "steps": [
+          "Every parallel branch has the full 9 V across it.",
+          "Find each branch current: 9 V / 1 k ohm = 9 mA and 9 V / 3 k ohm = 3 mA.",
+          "The source supplies the sum of the branch currents: 12 mA.",
+          "Check: the equivalent resistance is 9 V / 12 mA = 750 ohm, which is less than the smallest branch, as it must be."
+        ]
+      }
+    },
+    {
+      "id": "ck_open", "name": "Open faults", "domain": "circuits", "prereqs": ["ck_series"],
+      "description": "A break in the path: no current, full voltage across the gap.",
+      "worked_example": {
+        "title": "Finding a break in a series loop",
+        "before": "A series loop of 9 V, R1 and R2 has no current. Which part is open?",
+        "after": "Measure across each part: the open part reads the full 9 V, the others read 0 V.",
+        "steps": [
+          "No current anywhere in a series loop means there is a break somewhere in it.",
+          "With no current, a healthy resistor has no voltage drop (V = I x R = 0).",
+          "The break takes the whole source voltage, so the part reading about 9 V is the open one.",
+          "In a parallel circuit, an open branch carries 0 mA while the other branches keep working."
+        ]
+      }
+    },
+    {
+      "id": "ck_short", "name": "Short faults", "domain": "circuits", "prereqs": ["ck_series"],
+      "description": "A bypassed part: 0 V across it, higher current elsewhere.",
+      "worked_example": {
+        "title": "Spotting a shorted resistor",
+        "before": "Three equal 1 k ohm resistors in series on 12 V. Expected 4 V each; measured 6 V, 0 V, 6 V.",
+        "after": "The middle resistor is shorted: it reads 0 V and the current rose from 4 mA to 6 mA.",
+        "steps": [
+          "Work out the healthy values first: 12 V / 3 k ohm = 4 mA, so 4 V across each resistor.",
+          "A short has nearly zero resistance, so the voltage across it is close to 0 V.",
+          "The total resistance drops, so the current rises and the remaining parts get more voltage.",
+          "In parallel, a shorted branch pulls the whole node to 0 V, so use branch currents to tell which branch it is."
+        ]
+      }
+    },
+    {
+      "id": "ck_value", "name": "Wrong-value faults", "domain": "circuits", "prereqs": ["ck_ohms"],
+      "description": "The circuit works but is out of spec: compute the real resistance.",
+      "worked_example": {
+        "title": "Working out a resistor's real value",
+        "before": "R2 is labelled 1 k ohm. You measure 7.5 V across it with 2.5 mA flowing.",
+        "after": "R2 = 7.5 V / 2.5 mA = 3 k ohm, so it is the wrong part.",
+        "steps": [
+          "Measure the voltage across the suspect part and the current through it.",
+          "Apply R = V / I in base units: 7.5 / 0.0025 = 3000 ohm.",
+          "Compare with the label. A large difference means the wrong part was fitted.",
+          "Check the others too. Only one part should disagree with its label."
+        ]
+      }
+    }
+  ]
+}

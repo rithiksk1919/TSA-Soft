@@ -1,0 +1,59 @@
+{
+  "id": "py-obo-01",
+  "domain": "python",
+  "title": "Sum 1 to n",
+  "skills": [
+    "py_off_by_one"
+  ],
+  "difficulty": 0.25,
+  "surface_form": "range-bounds",
+  "scaffold": 2,
+  "estimated_minutes": 3,
+  "prompt": "sum_to(n) should return 1 + 2 + ... + n. sum_to(3) returns 3 instead of 6.",
+  "starter": "def sum_to(n):\n    # sum_to(3) -> 1 + 2 + 3 = 6\n    # Tip: list(range(1, 3)) is [1, 2].\n    total = 0\n    for i in range(1, n):\n        total += i\n    return total\n",
+  "hints": [
+    "Print each i inside the loop for n = 3.",
+    "range(1, n) stops before n.",
+    "Use range(1, n + 1)."
+  ],
+  "explanation": "range(1, n) excludes n, so the last number was never added. The stop value must be n + 1.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "sum_to",
+    "sample": "print(sum_to(3))",
+    "tests": [
+      {
+        "name": "sum_to(3)",
+        "expected": 6,
+        "args": [
+          3
+        ],
+        "visible": true
+      },
+      {
+        "name": "sum_to(1)",
+        "expected": 1,
+        "args": [
+          1
+        ],
+        "visible": true
+      },
+      {
+        "name": "sum_to(0)",
+        "expected": 0,
+        "args": [
+          0
+        ],
+        "visible": true
+      },
+      {
+        "name": "sum_to(10)",
+        "expected": 55,
+        "args": [
+          10
+        ]
+      }
+    ]
+  },
+  "solution": "def sum_to(n):\n    total = 0\n    for i in range(1, n + 1):\n        total += i\n    return total\n"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "tx-val-fitted",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The wrong resistor fitted",
+  "skills": [
+    "ck_value"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-val-fitted",
+  "scaffold": 0,
+  "prompt": "The design is 220 ohm on 11 V, which should give 50 mA. The meter reads 23 mA.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Less current means more resistance: 11 / 0.023 is about 478 ohm, so a 470 ohm part was likely fitted.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Expected I = 11 / 220 = 0.05 A",
+      "Measured 0.023 A: lower, but not zero",
+      "Not zero, so the circuit is complete (not open)",
+      "Lower current means less resistance than designed"
+    ],
+    "answer": 3
+  }
+}

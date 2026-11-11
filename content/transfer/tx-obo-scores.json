@@ -1,0 +1,27 @@
+{
+  "id": "tx-obo-scores",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "The first k scores",
+  "skills": [
+    "py_off_by_one"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-obo-scores",
+  "scaffold": 0,
+  "prompt": "Add up the first k scores in the list.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "range(k + 1) visits k + 1 positions, one score too many. range(k) gives exactly the first k.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def first_k_total(scores, k):",
+      "    total = 0",
+      "    for i in range(k + 1):",
+      "        total += scores[i]",
+      "    return total"
+    ],
+    "answer": 2
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "tx-loop-bus",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "The first late bus",
+  "skills": [
+    "py_loops"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-loop-bus",
+  "scaffold": 0,
+  "prompt": "Return the position of the first bus whose delay is over 5 minutes, or -1 if every bus is on time.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "When every bus is on time, delays[i] is read after i has passed the end, which raises IndexError. Check i < len(delays) first.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def first_late(delays):",
+      "    i = 0",
+      "    while delays[i] <= 5 and i < len(delays):",
+      "        i += 1",
+      "    if i == len(delays):",
+      "        return -1",
+      "    return i"
+    ],
+    "answer": 2
+  }
+}

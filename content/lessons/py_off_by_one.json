@@ -1,0 +1,155 @@
+{
+  "skill": "py_off_by_one",
+  "chapter": 3,
+  "title": "Count the fence posts",
+  "chalkboard": {
+    "title": "Add the first two scores",
+    "local_label": "total_first(scores, k)",
+    "code": [
+      "def total_first(scores, k):",
+      "    total = 0",
+      "    for i in range(1, k):",
+      "        total += scores[i]",
+      "    return total",
+      "",
+      "answer = total_first([4, 7, 9], 2)"
+    ],
+    "steps": [
+      {
+        "line": 6,
+        "say": "We want the first two scores added: 4 + 7 = 11.",
+        "memory": {
+          "global": {},
+          "local": {}
+        }
+      },
+      {
+        "line": 0,
+        "say": "Inside the call, scores is [4, 7, 9] and k is 2.",
+        "memory": {
+          "global": {},
+          "local": {
+            "scores": "[4, 7, 9]",
+            "k": "2"
+          }
+        }
+      },
+      {
+        "line": 1,
+        "say": "total starts at 0.",
+        "memory": {
+          "global": {},
+          "local": {
+            "scores": "[4, 7, 9]",
+            "k": "2",
+            "total": "0"
+          }
+        }
+      },
+      {
+        "line": 2,
+        "say": "range(1, 2) holds just one number: 1. Index 0, the first score, is skipped.",
+        "memory": {
+          "global": {},
+          "local": {
+            "scores": "[4, 7, 9]",
+            "k": "2",
+            "total": "0"
+          }
+        },
+        "error": true,
+        "error_label": "Bug: the range starts at 1, but the first item is at index 0. Use range(k)."
+      },
+      {
+        "line": 3,
+        "say": "With i = 1, total becomes 7.",
+        "memory": {
+          "global": {},
+          "local": {
+            "scores": "[4, 7, 9]",
+            "k": "2",
+            "total": "7",
+            "i": "1"
+          }
+        }
+      },
+      {
+        "line": 6,
+        "say": "answer is 7, not 11. With range(k) the loop visits 0 and 1 and the total is 11.",
+        "memory": {
+          "global": {
+            "answer": "7"
+          },
+          "local": {}
+        }
+      }
+    ]
+  },
+  "textbook": {
+    "pages": [
+      {
+        "kicker": "Chapter 3 · Off-by-one errors",
+        "title": "Count the fence posts",
+        "paragraphs": [
+          "range(a, b) starts at a and stops just before b, so it holds b - a numbers. range(1, 5) is 1, 2, 3, 4.",
+          "An off-by-one error is a loop that runs one time too many or too few. Write out the first and the last value before you trust a range."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "range(0, 4)",
+            "lines": [
+              "gives 0, 1, 2, 3"
+            ]
+          },
+          "inner": {
+            "label": "for i in range(len(items)):",
+            "lines": [
+              "visits every index exactly once"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Off-by-one error",
+          "definition": "a loop or index that is one step too many or too few."
+        }
+      },
+      {
+        "kicker": "Chapter 3 · Off-by-one errors",
+        "title": "First and last index",
+        "paragraphs": [
+          "Python counts positions from 0. A list with 3 items has indexes 0, 1 and 2.",
+          "The last item is at len(items) - 1. items[len(items)] is one past the end and raises IndexError."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "items = ['a', 'b', 'c']",
+            "lines": [
+              "len(items) is 3"
+            ]
+          },
+          "inner": {
+            "label": "valid indexes",
+            "lines": [
+              "0, 1, 2",
+              "items[3] is out of range"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Index",
+          "definition": "the position of an item in a list, counted from 0."
+        }
+      }
+    ]
+  },
+  "listen": {
+    "transcript": [
+      "Off-by-one errors are the most common bug in loops.",
+      "range starts at its first number and stops just before its second.",
+      "So range of one to five gives you one, two, three and four, but not five.",
+      "Lists count from zero, so the last item sits at length minus one.",
+      "Before you trust a loop, say its first and last value out loud.",
+      "If either one is off by a single step, you have found the bug."
+    ]
+  }
+}

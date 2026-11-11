@@ -1,0 +1,26 @@
+{
+  "id": "tx-par-lamps",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "Two lamps side by side",
+  "skills": [
+    "ck_parallel"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-par-lamps",
+  "scaffold": 0,
+  "prompt": "Two 12 ohm lamps are in parallel across 6 V. Find the total current.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Branch currents add in parallel: 0.5 + 0.5 = 1 A.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Parallel: each lamp has the full 6 V",
+      "Each lamp: I = 6 / 12 = 0.5 A",
+      "Total current = 0.5 A, because current is the same everywhere",
+      "So the supply gives 0.5 A"
+    ],
+    "answer": 2
+  }
+}

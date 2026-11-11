@@ -188,6 +188,41 @@
       return s + "</svg>";
     }
   };
+  // Figures for the Python and circuits desk problems (added alongside the original three).
+  function wireBox(x, y, w, h, label, part) {
+    return '<g data-parts="' + part + '"><rect class="fig-box" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="3"/>' +
+      txt(x + w / 2, y + h / 2 + 4, label, { mid: true }) + "</g>";
+  }
+  function battery(x, y) {
+    return '<g data-parts="vs"><path class="fig-ln" d="M' + (x - 14) + " " + (y - 8) + "H" + (x + 14) + "M" + (x - 8) + " " + (y + 6) + "H" + (x + 8) + '"/>' +
+      txt(x - 22, y + 4, "12 V", { end: true }) + "</g>";
+  }
+  FIGS.series = function () {
+    return '<svg viewBox="0 0 320 190" role="img" aria-label="A 12 volt battery, a 100 ohm resistor and a 200 ohm resistor in one series loop, with the current I.">' +
+      '<g data-parts="loop"><path class="fig-ln" d="M60 40H290V150H60V108M60 82V40"/></g>' + battery(60, 95) +
+      wireBox(120, 28, 70, 24, "100 Ω", "rtotal") + wireBox(150, 138, 70, 24, "200 Ω", "rtotal") +
+      '<g data-parts="I">' + arrow(215, 40, 262, 40) + txt(238, 30, "I", { mid: true }) + "</g></svg>";
+  };
+  FIGS.branches = function () {
+    return '<svg viewBox="0 0 320 190" role="img" aria-label="A 12 volt supply with two 60 ohm resistors on separate parallel branches, and the supply current I.">' +
+      '<g data-parts="branches"><path class="fig-ln" d="M60 50H290M60 140H290M290 50V140M60 50V82M60 108V140"/></g>' + battery(60, 95) +
+      wireBox(150, 38, 70, 24, "60 Ω", "branches rtotal") + wireBox(150, 128, 70, 24, "60 Ω", "branches rtotal") +
+      '<g data-parts="I">' + arrow(80, 50, 126, 50) + txt(103, 40, "I", { mid: true }) + "</g></svg>";
+  };
+  FIGS.trace = function () {
+    var rows = [["rng", "range(1, 5)", [1, 2, 3, 4, 5], 50], ["tot", "total after", [1, 3, 6, 10, 15], 110]];
+    var s = '<svg viewBox="0 0 340 156" role="img" aria-label="The classmate’s trace: loop values 1 2 3 4 5 and running totals 1 3 6 10 15.">';
+    rows.forEach(function (r) {
+      s += '<g data-parts="' + r[0] + '">' + txt(0, r[3] + 4, r[1]) + "</g>";
+      r[2].forEach(function (c, i) {
+        var x = 86 + i * 50;
+        var bad = i === 4 ? ' class="is-bad" data-fix-class="is-void"' : "";
+        s += '<g data-parts="c' + (i + 1) + " " + r[0] + '"' + bad + '><rect class="fig-cell" x="' + x + '" y="' + (r[3] - 15) + '" width="44" height="30" rx="3"/>' +
+          txt(x + 22, r[3] + 4, String(c), { mid: true }) + "</g>";
+      });
+    });
+    return s + "</svg>";
+  };
   function fixFigure() {
     var fig = $(".dk-fig", paper);
     if (!fig) return;

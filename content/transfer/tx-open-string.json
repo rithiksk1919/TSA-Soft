@@ -1,0 +1,26 @@
+{
+  "id": "tx-open-string",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The dark string of lights",
+  "skills": [
+    "ck_open"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-open-string",
+  "scaffold": 0,
+  "prompt": "Three bulbs in series on 9 V stay dark. A meter reads 9 V across bulb 2 and 0 V across bulbs 1 and 3.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "The open part is the one with the full supply across it: bulb 2. Bulbs 1 and 3 read 0 V because no current flows.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "No light, so no current flows",
+      "With no current, working bulbs drop 0 V",
+      "The full 9 V appears across the break",
+      "So bulb 1 is the open one, because it reads 0 V"
+    ],
+    "answer": 3
+  }
+}

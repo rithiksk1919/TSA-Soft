@@ -1,0 +1,26 @@
+{
+  "id": "tx-cond-museum",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Free museum entry",
+  "skills": [
+    "py_conditionals"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-cond-museum",
+  "scaffold": 0,
+  "prompt": "Children under 12 and adults aged 65 or older get in free. Everyone else pays.",
+  "kicker": "Same idea, new story",
+  "hints": [],
+  "explanation": "A 65-year-old should get in free, but age > 65 is False for 65. The boundary needs >= 65.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def is_free(age):",
+      "    if age < 12 or age > 65:",
+      "        return True",
+      "    return False"
+    ],
+    "answer": 1
+  }
+}

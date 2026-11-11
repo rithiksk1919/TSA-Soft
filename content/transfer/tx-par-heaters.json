@@ -1,0 +1,26 @@
+{
+  "id": "tx-par-heaters",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "Two heaters",
+  "skills": [
+    "ck_parallel"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-par-heaters",
+  "scaffold": 0,
+  "prompt": "A 20 ohm and a 30 ohm heater are in parallel. Find the total resistance.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "0.083 is 1/R, not R. Flip it: R = 1 / 0.083 = 12 ohm.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Parallel rule: 1/R = 1/20 + 1/30",
+      "1/R = 0.05 + 0.033 = 0.083",
+      "R = 0.083 ohm",
+      "Total resistance is 0.083 ohm"
+    ],
+    "answer": 2
+  }
+}

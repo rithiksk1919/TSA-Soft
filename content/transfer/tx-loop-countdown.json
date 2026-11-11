@@ -1,0 +1,27 @@
+{
+  "id": "tx-loop-countdown",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Launch countdown",
+  "skills": [
+    "py_loops"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-loop-countdown",
+  "scaffold": 0,
+  "prompt": "Print n, n - 1, ... down to 1, then print 'Lift off'.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "n goes up instead of down, so n > 0 stays True forever. The update must move toward the exit: n = n - 1.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def countdown(n):",
+      "    while n > 0:",
+      "        print(n)",
+      "        n = n + 1",
+      "    print(\"Lift off\")"
+    ],
+    "answer": 3
+  }
+}

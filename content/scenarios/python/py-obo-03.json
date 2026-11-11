@@ -1,0 +1,117 @@
+{
+  "id": "py-obo-03",
+  "domain": "python",
+  "title": "Sliding window sums",
+  "skills": [
+    "py_off_by_one",
+    "py_loops"
+  ],
+  "difficulty": 0.8,
+  "surface_form": "window-bounds",
+  "scaffold": 0,
+  "estimated_minutes": 8,
+  "prompt": "window_sums(nums, w) returns the sum of every run of w consecutive numbers. window_sums([1, 2, 3, 4], 2) should be [3, 5, 7], but the last window is missing.",
+  "starter": "def window_sums(nums, w):\n    # window_sums([1, 2, 3, 4], 2) -> [3, 5, 7]\n    sums = []\n    for start in range(len(nums) - w):\n        sums.append(sum(nums[start:start + w]))\n    return sums\n",
+  "hints": [
+    "How many windows of size w fit in a list of length n? Count them for n=4, w=2.",
+    "The last window starts at index n - w, and range() excludes its stop value.",
+    "Use range(len(nums) - w + 1)."
+  ],
+  "explanation": "The loop used range(len(nums) - w), which stops one start position early. The last window starts at len(nums) - w, so the stop must be len(nums) - w + 1.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "window_sums",
+    "sample": "print(window_sums([1, 2, 3, 4], 2))",
+    "tests": [
+      {
+        "name": "windows of 2",
+        "expected": [
+          3,
+          5,
+          7
+        ],
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          2
+        ],
+        "skills": [
+          "py_off_by_one"
+        ]
+      },
+      {
+        "name": "one window covering everything",
+        "expected": [
+          6
+        ],
+        "args": [
+          [
+            1,
+            2,
+            3
+          ],
+          3
+        ],
+        "skills": [
+          "py_off_by_one"
+        ]
+      },
+      {
+        "name": "window of 1",
+        "expected": [
+          5
+        ],
+        "args": [
+          [
+            5
+          ],
+          1
+        ],
+        "skills": [
+          "py_off_by_one"
+        ]
+      },
+      {
+        "name": "window larger than the list",
+        "expected": [],
+        "args": [
+          [
+            1,
+            2
+          ],
+          3
+        ],
+        "skills": [
+          "py_loops"
+        ]
+      },
+      {
+        "name": "five ones, windows of 2",
+        "expected": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "args": [
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          2
+        ],
+        "skills": [
+          "py_off_by_one"
+        ]
+      }
+    ]
+  },
+  "solution": "def window_sums(nums, w):\n    sums = []\n    for start in range(len(nums) - w + 1):\n        sums.append(sum(nums[start:start + w]))\n    return sums\n"
+}

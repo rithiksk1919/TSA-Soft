@@ -1,0 +1,162 @@
+{
+  "skill": "py_loops",
+  "chapter": 2,
+  "title": "A loop needs a way out",
+  "chalkboard": {
+    "title": "Why does this loop never stop?",
+    "local_label": "halve_until_one(n)",
+    "code": [
+      "def halve_until_one(n):",
+      "    steps = 0",
+      "    while n > 1:",
+      "        steps += 1",
+      "    return steps",
+      "",
+      "result = halve_until_one(8)"
+    ],
+    "steps": [
+      {
+        "line": 6,
+        "say": "We call halve_until_one(8). It should count how many halvings take 8 down to 1: three.",
+        "memory": {
+          "global": {},
+          "local": {}
+        }
+      },
+      {
+        "line": 0,
+        "say": "Inside the call, n is 8.",
+        "memory": {
+          "global": {},
+          "local": {
+            "n": "8"
+          }
+        }
+      },
+      {
+        "line": 1,
+        "say": "steps starts at 0.",
+        "memory": {
+          "global": {},
+          "local": {
+            "n": "8",
+            "steps": "0"
+          }
+        }
+      },
+      {
+        "line": 2,
+        "say": "Is 8 > 1? Yes, so we enter the loop.",
+        "memory": {
+          "global": {},
+          "local": {
+            "n": "8",
+            "steps": "0"
+          }
+        }
+      },
+      {
+        "line": 3,
+        "say": "steps goes up to 1.",
+        "memory": {
+          "global": {},
+          "local": {
+            "n": "8",
+            "steps": "1"
+          }
+        }
+      },
+      {
+        "line": 2,
+        "say": "Back to the test: is 8 > 1? Still yes. Nothing in the body changed n.",
+        "memory": {
+          "global": {},
+          "local": {
+            "n": "8",
+            "steps": "1"
+          }
+        },
+        "error": true,
+        "error_label": "Bug: the loop never changes n, so the test is always True and the loop never ends."
+      },
+      {
+        "line": 3,
+        "say": "Fix: add n = n // 2 in the body. Then n goes 8, 4, 2, 1 and the loop stops after 3 passes.",
+        "memory": {
+          "global": {},
+          "local": {
+            "n": "1",
+            "steps": "3"
+          }
+        }
+      }
+    ]
+  },
+  "textbook": {
+    "pages": [
+      {
+        "kicker": "Chapter 2 · Loop conditions",
+        "title": "A loop needs a way out",
+        "paragraphs": [
+          "A while loop checks its condition before every pass and stops as soon as the condition is False.",
+          "Something inside the body has to move the loop toward that exit. If nothing the condition depends on ever changes, the loop runs forever."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "while n > 1:",
+            "lines": [
+              "checked before every pass"
+            ]
+          },
+          "inner": {
+            "label": "body",
+            "lines": [
+              "steps += 1",
+              "n = n // 2   (moves toward the exit)"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Loop condition",
+          "definition": "the test checked before every pass; the loop stops when it is False."
+        }
+      },
+      {
+        "kicker": "Chapter 2 · Loop conditions",
+        "title": "Check the bounds first",
+        "paragraphs": [
+          "When a loop reads items by index, the index has to stay inside the list. Reading nums[i] after i has passed the end raises IndexError.",
+          "Python reads 'and' from left to right and stops at the first False. Put i < len(nums) first, so nums[i] is only read when i is valid."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "while i < len(nums) and nums[i] >= 0:",
+            "lines": [
+              "left side is checked first"
+            ]
+          },
+          "inner": {
+            "label": "body",
+            "lines": [
+              "i += 1"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Short-circuit",
+          "definition": "'and' stops at the first False, so the right side is never evaluated."
+        }
+      }
+    ]
+  },
+  "listen": {
+    "transcript": [
+      "A while loop asks its question before every single pass.",
+      "The moment the answer is False, the loop stops.",
+      "So something inside the loop has to change what the question depends on.",
+      "If nothing changes, the answer stays True and the loop never ends.",
+      "When the loop walks through a list, check the index is in range before you read the item.",
+      "With and, Python stops at the first False, so put the bounds check first."
+    ]
+  }
+}

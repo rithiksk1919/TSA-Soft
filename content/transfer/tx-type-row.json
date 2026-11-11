@@ -1,0 +1,25 @@
+{
+  "id": "tx-type-row",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Row labels",
+  "skills": [
+    "py_types"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-type-row",
+  "scaffold": 0,
+  "prompt": "row_label(7) should give the text 'Row 7'.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "Adding text and a number raises TypeError. Convert first: \"Row \" + str(row).",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def row_label(row):",
+      "    return \"Row \" + row",
+      "print(row_label(7))"
+    ],
+    "answer": 1
+  }
+}

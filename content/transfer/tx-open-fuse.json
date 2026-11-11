@@ -1,0 +1,26 @@
+{
+  "id": "tx-open-fuse",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The blown fuse",
+  "skills": [
+    "ck_open"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-open-fuse",
+  "scaffold": 0,
+  "prompt": "A 12 V lamp circuit with a fuse stops working. The meter reads 12 V across the fuse and 0 V across the lamp.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "The part with the full supply across it is the open one: the fuse has blown. The lamp reads 0 V only because no current flows.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "The lamp reads 0 V, so no current flows through it",
+      "The fuse reads the full 12 V",
+      "A good fuse would drop almost 0 V",
+      "So the lamp is the open part"
+    ],
+    "answer": 3
+  }
+}
