@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkillBridge Library</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#F4F2EE">
+<link rel="preload" href="assets/fonts/source-serif-4-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="library.css">
+<link rel="stylesheet" href="cabinet.css">
+<link rel="stylesheet" href="drawers.css">
+<link rel="stylesheet" href="room.css">
+<link rel="stylesheet" href="desk.css">
+</head>
+<body>
+<div class="library" id="library">
+  <header class="top" id="top">
+    <a class="brand" href="./" aria-label="SkillBridge library">
+      <svg class="brand__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M2.5 17.5h19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M4.5 17.5c0-6 3.4-10 7.5-10s7.5 4 7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8.5 17.5v-5.2M12 17.5V7.5M15.5 17.5v-5.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="brand__name" translate="no">SkillBridge</span>
+    </a>
+    <button class="room-link" id="to-room" type="button" hidden><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Library</button>
+    <p class="learner" id="learner"><span class="learner__initials" aria-hidden="true">PN</span><span><span class="learner__name">Priya Nair</span> · Saved on this device</span></p>
+  </header>
+
+  <main class="main">
+    <!-- Headings crossfade with the camera progress p -->
+    <div class="headings">
+      <div class="intro heading heading--a" id="intro">
+        <h1 class="intro__title" id="h-a" tabindex="-1">Learn your mistakes</h1>
+        <p class="intro__lede">Open a book to see what trips you up and why.</p>
+      </div>
+      <div class="intro heading heading--b" id="intro-b">
+        <h1 class="intro__title" id="h-b" tabindex="-1">Practice your mistakes</h1>
+        <p class="intro__lede">Each drawer holds a different kind of practice.</p>
+      </div>
+    </div>
+    <div class="seg" role="group" aria-label="Choose a scene">
+      <button class="seg__btn" id="seg-learn" type="button" aria-pressed="true">Learn</button>
+      <button class="seg__btn" id="seg-practice" type="button" aria-pressed="false">Practice</button>
+    </div>
+  </main>
+
+  <!-- One stage, two scenes on a horizontal track -->
+  <div class="world" id="world">
+    <div class="cam-stage" id="cam-stage">
+      <div class="layer layer--wall" aria-hidden="true"></div>
+      <div class="layer layer--floor" aria-hidden="true"><span class="floor-shadow" id="cab-shadow"></span></div>
+      <div class="track" id="track">
+
+        <section class="panel panel--a" id="scene-a" aria-labelledby="h-a">
+          <div class="panel-a__row">
+            <div class="shelf-wrap" id="shelf-wrap">
+              <div class="scene" id="scene">
+                <div class="rig" id="rig">
+                  <div class="shelf">
+                    <div class="shelf__back" aria-hidden="true"></div>
+                    <div class="shelf__board-top" aria-hidden="true"></div>
+                    <div class="shelf__board-front" aria-hidden="true"></div>
+                    <ul class="shelf__row" id="shelf-row" aria-label="Subjects"></ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="nav-arrow" id="to-cabinet" type="button" aria-label="Practice them: go to Practice your mistakes">
+              <span class="nav-arrow__circle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="nav-arrow__label">Practice them</span>
+            </button>
+          </div>
+          <p class="shelf-error" id="shelf-error" hidden></p>
+        </section>
+
+        <section class="panel panel--b" id="scene-b" aria-labelledby="h-b">
+          <button class="nav-arrow nav-arrow--back" id="to-shelf" type="button" aria-label="Learn your mistakes: go back to the bookshelf">
+            <span class="nav-arrow__circle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M16 10H5M9 5.5 4.5 10 9 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="nav-arrow__label">Learn</span>
+          </button>
+
+          <div class="drawer-bar" id="drawer-bar" hidden>
+            <p class="drawer-bar__title"><span>Flashcards</span> <span class="drawer-bar__count" id="drawer-count"></span></p>
+            <div class="drawer-bar__subjects" id="subject-buttons"></div>
+            <div class="drawer-bar__trays" id="drawer-trays"></div>
+            <button class="drawer-bar__all" id="review-all" type="button">Review All</button>
+            <button class="drawer-bar__close" id="close-drawer" type="button">Close Drawer</button>
+          </div>
+          <p class="drawer-hint" id="drawer-hint" hidden></p>
+
+          <div class="cab-scene" id="cab-scene">
+            <div class="cab-rig" id="cab-rig">
+              <span class="cab__face cab__front" id="cab-front"></span>
+              <span class="cab__face cab__cornice"></span>
+              <span class="cab__face cab__top"></span>
+              <span class="cab__face cab__side cab__side--r"><span class="cab__plate">SkillBridge · Card catalog</span></span>
+              <span class="cab__face cab__side cab__side--l"></span>
+              <span class="cab__scrim" id="cab-scrim"></span>
+              <div class="drawers" id="drawers"></div>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot" id="foot">
+    <p>Type: IBM Plex Sans and IBM Plex Mono (IBM) and Source Serif 4 (Adobe), each under the SIL Open Font License 1.1.</p>
+  </footer>
+</div>
+
+<!-- The open book. Its two pages are the subject dashboard. -->
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Open book">
+  <div class="reader__bg" aria-hidden="true"></div>
+  <div class="reader__inner">
+    <div class="reader__bar">
+      <button class="back" id="back" type="button">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back to the bookshelf
+      </button>
+    </div>
+    <div class="stage" id="stage">
+      <div class="cam" id="cam">
+        <div class="tilt" id="tilt">
+          <div class="spread" id="spread">
+            <div class="leaf" id="leaf">
+              <section class="page page--left" aria-labelledby="where-title">
+                <div class="page__inner" id="page-left"></div>
+                <div class="shade shade--left" id="shade-left" aria-hidden="true"></div>
+              </section>
+              <div class="cover cover--leaf" id="leaf-cover" aria-hidden="true"></div>
+            </div>
+            <section class="page page--right" aria-labelledby="next-title">
+              <span class="ribbon" aria-hidden="true"></span>
+              <div class="page__inner" id="page-right"></div>
+              <div class="shade shade--right" id="shade-right" aria-hidden="true"></div>
+            </section>
+            <div class="edges" id="edges" aria-hidden="true">
+              <i class="edge edge--r-top"></i>
+              <i class="edge edge--r-bottom"></i>
+              <i class="edge edge--r-fore"></i>
+              <i class="edge edge--r-spine"></i>
+            </div>
+            <div class="edges edges--left" id="edges-left" aria-hidden="true">
+              <i class="edge edge--l-bottom"></i>
+              <i class="edge edge--l-fore"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- The library: a CSS 3D room, the home screen. Stations fly the camera in to their scenes. -->
+<section class="room" id="room" aria-labelledby="room-title" hidden>
+  <div class="env" id="env" aria-hidden="true">
+    <div class="cam3" id="cam3"><div class="world3" id="world3"></div></div>
+  </div>
+  <header class="room__head">
+    <p class="room__brand"><a class="room__dash" href="dashboard.html"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to Dashboard</a><span translate="no">SkillBridge</span></p>
+    <h1 class="room__title" id="room-title" tabindex="-1">The library</h1>
+    <p class="room__lede">Learn from your mistakes, apply what you learn, then practise until it sticks.</p>
+  </header>
+  <nav class="rnav" aria-label="Stations">
+    <button class="rnav__btn" type="button" data-station="learn"><span class="rnav__verb">Learn</span><span class="rnav__name">The bookshelf</span></button>
+    <button class="rnav__btn" type="button" data-station="apply"><span class="rnav__verb">Apply</span><span class="rnav__name">The reading desk</span></button>
+    <button class="rnav__btn" type="button" data-station="practice"><span class="rnav__verb">Practice</span><span class="rnav__name">The card catalog</span></button>
+  </nav>
+  <nav class="rbooks" aria-label="Books on the shelf">
+    <button class="rbooks__btn" type="button" data-book="physics" style="--c:#2D4A6E">Open the Physics book</button>
+    <button class="rbooks__btn" type="button" data-book="chemistry" style="--c:#7B3F36">Open the Chemistry book</button>
+    <button class="rbooks__btn" type="button" data-book="biology" style="--c:#2F5B47">Open the Biology book</button>
+  </nav>
+</section>
+
+<!-- The reading desk (Apply): a 3D tabletop where a classmate's solution is checked step by step,
+     with a tutor beside it. The tutor is scripted for now (data/desk.json); no AI is connected. -->
+<section class="desk" id="desk" aria-labelledby="desk-title" hidden>
+  <header class="desk__bar">
+    <button class="desk__back" id="desk-close" type="button"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to the Library</button>
+    <div class="desk__heading">
+      <p class="desk__verb">Apply</p>
+      <h1 class="desk__title" id="desk-title" tabindex="-1">The reading desk</h1>
+    </div>
+    <div class="desk__tabs chip-row" id="desk-tabs" role="group" aria-label="Choose a scenario"></div>
+  </header>
+  <ol class="desk__phases" aria-label="Progress">
+    <li class="desk__phase">Read</li>
+    <li class="desk__phase">Check</li>
+    <li class="desk__phase">Fix</li>
+    <li class="desk__phase">Reflect</li>
+  </ol>
+  <div class="desk__body">
+    <div class="dk-stage" id="dk-stage">
+      <div class="dk-cam" id="dk-cam">
+        <div class="dk-top" id="dk-top">
+          <span class="dk-floor" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--bl" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--br" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--fl" aria-hidden="true"></span>
+          <span class="dk-leg dk-leg--fr" aria-hidden="true"></span>
+          <span class="dk-edge" aria-hidden="true"></span>
+          <div class="dk-props" aria-hidden="true">
+            <span class="dk-books">
+              <span class="dk-book" style="--c:#2D4A6E"><i class="dk-book__t"></i><i class="dk-book__f"></i><i class="dk-book__p"></i></span>
+              <span class="dk-book" style="--c:#7B3F36"><i class="dk-book__t"></i><i class="dk-book__f"></i><i class="dk-book__p"></i></span>
+              <span class="dk-book" style="--c:#2F5B47"><i class="dk-book__t"></i><i class="dk-book__f"></i><i class="dk-book__p"></i></span>
+            </span>
+            <span class="dk-pencil"></span>
+            <span class="dk-lamp" id="dk-lamp">
+              <span class="dk-lamp__base"></span>
+              <span class="dk-lamp__swing" id="dk-swing"><i class="dk-lamp__post"></i><i class="dk-lamp__arm"></i><i class="dk-lamp__glow"></i><i class="dk-lamp__shade"></i></span>
+            </span>
+          </div>
+          <article class="dk-paper" id="dk-paper" aria-label="The problem"></article>
+          <div class="dk-steps">
+            <h2 class="dk-steps__h">Classmate’s working</h2>
+            <ol class="dk-cards" id="dk-cards"></ol>
+          </div>
+          <span class="dk-lightbox" aria-hidden="true"><span class="dk-spot" id="dk-spot"></span></span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="tutor" id="tutor" aria-labelledby="tutor-name">
+      <header class="tutor__head">
+        <span class="tutor__avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 21h12M12 21v-7M8.5 9.5 12 14l3.5-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h14L16 3H8L5 9.5Z" fill="currentColor"/></svg></span>
+        <div class="tutor__who">
+          <h2 class="tutor__name" id="tutor-name">Tutor</h2>
+          <p class="tutor__status" id="tutor-status">Getting the desk ready</p>
+        </div>
+        <span class="tutor__badge" title="Replies are scripted for this demo. No AI is connected yet.">Demo · scripted</span>
+      </header>
+      <div class="tutor__log" id="tutor-log" role="region" aria-label="Conversation with the tutor" tabindex="0"></div>
+      <div class="tutor__choices" id="tutor-choices"></div>
+      <form class="tutor__compose" id="tutor-form">
+        <button class="ibtn" id="tutor-hint" type="button">Hint</button>
+        <label class="visually-hidden" for="tutor-input">Ask the tutor</label>
+        <input class="tutor__input" id="tutor-input" name="question" type="text" autocomplete="off" spellcheck="true" placeholder="Ask the tutor…" enterkeyhint="send">
+        <button class="ibtn ibtn--primary" type="submit">Send</button>
+      </form>
+    </aside>
+  </div>
+</section>
+
+<!-- Drawer panel: a tray over the room on desktop, a bottom sheet under 820px -->
+<div class="sheet-scrim" id="sheet-scrim" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <header class="sheet__head">
+    <div class="sheet__heading">
+      <p class="sheet__call"></p>
+      <h2 class="sheet__title" id="sheet-title" tabindex="-1"></h2>
+      <p class="sheet__sub"></p>
+    </div>
+    <button class="sheet__close" type="button">Close Drawer</button>
+  </header>
+  <div class="sheet__body"></div>
+</section>
+
+<!-- Flashcard review: shared by the 3D fan and the sheet -->
+<div class="review" id="review" role="dialog" aria-modal="true" aria-labelledby="review-title" hidden>
+  <div class="review__scrim"></div>
+  <div class="review__body">
+    <p class="review__progress" id="review-title"></p>
+    <div class="review__stage">
+      <div class="rcard-fly">
+        <div class="rcard">
+          <div class="rcard__face rcard__front"></div>
+          <div class="rcard__face rcard__back"></div>
+        </div>
+      </div>
+    </div>
+    <div class="review__actions"></div>
+  </div>
+</div>
+
+<p class="visually-hidden" id="announcer" aria-live="polite"></p>
+
+<script src="logic.js"></script>
+<script src="spring.js"></script>
+<script src="ui.js"></script>
+<script src="state.js"></script>
+<script src="library.js"></script>
+<script src="review.js"></script>
+<script src="panel.js"></script>
+<script src="drawers.js"></script>
+<script src="interiors.js"></script>
+<script src="cabinet.js"></script>
+<script src="desk.js"></script>
+<script src="room.js"></script>
+</body>
+</html>

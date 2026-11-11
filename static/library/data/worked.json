@@ -1,0 +1,85 @@
+{
+  "_note": "One worked example per mistake. Derivations are checked in _derivation; g = 9.8 m/s^2, O = 16.00, H2O = 18.02 g/mol.",
+  "examples": [
+    {
+      "id": "we-phy-normal", "mistake": "phy-normal", "call": "WE.PHY.001",
+      "title": "Normal force on a 30° incline",
+      "problem": "A 2.0 kg block rests on a 30° incline. Find the normal force on it.",
+      "_derivation": "mg = 2.0 x 9.8 = 19.6 N; cos 30 = 0.8660; N = 19.6 x 0.8660 = 16.97 N = 17.0 N. Check: cos 45 = 0.7071; 19.6 x 0.7071 = 13.86 N = 13.9 N.",
+      "steps": [
+        { "text": "Draw the forces: weight mg straight down, normal force N perpendicular to the surface, friction along the slope.", "explain": "Only N and the weight have parts perpendicular to the slope." },
+        { "text": "Tilt the axes: x along the slope, y perpendicular to it.", "explain": "Then N lies entirely along y, and friction entirely along x." },
+        { "text": "Split the weight: mg cos 30° perpendicular to the slope, mg sin 30° along it.", "explain": "The angle between the weight and the y axis equals the incline angle.", "mistake": true, "watch": "Using mg here instead of mg cos θ is the common mistake: the surface only pushes back against the part of the weight that presses into it." },
+        { "text": "Nothing moves perpendicular to the slope, so N − mg cos 30° = 0.", "explain": "The net force along y is zero." },
+        { "text": "N = 2.0 × 9.8 × cos 30° = 19.6 × 0.866 ≈ 17.0 N.", "explain": "Less than the weight (19.6 N), as it must be on a slope." }
+      ],
+      "check": { "question": "The same block on a 45° incline. What is the normal force?", "options": ["19.6 N", "13.9 N", "9.8 N"], "answer": 1, "explain": "N = mg cos 45° = 19.6 × 0.707 ≈ 13.9 N." }
+    },
+    {
+      "id": "we-phy-sign", "mistake": "phy-sign", "call": "WE.PHY.002",
+      "title": "Velocity of a ball thrown upward",
+      "problem": "A ball is thrown straight up at 12 m/s. Taking up as positive, find its velocity after 2.0 s.",
+      "_derivation": "v = 12 + (-9.8)(2.0) = 12 - 19.6 = -7.6 m/s. Top at t = 12/9.8 = 1.22 s. Check: v(1.0) = 12 - 9.8 = 2.2 m/s.",
+      "steps": [
+        { "text": "Choose a direction: up is positive.", "explain": "Every vector quantity now carries a sign." },
+        { "text": "Write the knowns with signs: v₀ = +12 m/s, a = −9.8 m/s², t = 2.0 s.", "explain": "Gravity points down, the negative direction.", "mistake": true, "watch": "Writing a = +9.8 m/s² after choosing up as positive is the common mistake: g points down." },
+        { "text": "Use v = v₀ + at.", "explain": "Constant acceleration, so this applies for the whole flight." },
+        { "text": "v = 12 + (−9.8)(2.0) = 12 − 19.6 = −7.6 m/s.", "explain": "Keep the sign of every term." },
+        { "text": "Read the sign: the ball is moving down at 7.6 m/s. It passed its highest point at t = 12 ÷ 9.8 ≈ 1.2 s.", "explain": "A negative velocity is a direction, not an error." }
+      ],
+      "check": { "question": "The same ball: what is its velocity after 1.0 s?", "options": ["+21.8 m/s", "−2.2 m/s", "+2.2 m/s"], "answer": 2, "explain": "v = 12 + (−9.8)(1.0) = +2.2 m/s: still rising, just slower." }
+    },
+    {
+      "id": "we-chem-molar", "mistake": "chem-molar", "call": "WE.CHE.001",
+      "title": "Grams of O₂ to moles",
+      "problem": "How many moles are in 8.0 g of oxygen gas? (O = 16.00 g/mol)",
+      "_derivation": "M(O2) = 2 x 16.00 = 32.00 g/mol; n = 8.0 / 32.00 = 0.25 mol. Check: 16 / 32.00 = 0.50 mol.",
+      "steps": [
+        { "text": "Identify the substance: oxygen gas is diatomic, O₂.", "explain": "Oxygen, nitrogen, hydrogen and the halogens exist as two-atom molecules." },
+        { "text": "Molar mass of O₂ = 2 × 16.00 = 32.00 g/mol.", "explain": "Add the masses of every atom in the formula.", "mistake": true, "watch": "Using 16.00 g/mol, the mass of one O atom, is the common mistake: it halves the molar mass and doubles the answer." },
+        { "text": "Use n = m ÷ M.", "explain": "Grams to moles: divide by the molar mass." },
+        { "text": "n = 8.0 g ÷ 32.00 g/mol = 0.25 mol.", "explain": "The units cancel to mol, a good check." }
+      ],
+      "check": { "question": "How many moles are in 16 g of O₂?", "options": ["0.50 mol", "1.0 mol", "512 mol"], "answer": 0, "explain": "n = 16 g ÷ 32.00 g/mol = 0.50 mol." }
+    },
+    {
+      "id": "we-chem-ratio", "mistake": "chem-ratio", "call": "WE.CHE.002",
+      "title": "Water from 3.0 mol of oxygen",
+      "problem": "2H₂ + O₂ → 2H₂O. How many grams of water form from 3.0 mol of O₂, with H₂ in excess? (H₂O = 18.02 g/mol)",
+      "_derivation": "Balanced: 4 H and 2 O each side. 3.0 x 2/1 = 6.0 mol H2O; 6.0 x 18.02 = 108.12 g = 108 g. Check: 1.5 x 2 = 3.0 mol.",
+      "steps": [
+        { "text": "Check the equation is balanced: 4 H and 2 O on each side.", "explain": "Ratios only mean something in a balanced equation." },
+        { "text": "Read the mole ratio from the coefficients: 2 mol H₂O for every 1 mol O₂.", "explain": "Coefficients count moles.", "mistake": true, "watch": "Assuming 1 : 1 is the common mistake: always take the ratio from the coefficients." },
+        { "text": "Moles of water: 3.0 mol O₂ × (2 mol H₂O / 1 mol O₂) = 6.0 mol H₂O.", "explain": "The mol O₂ units cancel." },
+        { "text": "Mass of water: 6.0 mol × 18.02 g/mol ≈ 108 g.", "explain": "Moles to grams: multiply by the molar mass." }
+      ],
+      "check": { "question": "From 1.5 mol of O₂, how many moles of H₂O form?", "options": ["1.5 mol", "0.75 mol", "3.0 mol"], "answer": 2, "explain": "1.5 mol × 2/1 = 3.0 mol H₂O." }
+    },
+    {
+      "id": "we-bio-mrna", "mistake": "bio-mrna", "call": "WE.BIO.001",
+      "title": "From a template strand to amino acids",
+      "problem": "A DNA template strand reads 3′-TAC GGA-5′. Which amino acids does it code for?",
+      "_derivation": "Pair template: T-A, A-U, C-G -> AUG; G-C, G-C, A-U -> CCU. mRNA 5'-AUG CCU-3'. AUG = Met, CCU = Pro. Check: 3'-TAC AAA-5' -> 5'-AUG UUU-3'; UUU = Phe (AAA as a codon would be Lys).",
+      "steps": [
+        { "text": "Find what the ribosome reads: mRNA, not DNA.", "explain": "DNA stays in the nucleus; mRNA carries the code out." },
+        { "text": "Transcribe by pairing each template base (A→U, T→A, C→G, G→C): 3′-TAC GGA-5′ gives 5′-AUG CCU-3′.", "explain": "RNA uses U where DNA uses T.", "mistake": true, "watch": "Reading TAC and GGA as codons is the common mistake: it skips transcription." },
+        { "text": "Split the mRNA into codons from the 5′ end: AUG, CCU.", "explain": "Codons are read in threes, 5′ to 3′." },
+        { "text": "Look each codon up: AUG = Met (the start codon), CCU = Pro.", "explain": "The peptide is Met–Pro." }
+      ],
+      "check": { "question": "Template 3′-TAC AAA-5′. What is the second amino acid?", "options": ["Lys", "Met", "Phe"], "answer": 2, "explain": "The mRNA is 5′-AUG UUU-3′ and UUU codes for Phe. Lys would come from reading AAA as a codon." }
+    },
+    {
+      "id": "we-bio-strand", "mistake": "bio-strand", "call": "WE.BIO.002",
+      "title": "From the coding strand to a peptide",
+      "problem": "The coding strand is 5′-ATG GCT TAA-3′. Write the mRNA and the peptide.",
+      "_derivation": "Copy coding strand with T->U: 5'-AUG GCU UAA-3'. AUG = Met, GCU = Ala, UAA = stop. Wrong path (pairing): UAC CGA AUU. Check: 5'-ATG TTT-3' -> 5'-AUG UUU-3'.",
+      "steps": [
+        { "text": "The coding strand has the same sequence as the mRNA, with T where the mRNA has U.", "explain": "The other strand, the template, is the one that gets paired." },
+        { "text": "Copy it, changing T to U: 5′-AUG GCU UAA-3′.", "explain": "Same direction, same order.", "mistake": true, "watch": "Pairing the coding strand (giving UAC CGA AUU) is the common mistake: pair the template, copy the coding strand." },
+        { "text": "Split into codons: AUG, GCU, UAA.", "explain": "Read 5′ to 3′ in threes." },
+        { "text": "AUG = Met, GCU = Ala, UAA = stop. The peptide is Met–Ala.", "explain": "Translation ends at the stop codon." }
+      ],
+      "check": { "question": "Coding strand 5′-ATG TTT-3′. What is the mRNA?", "options": ["5′-AUG UUU-3′", "5′-UAC AAA-3′", "5′-ATG TTT-3′"], "answer": 0, "explain": "Copy the coding strand and change T to U: 5′-AUG UUU-3′." }
+    }
+  ]
+}

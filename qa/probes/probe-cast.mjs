@@ -1,0 +1,22 @@
+// Screencast the close and record the painted colour at points on the drawer face.
+import { chromium } from "@playwright/test";
+import { writeFileSync, mkdirSync } from "node:fs";
+const [W = 1360, H = 860, how = "esc"] = process.argv.slice(2);
+mkdirSync("qa/traces/cast", { recursive: true });
+const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: +W, height: +H } });
+await p.goto("http://127.0.0.1:5180/"); await p.waitForTimeout(1200);
+await p.locator("#to-cabinet").click(); await p.waitForTimeout(1900);
+const face = await p.locator('.dslot[data-i="0"] .drawer').boundingBox();
+await p.locator('.dslot[data-i="0"] .drawer').click(); await p.waitForTimeout(2800);
+const cdp = await p.context().newCDPSession(p);
+const frames = [];
+cdp.on("Page.screencastFrame", async (f) => { frames.push({ t: f.metadata.timestamp, data: f.data }); await cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }); });
+await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
+await p.waitForTimeout(150);
+if (how === "button") await p.locator("#close-drawer").click(); else await p.keyboard.press("Escape");
+await p.waitForTimeout(3200);
+await cdp.send("Page.stopScreencast");
+frames.forEach((f, i) => writeFileSync(`qa/traces/cast/f${String(i).padStart(3, "0")}.png`, Buffer.from(f.data, "base64")));
+writeFileSync("qa/traces/cast/meta.json", JSON.stringify({ face, t0: frames[0]?.t, ts: frames.map((f) => f.t) }));
+console.log("frames", frames.length, "face", face);
+await b.close();

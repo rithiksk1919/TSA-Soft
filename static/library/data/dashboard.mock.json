@@ -1,0 +1,77 @@
+{
+  "_note": "Placeholder data for dashboard.html. Every number on the dashboard comes from this file; swap it for the extension's feed later. Dates are ISO (YYYY-MM-DD). Subject ids match data/subjects.json.",
+
+  "learner": { "name": "Priya Nair", "firstName": "Priya", "initials": "PN" },
+  "today": "2026-11-08",
+  "nextTest": { "subject": "physics", "name": "Physics unit test: forces", "date": "2026-11-13" },
+
+  "subjects": [
+    { "id": "physics",   "name": "Physics",   "color": "#2D4A6E", "code": "PHY" },
+    { "id": "chemistry", "name": "Chemistry", "color": "#7B3F36", "code": "CHM" },
+    { "id": "biology",   "name": "Biology",   "color": "#2F5B47", "code": "BIO" }
+  ],
+
+  "stats": [
+    { "id": "caught",   "label": "Mistakes caught", "period": "this week", "value": 12, "delta": -2, "deltaLabel": "fewer than last week", "goodWhen": "down" },
+    { "id": "mastered", "label": "Concepts mastered", "period": "all time", "value": 18, "delta": 3, "deltaLabel": "new this week", "goodWhen": "up" },
+    { "id": "due",      "label": "Flashcards due", "period": "today", "value": 14, "delta": 5, "deltaLabel": "from yesterday’s misses", "goodWhen": "none" },
+    { "id": "streak",   "label": "Study streak", "period": "days", "value": 6, "delta": 0, "deltaLabel": "Best: 11 days", "goodWhen": "up", "unit": "days" }
+  ],
+
+  "repeatRisk": [
+    {
+      "id": "phy-normal", "subject": "physics", "callNumber": "PHY.NEW.001",
+      "pattern": "Normal force on an incline",
+      "detail": "Uses the full weight mg instead of mg cos θ.",
+      "times": 5, "lastSeen": "2026-11-06", "sources": ["Khan Academy", "Worksheet"], "risk": "high"
+    },
+    {
+      "id": "chm-ratio", "subject": "chemistry", "callNumber": "CHM.STO.002",
+      "pattern": "Mole ratio from the equation",
+      "detail": "Divides grams by grams instead of converting to moles first.",
+      "times": 4, "lastSeen": "2026-11-05", "sources": ["Khan Academy"], "risk": "high"
+    },
+    {
+      "id": "phy-sign", "subject": "physics", "callNumber": "PHY.KIN.002",
+      "pattern": "Sign of g when up is positive",
+      "detail": "Keeps g = +9.8 m/s² after choosing up as positive.",
+      "times": 4, "lastSeen": "2026-11-04", "sources": ["Worksheet", "Khan Academy"], "risk": "high"
+    },
+    {
+      "id": "bio-strand", "subject": "biology", "callNumber": "BIO.GEN.001",
+      "pattern": "Codons from the wrong strand",
+      "detail": "Reads codons off the DNA template instead of the mRNA.",
+      "times": 3, "lastSeen": "2026-11-02", "sources": ["Worksheet"], "risk": "medium"
+    },
+    {
+      "id": "chm-diatomic", "subject": "chemistry", "callNumber": "CHM.STO.001",
+      "pattern": "Molar mass of a diatomic gas",
+      "detail": "Uses 16 g/mol for O₂ instead of 32 g/mol.",
+      "times": 2, "lastSeen": "2026-10-29", "sources": ["Khan Academy"], "risk": "low"
+    }
+  ],
+
+  "trend": {
+    "weeks": ["Oct 12", "Oct 19", "Oct 26", "Nov 2"],
+    "series": {
+      "physics":   [7, 9, 6, 5],
+      "chemistry": [5, 4, 6, 4],
+      "biology":   [4, 3, 2, 3]
+    }
+  },
+
+  "due": [
+    { "subject": "physics",   "count": 6, "overdue": 2 },
+    { "subject": "chemistry", "count": 5, "overdue": 0 },
+    { "subject": "biology",   "count": 3, "overdue": 1 }
+  ],
+
+  "log": [
+    { "date": "2026-11-07", "kind": "session", "subject": "physics",   "title": "Find the wrong step: forces on a block on an incline", "result": "Found it on the 2nd try" },
+    { "date": "2026-11-06", "kind": "caught",  "subject": "physics",   "title": "Normal force on an incline", "result": "Caught on Khan Academy" },
+    { "date": "2026-11-05", "kind": "caught",  "subject": "chemistry", "title": "Mole ratio from the equation", "result": "Caught on Khan Academy" },
+    { "date": "2026-11-05", "kind": "session", "subject": "chemistry", "title": "Flashcards: stoichiometry", "result": "9 of 12 correct" },
+    { "date": "2026-11-04", "kind": "caught",  "subject": "physics",   "title": "Sign of g when up is positive", "result": "Caught on a worksheet" },
+    { "date": "2026-11-03", "kind": "session", "subject": "biology",   "title": "Find the wrong step: from DNA to protein", "result": "Solved first try" }
+  ]
+}

@@ -1,0 +1,111 @@
+
+Running 20 tests using 1 worker
+
+[1/20] tests\e2e\flashcards.spec.mjs:34:1 › open: cards fan up, label and bar counts match the data
+  1) tests\e2e\flashcards.spec.mjs:34:1 › open: cards fan up, label and bar counts match the data ──
+
+    Error: browserContext.close: ENOENT: no such file or directory, open 'C:\Users\Rithik\Downloads\TSA SOFT\qa\test-results-fan\.playwright-artifacts-0\traces\5d6dad7ed1515b277d15-45c7d065d0d4fbc84fc6.trace'
+
+    Error: ENOENT: no such file or directory, open 'C:\Users\Rithik\Downloads\TSA SOFT\qa\test-results-fan\.playwright-artifacts-0\3bd966006c4d341f10012b1c2fe0c544.zip'
+
+    Error Context: qa\test-results-fan\flashcards-open-cards-fan--99d9f-d-bar-counts-match-the-data\error-context.md
+
+
+[2/20] tests\e2e\flashcards.spec.mjs:49:1 › divider tabs and chips filter by subject; counts follow the filter
+[3/20] tests\e2e\flashcards.spec.mjs:76:1 › Review N cards works for each mistake, and Review All for all of them
+[4/20] tests\e2e\flashcards.spec.mjs:94:1 › all 12 cards: answered correctly, then incorrectly; boxes and end screen add up
+[5/20] tests\e2e\flashcards.spec.mjs:124:1 › all 6 Leitner transitions happen in the UI
+  2) tests\e2e\flashcards.spec.mjs:124:1 › all 6 Leitner transitions happen in the UI ──────────────
+
+    Error: browserContext.close: ENOENT: no such file or directory, open 'C:\Users\Rithik\Downloads\TSA SOFT\qa\test-results-fan\.playwright-artifacts-1\traces\5d6dad7ed1515b277d15-d129c102565460ef2620-recording6.trace'
+
+    Error: ENOENT: no such file or directory, open 'C:\Users\Rithik\Downloads\TSA SOFT\qa\test-results-fan\.playwright-artifacts-1\497b0a2ddd51d06cf257043967a3caca.zip'
+
+    Error Context: qa\test-results-fan\flashcards-all-6-Leitner-transitions-happen-in-the-UI\error-context.md
+
+
+[6/20] tests\e2e\flashcards.spec.mjs:149:1 › Esc at every step walks back one level
+[7/20] tests\e2e\flashcards.spec.mjs:168:1 › review persists in localStorage sb_cards and survives a reload
+  3) tests\e2e\flashcards.spec.mjs:168:1 › review persists in localStorage sb_cards and survives a reload 
+
+    Error: browserContext.close: ENOENT: no such file or directory, open 'C:\Users\Rithik\Downloads\TSA SOFT\qa\test-results-fan\.playwright-artifacts-2\traces\5d6dad7ed1515b277d15-3ab145b67eab4c22e71d-recording2.trace'
+
+    Error: ENOENT: no such file or directory, open 'C:\Users\Rithik\Downloads\TSA SOFT\qa\test-results-fan\.playwright-artifacts-2\6b2054bcb2fb14c061dc8132b1830000.zip'
+
+    Error Context: qa\test-results-fan\flashcards-review-persists-274ec-cards-and-survives-a-reload\error-context.md
+
+
+[8/20] tests\e2e\room.spec.mjs:26:5 › library room (laptop) › loads as home with three stations and no console problems
+[9/20] tests\e2e\room.spec.mjs:38:5 › library room (laptop) › Learn: every book opens from the room's shelf and goes back; Esc flies out
+[10/20] tests\e2e\room.spec.mjs:67:5 › library room (laptop) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room
+  4) tests\e2e\room.spec.mjs:67:5 › library room (laptop) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "closed"
+    Received: "groups"
+
+      113 |         await page.keyboard.press("Escape");
+      114 |         await settle(page);
+    > 115 |         expect(await page.evaluate(() => window.SkillBridge.debug.drawer())).toBe("closed");
+          |                                                                              ^
+      116 |       }
+      117 |       await page.keyboard.press("Escape");
+      118 |       await waitRoom(page, "overview");
+        at C:\Users\Rithik\Downloads\TSA SOFT\tests\e2e\room.spec.mjs:115:78
+
+    Error Context: qa\test-results-fan\room-library-room-laptop-P-1eecf-pens-and-closes-in-the-room\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa\test-results-fan\room-library-room-laptop-P-1eecf-pens-and-closes-in-the-room\trace.zip
+    Usage:
+
+        npx playwright show-trace qa\test-results-fan\room-library-room-laptop-P-1eecf-pens-and-closes-in-the-room\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[11/20] tests\e2e\room.spec.mjs:26:5 › library room (wide) › loads as home with three stations and no console problems
+[12/20] tests\e2e\room.spec.mjs:38:5 › library room (wide) › Learn: every book opens from the room's shelf and goes back; Esc flies out
+[13/20] tests\e2e\room.spec.mjs:67:5 › library room (wide) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room
+  5) tests\e2e\room.spec.mjs:67:5 › library room (wide) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "subject"
+    Received: "groups"
+
+      106 |           await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
+      107 |           await settle(page);
+    > 108 |           expect(await page.evaluate(() => window.SkillBridge.debug.drawer())).toBe("subject");
+          |                                                                                ^
+      109 |           const sub = await page.evaluate(() => [...document.querySelectorAll('#dcontents .fcard[data-subject="physics"]:not(.fcard--filler)')].map((n) => n.getBoundingClientRect())
+      110 |             .filter((r) => r.left < 0 || r.right > innerWidth || r.top < 0).length);
+      111 |           expect(sub).toBe(0);
+        at C:\Users\Rithik\Downloads\TSA SOFT\tests\e2e\room.spec.mjs:108:80
+
+    Error Context: qa\test-results-fan\room-library-room-wide-Pra-a5daf-pens-and-closes-in-the-room\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa\test-results-fan\room-library-room-wide-Pra-a5daf-pens-and-closes-in-the-room\trace.zip
+    Usage:
+
+        npx playwright show-trace qa\test-results-fan\room-library-room-wide-Pra-a5daf-pens-and-closes-in-the-room\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[14/20] tests\e2e\room.spec.mjs:26:5 › library room (phone) › loads as home with three stations and no console problems
+[15/20] tests\e2e\room.spec.mjs:38:5 › library room (phone) › Learn: every book opens from the room's shelf and goes back; Esc flies out
+[16/20] tests\e2e\room.spec.mjs:67:5 › library room (phone) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room
+[17/20] tests\e2e\room.spec.mjs:126:1 › Back to the Library button works from both stations; the room stays consistent
+[18/20] tests\e2e\room.spec.mjs:137:1 › a drawer open blocks leaving; closing it first then Back works
+[19/20] tests\e2e\room.spec.mjs:151:1 › deep links #shelf and #practice skip the room; Library brings it back
+[20/20] tests\e2e\room.spec.mjs:166:1 › reduced motion: stations open without flights and still work
+  5 failed
+    tests\e2e\flashcards.spec.mjs:34:1 › open: cards fan up, label and bar counts match the data ───
+    tests\e2e\flashcards.spec.mjs:124:1 › all 6 Leitner transitions happen in the UI ───────────────
+    tests\e2e\flashcards.spec.mjs:168:1 › review persists in localStorage sb_cards and survives a reload 
+    tests\e2e\room.spec.mjs:67:5 › library room (laptop) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room 
+    tests\e2e\room.spec.mjs:67:5 › library room (wide) › Practice: the cabinet takes the catalog's place; every drawer opens and closes in the room 
+  15 passed (6.2m)

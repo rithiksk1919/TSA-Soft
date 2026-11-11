@@ -1,0 +1,20 @@
+{
+  "name": "skillbridge-library",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node scripts/serve.mjs 5180",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"tests/unit/*.test.cjs\"",
+    "test:e2e": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1"
+  },
+  "private": true
+}

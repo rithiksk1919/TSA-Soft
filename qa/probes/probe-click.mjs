@@ -1,0 +1,11 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1360, height: 860 } });
+p.on("console", (m) => console.log("console:", m.type(), m.text()));
+p.on("pageerror", (e) => console.log("pageerror:", e.message));
+await p.goto("http://127.0.0.1:5180/"); await p.waitForTimeout(1200);
+console.log(await p.evaluate(() => ({ atShelf: window.SkillBridge.atShelf(), bookOpen: window.SkillBridge.bookOpen() })));
+const box = await p.locator('.book[data-id="physics"]').boundingBox();
+console.log("box", box, await p.evaluate(({ x, y }) => { const e = document.elementFromPoint(x, y); return e && (e.className + " in book: " + !!e.closest(".book")); }, { x: box.x + box.width / 2, y: box.y + box.height / 2 }));
+await p.click('.book[data-id="physics"]'); await p.waitForTimeout(300);
+console.log("after click", await p.evaluate(() => ({ reader: document.getElementById("reader").className, bookOpen: window.SkillBridge.bookOpen() })));
+await b.close();

@@ -1,0 +1,41 @@
+{
+  "_note": "Mistakes index extras, keyed by the mistake ids in cards.json (the 6 tagged mistakes). g = 9.8 m/s^2, O = 16.00 g/mol.",
+  "mistakes": {
+    "phy-normal": {
+      "callNumber": "PHY.NEW.001", "timesMade": 5, "lastSeenDays": 2,
+      "explanation": "You used the full weight as the normal force. On a slope the surface only pushes back against the part of the weight that presses into it, mg cos θ; the other part, mg sin θ, pulls the block along the slope.",
+      "wrongExample": "N = mg = 2.0 × 9.8 = 19.6 N",
+      "rightExample": "N = mg cos 30° = 19.6 × 0.866 ≈ 17.0 N"
+    },
+    "phy-sign": {
+      "callNumber": "PHY.KIN.002", "timesMade": 3, "lastSeenDays": 6,
+      "explanation": "You chose up as positive but kept g as +9.8 m/s². Gravity points down, so with up positive the acceleration is −9.8 m/s² for the whole flight.",
+      "wrongExample": "v = 12 + 9.8 × 2.0 = 31.6 m/s",
+      "rightExample": "v = 12 + (−9.8)(2.0) = −7.6 m/s"
+    },
+    "chem-molar": {
+      "callNumber": "CHE.MOL.001", "timesMade": 4, "lastSeenDays": 1,
+      "explanation": "You used the atomic mass of oxygen for oxygen gas. O₂ has two atoms per molecule, so its molar mass is 2 × 16.00 = 32.00 g/mol.",
+      "wrongExample": "n = 8.0 g ÷ 16.00 g/mol = 0.50 mol",
+      "rightExample": "n = 8.0 g ÷ 32.00 g/mol = 0.25 mol"
+    },
+    "chem-ratio": {
+      "callNumber": "CHE.STO.002", "timesMade": 2, "lastSeenDays": 9,
+      "explanation": "You treated the reaction as 1 : 1. The coefficients in the balanced equation set the mole ratio: 2H₂ + O₂ → 2H₂O gives 2 mol of water per mol of oxygen.",
+      "wrongExample": "3.0 mol O₂ → 3.0 mol H₂O",
+      "rightExample": "3.0 mol O₂ × (2 mol H₂O / 1 mol O₂) = 6.0 mol H₂O"
+    },
+    "bio-mrna": {
+      "callNumber": "BIO.PRO.001", "timesMade": 3, "lastSeenDays": 3,
+      "explanation": "You read codons straight from the DNA. Ribosomes read mRNA, which is made first by pairing with the template strand (A→U, T→A, C→G, G→C).",
+      "wrongExample": "Template 3′-TAC-5′ → codon TAC",
+      "rightExample": "Template 3′-TAC-5′ → mRNA 5′-AUG-3′ → codon AUG"
+    },
+    "bio-strand": {
+      "callNumber": "BIO.PRO.002", "timesMade": 1, "lastSeenDays": 12,
+      "explanation": "You paired the coding strand instead of copying it. The mRNA has the same sequence as the coding strand, with U in place of T; only the template strand is paired.",
+      "wrongExample": "Coding 5′-ATG GCT-3′ → mRNA 5′-UAC CGA-3′",
+      "rightExample": "Coding 5′-ATG GCT-3′ → mRNA 5′-AUG GCU-3′"
+    }
+  }
+}

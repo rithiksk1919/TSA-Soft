@@ -1,0 +1,194 @@
+{
+  "python": {
+    "learners": 120,
+    "pearson_r_final": 0.823,
+    "mae_initial": 0.195,
+    "mae_final": 0.111,
+    "identical_first_k_within_group": 0.011,
+    "identical_first_k_across_groups": 0.0,
+    "first_k": 8,
+    "groups": {
+      "weak loops & bounds": {
+        "n": 20,
+        "skill_share_first_k": {
+          "py_conditionals": 0.05,
+          "py_loops": 0.425,
+          "py_off_by_one": 0.225,
+          "py_returns": 0.094,
+          "py_scope": 0.113,
+          "py_types": 0.094
+        },
+        "most_common_first_3": [
+          "py-loop-02",
+          "py-ret-03",
+          "py-scope-02"
+        ],
+        "mean_mastered": 0.8
+      },
+      "weak types": {
+        "n": 20,
+        "skill_share_first_k": {
+          "py_conditionals": 0.125,
+          "py_loops": 0.081,
+          "py_off_by_one": 0.094,
+          "py_returns": 0.156,
+          "py_scope": 0.1,
+          "py_types": 0.444
+        },
+        "most_common_first_3": [
+          "py-type-01",
+          "py-type-02",
+          "py-ret-04"
+        ],
+        "mean_mastered": 1.25
+      },
+      "weak returns & scope": {
+        "n": 20,
+        "skill_share_first_k": {
+          "py_conditionals": 0.087,
+          "py_loops": 0.062,
+          "py_off_by_one": 0.087,
+          "py_returns": 0.469,
+          "py_scope": 0.138,
+          "py_types": 0.156
+        },
+        "most_common_first_3": [
+          "py-ret-01",
+          "py-ret-02",
+          "py-scope-02"
+        ],
+        "mean_mastered": 0.5
+      },
+      "weak conditionals": {
+        "n": 20,
+        "skill_share_first_k": {
+          "py_conditionals": 0.475,
+          "py_loops": 0.0,
+          "py_off_by_one": 0.113,
+          "py_returns": 0.15,
+          "py_scope": 0.125,
+          "py_types": 0.138
+        },
+        "most_common_first_3": [
+          "py-cond-01",
+          "py-cond-02",
+          "py-loop-02"
+        ],
+        "mean_mastered": 1.85
+      },
+      "all strong": {
+        "n": 20,
+        "skill_share_first_k": {
+          "py_conditionals": 0.156,
+          "py_loops": 0.125,
+          "py_off_by_one": 0.219,
+          "py_returns": 0.138,
+          "py_scope": 0.194,
+          "py_types": 0.169
+        },
+        "most_common_first_3": [
+          "py-obo-01",
+          "py-obo-02",
+          "py-cond-02"
+        ],
+        "mean_mastered": 1.8
+      },
+      "all weak": {
+        "n": 20,
+        "skill_share_first_k": {
+          "py_conditionals": 0.237,
+          "py_loops": 0.037,
+          "py_off_by_one": 0.094,
+          "py_returns": 0.331,
+          "py_scope": 0.006,
+          "py_types": 0.294
+        },
+        "most_common_first_3": [
+          "py-cond-01",
+          "py-ret-01",
+          "py-type-01"
+        ],
+        "mean_mastered": 0.0
+      }
+    }
+  },
+  "circuits": {
+    "learners": 120,
+    "pearson_r_final": 0.529,
+    "mae_initial": 0.222,
+    "mae_final": 0.114,
+    "identical_first_k_within_group": 0.009,
+    "identical_first_k_across_groups": 0.0,
+    "first_k": 8,
+    "groups": {
+      "weak Ohm's law": {
+        "n": 30,
+        "skill_share_first_k": {
+          "ck_ohms": 0.621,
+          "ck_series": 0.025,
+          "ck_parallel": 0.146,
+          "ck_open": 0.046,
+          "ck_short": 0.062,
+          "ck_value": 0.1
+        },
+        "most_common_first_3": [
+          "ck-01",
+          "ck-02",
+          "ck-03"
+        ],
+        "mean_mastered": 0.6
+      },
+      "weak parallel": {
+        "n": 30,
+        "skill_share_first_k": {
+          "ck_ohms": 0.083,
+          "ck_series": 0.117,
+          "ck_parallel": 0.588,
+          "ck_open": 0.075,
+          "ck_short": 0.075,
+          "ck_value": 0.062
+        },
+        "most_common_first_3": [
+          "ck-03",
+          "ck-07",
+          "ck-08"
+        ],
+        "mean_mastered": 0.13
+      },
+      "weak fault finding": {
+        "n": 30,
+        "skill_share_first_k": {
+          "ck_ohms": 0.108,
+          "ck_series": 0.225,
+          "ck_parallel": 0.067,
+          "ck_open": 0.258,
+          "ck_short": 0.242,
+          "ck_value": 0.1
+        },
+        "most_common_first_3": [
+          "ck-04",
+          "ck-05",
+          "ck-06"
+        ],
+        "mean_mastered": 0.53
+      },
+      "all strong": {
+        "n": 30,
+        "skill_share_first_k": {
+          "ck_ohms": 0.154,
+          "ck_series": 0.225,
+          "ck_parallel": 0.133,
+          "ck_open": 0.163,
+          "ck_short": 0.183,
+          "ck_value": 0.142
+        },
+        "most_common_first_3": [
+          "ck-06",
+          "ck-02",
+          "ck-03"
+        ],
+        "mean_mastered": 0.5
+      }
+    }
+  }
+}

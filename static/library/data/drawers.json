@@ -1,0 +1,53 @@
+{
+  "_note": "Cabinet drawers. 'count' names the live count shown on the label card (see state.js).",
+  "drawers": [
+    {
+      "id": "flashcards",
+      "call": "FC 01",
+      "title": "Flashcards",
+      "sub": "Mistakes to review",
+      "count": "cards",
+      "active": true
+    },
+    {
+      "id": "index",
+      "call": "MI 02",
+      "title": "Mistakes index",
+      "sub": "What you got wrong",
+      "count": "mistakes",
+      "active": true
+    },
+    {
+      "id": "worked",
+      "call": "WE 03",
+      "title": "Worked examples",
+      "sub": "Solved step by step",
+      "count": "examples",
+      "active": true
+    },
+    {
+      "id": "diagnostic",
+      "call": "DG 04",
+      "title": "Diagnostic",
+      "sub": "Find your starting point",
+      "count": "questions",
+      "active": true
+    },
+    {
+      "id": "history",
+      "call": "HI 05",
+      "title": "History",
+      "sub": "Past attempts",
+      "count": "attempts",
+      "active": true
+    },
+    {
+      "id": "learned",
+      "call": "LE 06",
+      "title": "Learned",
+      "sub": "Cards you have mastered",
+      "count": "learned",
+      "active": true
+    }
+  ]
+}
