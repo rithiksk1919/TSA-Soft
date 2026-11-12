@@ -13,6 +13,7 @@ for (const [w, h] of [[1440, 900], [1024, 768], [390, 844]]) {
   await page.waitForTimeout(600);
   const school = page.locator(".school");
   await school.screenshot({ path: `${out}-${w}-rest.png` });
+  await page.screenshot({ path: `${out}-${w}-page.png` });
   if (w > 700) {
     const box = await school.boundingBox();
     await page.mouse.move(box.x + box.width * 0.9, box.y + box.height * 0.2);

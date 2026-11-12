@@ -1,0 +1,126 @@
+/* The school's rooms as small CSS 3D scenes (rooms3d.js), in the library room's construction and
+   light: fixed face shading for one light from above and a little left, soft shadows on the floor,
+   pools of window and lamp light. Every piece is a plane (.p3) or a cuboid (.g3 > .f3). */
+
+.stage3 { position: absolute; inset: 0; perspective-origin: 50% 26%; pointer-events: none; }
+/* a warm cast and a falloff toward the corners, as in the library */
+.stage3::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse 80% 90% at 50% 40%, rgba(255, 214, 150, .08), rgba(40, 24, 10, 0) 55%, rgba(40, 24, 10, .34)); }
+.cam3 { position: absolute; left: 50%; top: 88%; width: 0; height: 0; transform-style: preserve-3d; }
+.world3, .g3 { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+.p3, .f3 { position: absolute; display: block; backface-visibility: hidden; }
+.p3 > span, .f3 > span { position: absolute; display: block; }
+
+.f3--top::after, .f3--left::after, .f3--right::after, .f3--bottom::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.f3--top::after { background: rgba(255, 236, 200, .17); }
+.f3--right::after { background: rgba(20, 14, 8, .29); }
+.f3--left::after { background: rgba(20, 14, 8, .16); }
+.f3--bottom::after { background: rgba(20, 14, 8, .34); }
+
+/* ---- shell ---- */
+.floor3 {
+  background-color: #9C7650;
+  background-image:
+    repeating-linear-gradient(to right, rgba(40, 26, 14, .26) 0 2px, transparent 2px 60px),
+    repeating-linear-gradient(to right, transparent 0 23px, rgba(40, 26, 14, .07) 23px 25px, transparent 25px 47px);
+  box-shadow: inset 0 60px 50px -30px rgba(30, 18, 8, .3);
+}
+.floor3--gym { background-color: #C49A6C; background-image: repeating-linear-gradient(to right, rgba(110, 72, 40, .22) 0 1px, transparent 1px 28px); }
+.wall3 { background-color: #E6D9BF; }
+.wall3--back {
+  background-image: radial-gradient(ellipse 60% 70% at 40% 40%, rgba(255, 236, 196, .55), rgba(255, 236, 196, 0) 70%);
+  box-shadow: inset 0 -40px 40px -24px rgba(40, 26, 14, .22);
+}
+.wall3--side { background-color: #D8C8A8; }
+.wall3--right { background-color: #CDBC9B; }
+.wall3--gym { background-color: #E4DCC8; }
+.wall3--gym.wall3--side { background-color: #D3C9B2; }
+.wall3--lunch { background-color: #DCE4D8; }
+.wall3--lunch.wall3--side { background-color: #C9D2C4; }
+.ceil3 { background: #BFAE8E; }
+
+/* ---- materials ---- */
+.wood .f3 {
+  background-color: #7A5E42;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .045) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(87deg, rgba(40, 24, 10, .07) 0 3px, transparent 3px 41px, rgba(255, 236, 205, .05) 41px 43px, transparent 43px 97px);
+}
+.wood .f3--top { background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, .045) 0 1px, transparent 1px 7px); }
+.wood--dark .f3 { background-color: #5E4733; }
+.wood--warm .f3 { background-color: #8C6A47; }
+.metal3 .f3 { background: #4A4A48; }
+.metal3--dark .f3 { background: #3A3A38; }
+.brass .f3 { background: #B7A57A; }
+.steel3 .f3 { background: #B9BDB8; }
+.book3 .f3 { background: var(--c); }
+.book3 .f3--front { box-shadow: inset 0 3px 0 rgba(255, 255, 255, .14), inset 0 -4px 0 rgba(0, 0, 0, .14); }
+.book3 .f3--top { background: #EDE7DA; }
+.book3--open .f3--top { background: #FBF8F1; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08), inset 26px 0 0 -25px rgba(0, 0, 0, .25); }
+.paper3 .f3 { background: #FBF8F1; }
+.chalkstick .f3 { background: #F2EEE2; }
+.case3__back { background: #3E2E20; box-shadow: inset 0 20px 30px -10px rgba(0, 0, 0, .45); }
+.rug3 { background: #3E4A57; box-shadow: inset 0 0 0 8px #34404C, inset 0 0 0 11px #A08F70, inset 0 0 0 14px #3E4A57; }
+
+/* ---- light and shadow ---- */
+.sh3, .sun3, .lamp3__pool { pointer-events: none; }
+.sh3--soft { background: radial-gradient(closest-side, rgba(30, 18, 8, .34), rgba(30, 18, 8, .13) 60%, rgba(30, 18, 8, 0)); }
+.sh3--deep { background: radial-gradient(closest-side, rgba(30, 18, 8, .5), rgba(30, 18, 8, .2) 58%, rgba(30, 18, 8, 0)); }
+.sh3--strip { background: radial-gradient(ellipse 54% 100% at 50% 0%, rgba(30, 18, 8, .44), rgba(30, 18, 8, .16) 55%, rgba(30, 18, 8, 0)); }
+/* daylight from the window, thrown forward onto the floor */
+.sun3 { background: radial-gradient(ellipse 60% 70% at 50% 40%, rgba(255, 232, 176, .42), rgba(255, 232, 176, .18) 60%, rgba(255, 232, 176, 0)); }
+.win3 { background: #5E4733; }
+.win3__view {
+  inset: 6px; background-color: #B9CFD6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath fill='%23839B7E' d='M0 40V22Q12 10 26 20Q38 8 52 18Q66 6 80 16Q90 12 100 18V40Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: bottom; background-size: 100% 55%;
+}
+.win3__bar { background: #5E4733; }
+.win3__bar--v { left: calc(50% - 2px); top: 6px; bottom: 6px; width: 4px; }
+.win3__bar--h { top: calc(50% - 2px); left: 6px; right: 6px; height: 4px; }
+.lamp3 .f3 { background: #2F5B47; }
+.lamp3 .f3--bottom { background: #FFE9B0; }
+.lamp3 .f3--bottom::after { background: none; }
+.lamp3__pool { background: radial-gradient(closest-side, rgba(255, 228, 164, .62), rgba(255, 214, 140, .26) 55%, rgba(255, 214, 140, 0)); }
+.lamp3__pool--soft { background: radial-gradient(closest-side, rgba(255, 228, 164, .45), rgba(255, 214, 140, 0)); }
+.cord3 { background: #2F2A24; }
+.pendant3 .f3 { background: #2F3B33; }
+.pendant3 .f3--bottom { background: #FFE9B0; }
+.pendant3 .f3--bottom::after { background: none; }
+
+/* ---- classroom ---- */
+.chalk3 { background: #2F4A3E; box-shadow: inset 0 0 30px rgba(0, 0, 0, .3); }
+.chalk3__code { left: 22px; top: 18px; white-space: pre; font-family: var(--mono); font-size: 15px; line-height: 1.55; color: #ECE7D8; opacity: .92; }
+.chalk3__mark { left: 22px; right: 60px; bottom: 18px; height: 2px; background: rgba(236, 231, 216, .35); }
+.apple3 { border-radius: 50%; background: #A1332B; box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .2); }
+
+/* ---- gym ---- */
+.mat3 .f3 { background: #4F6B45; }
+.mat3 .f3--front { background-image: repeating-linear-gradient(90deg, transparent 0 62px, rgba(0, 0, 0, .18) 62px 64px); }
+.pennant3 { background: var(--c); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.string3 { background: #6B5848; }
+.court3--line { background: #FBF8F1; }
+.court3--circle { border: 3px solid #FBF8F1; border-radius: 50%; }
+.board3 .f3 { background: #FBF8F1; }
+.board3 .f3--front { box-shadow: inset 0 0 0 4px #6B4C34; }
+.board3__square { left: 38%; right: 38%; top: 34%; bottom: 22%; border: 3px solid #C0562F; }
+.rim3 { border: 3px solid #C0562F; border-radius: 50%; }
+.net3 {
+  clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+  background: repeating-linear-gradient(60deg, transparent 0 5px, rgba(251, 248, 241, .85) 5px 6px), repeating-linear-gradient(-60deg, transparent 0 5px, rgba(251, 248, 241, .85) 5px 6px);
+}
+.ball3 { border-radius: 50%; background: #C0562F; box-shadow: inset -5px -6px 0 rgba(60, 20, 8, .32), inset 3px 3px 0 rgba(255, 220, 190, .25); }
+.ball3__seams { inset: 0; border-radius: 50%; background: linear-gradient(90deg, transparent 48%, #6B2A16 48% 52%, transparent 52%), linear-gradient(0deg, transparent 48%, #6B2A16 48% 52%, transparent 52%); }
+
+/* ---- lunchroom ---- */
+.clock3 { border-radius: 50%; background: #FBFAF7; box-shadow: inset 0 0 0 4px #3A2A1F, 2px 3px 0 rgba(40, 26, 14, .2); }
+.clock3__h, .clock3__m { left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 2px; background: #1B1F24; }
+.clock3__h { width: 4px; height: 15px; margin-left: -2px; }
+.clock3__m { width: 3px; height: 22px; margin-left: -1.5px; }
+.clock3__pin { left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #1B1F24; }
+.food3 .f3 { background: var(--c); }
+.food3 .f3--top { box-shadow: inset 0 0 0 3px rgba(0, 0, 0, .12); }
+.tray3 .f3 { background: #6F8C8A; }
+.plate3 { border-radius: 50%; background: #FBF8F1; box-shadow: inset 0 0 0 3px #E4D9C4; }
+.carton3 .f3 { background: #FBF8F1; }
+.carton3 .f3--front { box-shadow: inset 0 -6px 0 #2D4A6E; }
