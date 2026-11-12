@@ -10,11 +10,11 @@ const H = 300;
 const BACK = -220;
 const PERSPECTIVE = 900;
 
-function px(n) {
+export function px(n) {
   return (+n).toFixed(1) + "px";
 }
 
-function node(cls, style, html) {
+export function node(cls, style, html) {
   const e = document.createElement("span");
   e.className = cls;
   if (style) {
@@ -41,7 +41,7 @@ function rot(o) {
 }
 
 // A flat plane centred at (x, y, z), w by h.
-function plane(parent, o) {
+export function plane(parent, o) {
   const e = node("p3 " + (o.cls || ""), "width:" + px(o.w) + ";height:" + px(o.h) + ";left:" + px(-o.w / 2) + ";top:" + px(-o.h / 2) + (o.style || ""), o.html);
   e.style.transform = "translate3d(" + px(o.x || 0) + "," + px(o.y || 0) + "," + px(o.z || 0) + ")" + rot(o);
   parent.appendChild(e);
@@ -49,7 +49,7 @@ function plane(parent, o) {
 }
 
 // A cuboid whose bottom rests at y, centred on x and z. `faces` lists the faces to draw.
-function box(parent, o) {
+export function box(parent, o) {
   const g = node("g3 " + (o.cls || ""), o.style);
   const w = o.w;
   const h = o.h;
@@ -73,7 +73,7 @@ function box(parent, o) {
 }
 
 // A soft shadow (or pool of light) lying on a surface at height y.
-function shade(parent, o) {
+export function shade(parent, o) {
   let y = -0.6;
   if (o.y !== undefined) {
     y = o.y;
@@ -82,7 +82,7 @@ function shade(parent, o) {
 }
 
 // Four legs under a top of w by d, inset a little, each h tall.
-function legs(parent, cls, x, z, w, d, h, size) {
+export function legs(parent, cls, x, z, w, d, h, size) {
   const ix = w / 2 - size;
   const iz = d / 2 - size;
   for (const p of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
@@ -122,7 +122,7 @@ function pendant(world, x, z, drop) {
 }
 
 // Plays keyframes on an element and resolves when done (or at once if it cannot animate).
-function play(el, frames, opts) {
+export function play(el, frames, opts) {
   if (!el || !el.animate) {
     return Promise.resolve();
   }

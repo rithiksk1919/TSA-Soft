@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import demo
+from . import demo, tts
 from .gym import Gym
 from .hub import Hub
 from .lessons import load_lesson
@@ -270,6 +270,8 @@ def make_handler(app: App):
             special = re.match(r"^/api/profiles/(\d+)/export(?:\.json|/(\w+)\.csv)$", url.path)
             if special and method == "GET":
                 return self._export(int(special[1]), special[2])
+            if url.path == "/api/tts" and method == "POST":
+                return self._tts()
             for meth, pat, fn in ROUTES:
                 m = pat.match(url.path)
                 if m and meth == method:
@@ -306,6 +308,19 @@ def make_handler(app: App):
                 w.writerows(rows)
             return self._send(200, buf.getvalue().encode(), "text/csv; charset=utf-8",
                               {"Content-Disposition": f'attachment; filename="{table}.csv"'})
+
+        def _tts(self):
+            # One spoken line as MP3. 503 tells the browser to read the line with its own voice.
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(length) or b"{}") if 0 < length <= 4000 else {}
+                audio = tts.speech(body.get("text", "") if isinstance(body, dict) else "")
+            except ValueError as exc:
+                return self._json(400, {"error": str(exc)})
+            except tts.TTSUnavailable as exc:
+                log.info("tts unavailable: %s", exc)
+                return self._json(503, {"error": "spoken audio is not available", "fallback": "browser"})
+            return self._send(200, audio, "audio/mpeg")
 
         def _files(self, path):
             m = re.match(r"^/files/starter/([\w-]+)\.py$", path)

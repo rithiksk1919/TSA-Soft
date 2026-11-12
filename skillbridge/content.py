@@ -105,7 +105,7 @@ def validate_transfer(sc: dict) -> None:
 @lru_cache(maxsize=1)
 def load(content_dir: str | None = None) -> Catalog:
     base = Path(content_dir) if content_dir else CONTENT_DIR
-    meta = json.loads((base / "skills.json").read_text())
+    meta = json.loads((base / "skills.json").read_text(encoding="utf-8"))
     skill_ids = {s["id"] for s in meta["skills"]}
     domains = {d["id"] for d in meta["domains"]}
     for s in meta["skills"]:
@@ -115,12 +115,12 @@ def load(content_dir: str | None = None) -> Catalog:
     scenarios = {}
     files = sorted((base / "scenarios").glob("*/*.json")) + sorted((base / "transfer").glob("*.json"))
     for f in files:
-        sc = json.loads(f.read_text())
+        sc = json.loads(f.read_text(encoding="utf-8"))
         validate_scenario(sc, skill_ids, domains)
         if sc["id"] in scenarios:
             raise ContentError(f"duplicate scenario id {sc['id']}")
         scenarios[sc["id"]] = sc
-    diagnostics = json.loads((base / "diagnostics.json").read_text())
+    diagnostics = json.loads((base / "diagnostics.json").read_text(encoding="utf-8"))
     return Catalog(meta["domains"], meta["skills"], scenarios, diagnostics)
 
 

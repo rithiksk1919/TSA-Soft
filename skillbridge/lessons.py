@@ -18,7 +18,7 @@ def load_lesson(catalog, skill_id):
     skill = catalog.skill(skill_id)
     path = LESSON_DIR / (skill_id + ".json")
     if path.is_file():
-        lesson = json.loads(path.read_text())
+        lesson = json.loads(path.read_text(encoding="utf-8"))
         lesson["generated"] = False
     else:
         lesson = lesson_from_worked_example(skill)

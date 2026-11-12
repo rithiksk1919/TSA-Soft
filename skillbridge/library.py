@@ -44,7 +44,7 @@ def days_ago(timestamp):
 class Library:
     def __init__(self, svc):
         self.svc = svc
-        self.content = json.loads(CONTENT_FILE.read_text())
+        self.content = json.loads(CONTENT_FILE.read_text(encoding="utf-8"))
 
     # ---- per-learner facts -----------------------------------------------------------
     def mistake_stats(self, pid):
