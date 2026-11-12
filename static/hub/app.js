@@ -65,8 +65,10 @@ function roomCard(id, label, name, href, art, badge, isNext) {
   if (!badge.live) {
     pillClass += " quiet";
   }
-  let html = '<a class="' + cls + '" href="' + href + '" aria-label="' + esc(name + ". " + label + ". " + badge.label) + '">';
-  html += art;
+  let html = '<a class="' + cls + '" data-room="' + id + '" href="' + href + '" aria-label="' + esc(name + ". " + label + ". " + badge.label) + '">';
+  // A recessed box: the illustration is the back wall, with a floor, ceiling and side walls around it.
+  html += '<span class="box" aria-hidden="true"><span class="f f-back">' + art + '</span>';
+  html += '<span class="f f-floor"></span><span class="f f-ceil"></span><span class="f f-left"></span><span class="f f-right"></span></span>';
   html += '<span class="chip"><span class="kicker">' + esc(label) + "</span><strong>" + esc(name) + "</strong></span>";
   if (isNext) {
     html += '<span class="next-tag">NEXT STEP</span>';
@@ -117,6 +119,51 @@ function whyCard(nextUp) {
   return html;
 }
 
+// The school turns a few degrees toward the pointer, eased each frame. Off for reduced motion,
+// narrow screens and touch; only the house's transform changes.
+function tiltSchool() {
+  const school = main.querySelector(".school");
+  const house = document.getElementById("house");
+  if (!school || !house) {
+    return;
+  }
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce), (max-width: 700px), (hover: none)");
+  let target = { x: 0, y: 0 };
+  let now = { x: 0, y: 0 };
+  let frame = 0;
+  function step() {
+    now.x = now.x + (target.x - now.x) * 0.12;
+    now.y = now.y + (target.y - now.y) * 0.12;
+    house.style.transform = "rotateX(" + now.x.toFixed(3) + "deg) rotateY(" + now.y.toFixed(3) + "deg)";
+    if (Math.abs(target.x - now.x) > 0.01 || Math.abs(target.y - now.y) > 0.01) {
+      frame = requestAnimationFrame(step);
+    } else {
+      frame = 0;
+    }
+  }
+  function aim(x, y) {
+    target = { x: x, y: y };
+    if (!frame) {
+      frame = requestAnimationFrame(step);
+    }
+  }
+  school.addEventListener("pointermove", function (event) {
+    if (calm.matches || event.pointerType !== "mouse") {
+      return;
+    }
+    const box = school.getBoundingClientRect();
+    const px = (event.clientX - box.left) / box.width - 0.5;
+    const py = (event.clientY - box.top) / box.height - 0.5;
+    aim(-py * 5, px * 7);
+  });
+  school.addEventListener("pointerleave", function () {
+    aim(0, 0);
+  });
+  calm.addEventListener("change", function () {
+    aim(0, 0);
+  });
+}
+
 function showHub(summary) {
   renderTopBar("hub", summary);
   const nextUp = summary.next_up;
@@ -137,13 +184,14 @@ function showHub(summary) {
     banner = '<section class="banner"><div class="text"><div class="kicker">Next up</div><h1>Everything here is mastered</h1></div></section>';
   }
 
-  let building = '<section class="school" aria-label="SkillBridge School"><div class="roof"><span class="roof-shape"></span><span class="flag"></span>';
+  let building = '<section class="school" aria-label="SkillBridge School"><div class="house" id="house"><div class="roof"><span class="roof-top" aria-hidden="true"></span><span class="roof-shape"></span><span class="flag"></span>';
   building += '<span class="roof-sign">SKILLBRIDGE SCHOOL</span></div><div class="building">';
   building += roomCard("classroom", "Learn", "The classroom", "#/classroom", classroomRoom(), rooms.classroom, nextRoom === "classroom");
   building += roomCard("library", "Review mistakes", "The library", "/library/", libraryRoom(), rooms.library, false);
   building += roomCard("gym", "Transfer check", "The gym", "#/gym", gymRoom(), rooms.gym, nextRoom === "gym");
   building += roomCard("lunch", "Break", "The lunchroom", "#/lunch", lunchRoom(), rooms.lunch, false);
-  building += '</div><div class="lawn"></div></section>';
+  building += '<span class="wall-side wall-side--l" aria-hidden="true"></span><span class="wall-side wall-side--r" aria-hidden="true"></span>';
+  building += '</div><div class="lawn"></div></div></section>';
 
   let small = '<section class="card small-stats" aria-label="Review and streak">';
   small += "<div>Mistakes due for review<strong>" + summary.mistakes_due + "</strong></div>";
@@ -155,6 +203,7 @@ function showHub(summary) {
 
   main.innerHTML = '<div class="hub"><div class="hub-left">' + banner + building + '</div><aside class="hub-right">' +
     masteryCard(summary) + whyCard(nextUp) + small + "</aside></div>";
+  tiltSchool();
 
   if (nextUp) {
     const goButton = document.getElementById("go-next");
