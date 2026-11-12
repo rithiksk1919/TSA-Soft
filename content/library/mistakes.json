@@ -1,0 +1,414 @@
+{
+ "subjects": [
+  {
+   "id": "python",
+   "name": "Python debugging",
+   "accent": "#2D4A6E",
+   "logo": "code"
+  },
+  {
+   "id": "circuits",
+   "name": "Circuit troubleshooting",
+   "accent": "#7B3F36",
+   "logo": "bolt"
+  }
+ ],
+ "mistakes": [
+  {
+   "id": "m-cond",
+   "skill": "py_conditionals",
+   "call": "PY.CON.001",
+   "title": "Boundary in a comparison",
+   "explanation": "You used <= or 'not >' where the rule says 'below zero'. Zero sits exactly on the boundary, so it is easy to include it by accident. Test the boundary value before you trust a comparison.",
+   "wrongExample": "if nums[i] <= 0:   # meant: negative",
+   "rightExample": "if nums[i] < 0:",
+   "cards": [
+    {
+     "id": "m-cond-1",
+     "prompt": "Which condition is True only for negative numbers?",
+     "options": [
+      "x <= 0",
+      "x < 0",
+      "not x > 0"
+     ],
+     "answer": 1,
+     "explain": "0 is not negative. 'x <= 0' and 'not x > 0' are both True for 0; only 'x < 0' is not."
+    },
+    {
+     "id": "m-cond-2",
+     "prompt": "'if not n > 0:' means the same as which condition?",
+     "options": [
+      "n < 0",
+      "n <= 0",
+      "n >= 0"
+     ],
+     "answer": 1,
+     "explain": "The opposite of 'greater than 0' is 'less than or equal to 0', so zero is included."
+    }
+   ]
+  },
+  {
+   "id": "m-loop",
+   "skill": "py_loops",
+   "call": "PY.LOP.001",
+   "title": "A loop guard that reads past the end",
+   "explanation": "Your while condition either never changes, or looks at an item before checking the index is still inside the list. Make sure something in the body moves the loop toward its exit, and put the bounds check first.",
+   "wrongExample": "while i < len(a) or a[i] >= 0:",
+   "rightExample": "while i < len(a) and a[i] >= 0:",
+   "cards": [
+    {
+     "id": "m-loop-1",
+     "prompt": "'while n > 1:' has a body that never changes n. What happens?",
+     "options": [
+      "It stops after one pass",
+      "It runs forever",
+      "Python raises an error at once"
+     ],
+     "answer": 1,
+     "explain": "A while loop only ends when its condition turns False. Nothing changes n, so it stays True."
+    },
+    {
+     "id": "m-loop-2",
+     "prompt": "Which guard never reads a[i] when i is out of range?",
+     "options": [
+      "while a[i] >= 0 and i < len(a):",
+      "while i < len(a) or a[i] >= 0:",
+      "while i < len(a) and a[i] >= 0:"
+     ],
+     "answer": 2,
+     "explain": "'and' stops at the first False part, so with the bounds check first a[i] is only read when i is valid."
+    }
+   ]
+  },
+  {
+   "id": "m-obo",
+   "skill": "py_off_by_one",
+   "call": "PY.OBO.001",
+   "title": "Starting or stopping one step off",
+   "explanation": "range(a, b) starts at a and stops before b. Starting at 1 skips the first item, and stopping at len(a)+1 runs one past the end. Trace the first and last index by hand.",
+   "wrongExample": "for i in range(1, len(a)):   # skips a[0]",
+   "rightExample": "for i in range(len(a)):",
+   "cards": [
+    {
+     "id": "m-obo-1",
+     "prompt": "What does range(1, 5) produce?",
+     "options": [
+      "1, 2, 3, 4",
+      "1, 2, 3, 4, 5",
+      "0, 1, 2, 3, 4"
+     ],
+     "answer": 0,
+     "explain": "The start is included and the stop is not, so it counts 1 to 4."
+    },
+    {
+     "id": "m-obo-2",
+     "prompt": "Which loop visits every index of a list a?",
+     "options": [
+      "range(len(a))",
+      "range(len(a) + 1)",
+      "range(1, len(a))"
+     ],
+     "answer": 0,
+     "explain": "Valid indexes run from 0 to len(a) - 1, which is exactly range(len(a))."
+    }
+   ]
+  },
+  {
+   "id": "m-ret",
+   "skill": "py_returns",
+   "call": "PY.RET.001",
+   "title": "Computing a value but not returning it",
+   "explanation": "You calculated the answer inside the function, but the caller only receives what you return. With no return statement, or a return inside a loop that fires on the first pass, the caller gets None or a partial answer.",
+   "wrongExample": "def add(a, b):\n    s = a + b      # no return",
+   "rightExample": "def add(a, b):\n    return a + b",
+   "cards": [
+    {
+     "id": "m-ret-1",
+     "prompt": "A function with no return statement gives its caller:",
+     "options": [
+      "None",
+      "0",
+      "The last variable it set"
+     ],
+     "answer": 0,
+     "explain": "Python returns None when a function ends without return."
+    },
+    {
+     "id": "m-ret-2",
+     "prompt": "What does 'def f(xs): for x in xs: return x' return for [4, 5, 6]?",
+     "options": [
+      "4",
+      "6",
+      "[4, 5, 6]"
+     ],
+     "answer": 0,
+     "explain": "The return fires on the first pass and ends the function, so only the first item comes back."
+    }
+   ]
+  },
+  {
+   "id": "m-scope",
+   "skill": "py_scope",
+   "call": "PY.SCO.001",
+   "title": "Changing a global from inside a function",
+   "explanation": "Assigning to a name inside a function makes it local to that function. 'total += x' then reads a local that does not exist yet. Pass values in and return results instead of reaching for globals.",
+   "wrongExample": "total = 0\ndef add(x):\n    total += x",
+   "rightExample": "def add(total, x):\n    return total + x",
+   "cards": [
+    {
+     "id": "m-scope-1",
+     "prompt": "With a module-level total, calling a function that runs 'total += x' raises:",
+     "options": [
+      "UnboundLocalError",
+      "Nothing: total increases",
+      "NameError when the function is defined"
+     ],
+     "answer": 0,
+     "explain": "The assignment makes total local, so the read before it fails."
+    },
+    {
+     "id": "m-scope-2",
+     "prompt": "Which keeps a function's result without touching a global?",
+     "options": [
+      "return the new value",
+      "print the new value",
+      "declare every name global"
+     ],
+     "answer": 0,
+     "explain": "The caller can store what you return; printing gives the caller nothing."
+    }
+   ]
+  },
+  {
+   "id": "m-type",
+   "skill": "py_types",
+   "call": "PY.TYP.001",
+   "title": "Mixing text and numbers",
+   "explanation": "Python will not add a string and an integer for you. Convert one side first, or build the text with an f-string. input() always gives you text, so convert it before doing arithmetic.",
+   "wrongExample": "print('Age: ' + 21)",
+   "rightExample": "print('Age: ' + str(21))",
+   "cards": [
+    {
+     "id": "m-type-1",
+     "prompt": "'Age: ' + 21 raises:",
+     "options": [
+      "TypeError",
+      "Nothing: it prints Age: 21",
+      "ValueError"
+     ],
+     "answer": 0,
+     "explain": "str + int is not allowed. Convert with str() or use an f-string."
+    },
+    {
+     "id": "m-type-2",
+     "prompt": "input() returns which type?",
+     "options": [
+      "str",
+      "int",
+      "float"
+     ],
+     "answer": 0,
+     "explain": "Always a string. int(input()) converts it to a number."
+    }
+   ]
+  },
+  {
+   "id": "m-ohm",
+   "skill": "ck_ohms",
+   "call": "CK.OHM.001",
+   "title": "Multiplying where Ohm's law divides",
+   "explanation": "Current is voltage divided by resistance, I = V / R. Multiplying them gives a number that grows with R, the opposite of what happens. Check the answer: more resistance should mean less current.",
+   "wrongExample": "I = V x R = 12 x 4 = 48 A",
+   "rightExample": "I = V / R = 12 / 4 = 3 A",
+   "cards": [
+    {
+     "id": "m-ohm-1",
+     "prompt": "12 V across 4 ohms. What is the current?",
+     "options": [
+      "3 A",
+      "48 A",
+      "0.33 A"
+     ],
+     "answer": 0,
+     "explain": "I = V / R = 12 / 4 = 3 A."
+    },
+    {
+     "id": "m-ohm-2",
+     "prompt": "A resistor drops 6 V with 2 mA flowing. What is R?",
+     "options": [
+      "3 kohm",
+      "12 ohm",
+      "3 ohm"
+     ],
+     "answer": 0,
+     "explain": "R = V / I = 6 / 0.002 = 3000 ohm."
+    }
+   ]
+  },
+  {
+   "id": "m-series",
+   "skill": "ck_series",
+   "call": "CK.SER.001",
+   "title": "Using the parallel rule for a series loop",
+   "explanation": "In series the resistances simply add: R total = R1 + R2. The reciprocal rule belongs to parallel branches. The same current flows through every part of the loop.",
+   "wrongExample": "1/Rt = 1/100 + 1/200  -> 66.7 ohm",
+   "rightExample": "Rt = 100 + 200 = 300 ohm",
+   "cards": [
+    {
+     "id": "m-series-1",
+     "prompt": "100 ohm and 200 ohm in series. Total resistance?",
+     "options": [
+      "300 ohm",
+      "66.7 ohm",
+      "150 ohm"
+     ],
+     "answer": 0,
+     "explain": "Series resistances add: 100 + 200 = 300 ohm."
+    },
+    {
+     "id": "m-series-2",
+     "prompt": "In a series circuit, what is the same at every resistor?",
+     "options": [
+      "Current",
+      "Voltage",
+      "Resistance"
+     ],
+     "answer": 0,
+     "explain": "There is only one path, so the same current flows through every resistor."
+    }
+   ]
+  },
+  {
+   "id": "m-par",
+   "skill": "ck_parallel",
+   "call": "CK.PAR.001",
+   "title": "Adding resistors that are in parallel",
+   "explanation": "Parallel branches give the current more paths, so the total resistance is smaller than the smallest branch. Add the reciprocals, or for two equal resistors divide by two.",
+   "wrongExample": "Rt = 100 + 100 = 200 ohm",
+   "rightExample": "1/Rt = 1/100 + 1/100  ->  Rt = 50 ohm",
+   "cards": [
+    {
+     "id": "m-par-1",
+     "prompt": "Two 100 ohm resistors in parallel. Total?",
+     "options": [
+      "50 ohm",
+      "200 ohm",
+      "100 ohm"
+     ],
+     "answer": 0,
+     "explain": "Two equal parallel resistors give half: 50 ohm."
+    },
+    {
+     "id": "m-par-2",
+     "prompt": "In parallel, what is the same across every branch?",
+     "options": [
+      "Voltage",
+      "Current",
+      "Power"
+     ],
+     "answer": 0,
+     "explain": "Each branch connects across the same two nodes, so each sees the same voltage."
+    }
+   ]
+  },
+  {
+   "id": "m-open",
+   "skill": "ck_open",
+   "call": "CK.OPN.001",
+   "title": "Expecting 0 V across an open break",
+   "explanation": "An open means no current flows, so every working resistor drops 0 V, and the whole supply voltage appears across the break itself. Put the meter across the break and you read the supply.",
+   "wrongExample": "Open found: meter reads 0 V across it",
+   "rightExample": "Meter across the break reads the full supply (e.g. 9 V)",
+   "cards": [
+    {
+     "id": "m-open-1",
+     "prompt": "A series loop has an open break. A meter across the break reads about:",
+     "options": [
+      "The full supply voltage",
+      "0 V",
+      "Half the supply"
+     ],
+     "answer": 0,
+     "explain": "No current means no drop in the resistors, so all of the supply appears across the gap."
+    },
+    {
+     "id": "m-open-2",
+     "prompt": "Current in a series loop that has an open break:",
+     "options": [
+      "0 A",
+      "The normal current",
+      "Double"
+     ],
+     "answer": 0,
+     "explain": "An open circuit has no complete path, so no current flows."
+    }
+   ]
+  },
+  {
+   "id": "m-short",
+   "skill": "ck_short",
+   "call": "CK.SHT.001",
+   "title": "A short drops zero volts and raises the current",
+   "explanation": "A shorted part has almost no resistance, so it drops about 0 V. The loop's total resistance falls, so the current rises through everything else, which can overheat the remaining parts.",
+   "wrongExample": "Shorted resistor still drops 6 V",
+   "rightExample": "Shorted resistor drops about 0 V; loop current rises",
+   "cards": [
+    {
+     "id": "m-short-1",
+     "prompt": "A resistor in a series loop is shorted. Its voltage drop becomes:",
+     "options": [
+      "About 0 V",
+      "The full supply",
+      "Unchanged"
+     ],
+     "answer": 0,
+     "explain": "A short has almost no resistance, so V = I x R is about 0."
+    },
+    {
+     "id": "m-short-2",
+     "prompt": "Shorting one of two series resistors makes the loop current:",
+     "options": [
+      "Rise",
+      "Fall",
+      "Stay the same"
+     ],
+     "answer": 0,
+     "explain": "Total resistance falls, so I = V / R rises."
+    }
+   ]
+  },
+  {
+   "id": "m-val",
+   "skill": "ck_value",
+   "call": "CK.VAL.001",
+   "title": "Calling every wrong reading an open or a short",
+   "explanation": "A part with the wrong value is not broken, it just has the wrong resistance. The circuit still works, but the current and drops are off by a steady ratio. Compare what you measure with what the value should give.",
+   "wrongExample": "Current low but not zero: 'must be open'",
+   "rightExample": "Current low but not zero: a resistor is higher than specified",
+   "cards": [
+    {
+     "id": "m-val-1",
+     "prompt": "Current is lower than designed but not zero. The most likely fault is:",
+     "options": [
+      "A resistor value too high",
+      "An open circuit",
+      "A short"
+     ],
+     "answer": 0,
+     "explain": "An open gives zero current and a short raises it. Lower, non-zero current means more resistance."
+    },
+    {
+     "id": "m-val-2",
+     "prompt": "A resistor measures 470 ohm but the design needs 220 ohm. Compared with the design, current will be:",
+     "options": [
+      "Lower",
+      "Higher",
+      "The same"
+     ],
+     "answer": 0,
+     "explain": "More resistance means less current for the same supply."
+    }
+   ]
+  }
+ ]
+}

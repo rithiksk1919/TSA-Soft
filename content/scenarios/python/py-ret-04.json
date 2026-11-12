@@ -1,0 +1,99 @@
+{
+  "id": "py-ret-04",
+  "domain": "python",
+  "title": "Top three scores",
+  "skills": [
+    "py_returns",
+    "py_types"
+  ],
+  "difficulty": 0.8,
+  "surface_form": "list-methods",
+  "scaffold": 0,
+  "estimated_minutes": 7,
+  "prompt": "top_three(scores) returns the three highest scores, highest first, without changing the caller's list. It crashes with a TypeError.",
+  "starter": "def top_three(scores):\n    # three highest, highest first; don't modify the caller's list\n    ranked = scores.sort(reverse=True)\n    return ranked[:3]\n",
+  "hints": [
+    "The error says 'NoneType' object is not subscriptable. Which variable is None?",
+    "list.sort() sorts in place and returns None. It also changes the caller's list.",
+    "sorted(scores, reverse=True) returns a new sorted list and leaves the original alone."
+  ],
+  "explanation": "list.sort() returns None and mutates the caller's list, so 'ranked' was None (TypeError) and the input was changed. sorted() returns a new list.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "top_three",
+    "sample": "print(top_three([4, 9, 1, 7]))",
+    "tests": [
+      {
+        "name": "three highest",
+        "expected": [
+          9,
+          7,
+          4
+        ],
+        "args": [
+          [
+            4,
+            9,
+            1,
+            7
+          ]
+        ],
+        "skills": [
+          "py_returns",
+          "py_types"
+        ]
+      },
+      {
+        "name": "fewer than three",
+        "expected": [
+          5,
+          2
+        ],
+        "args": [
+          [
+            2,
+            5
+          ]
+        ],
+        "skills": [
+          "py_returns",
+          "py_types"
+        ]
+      },
+      {
+        "name": "caller's list is unchanged",
+        "expected": [
+          4,
+          9,
+          1,
+          7
+        ],
+        "code": "s = [4, 9, 1, 7]\ntop_three(s)\nresult = s",
+        "skills": [
+          "py_returns"
+        ]
+      },
+      {
+        "name": "ties",
+        "expected": [
+          8,
+          8,
+          3
+        ],
+        "args": [
+          [
+            3,
+            8,
+            1,
+            8
+          ]
+        ],
+        "skills": [
+          "py_returns",
+          "py_types"
+        ]
+      }
+    ]
+  },
+  "solution": "def top_three(scores):\n    ranked = sorted(scores, reverse=True)\n    return ranked[:3]\n"
+}

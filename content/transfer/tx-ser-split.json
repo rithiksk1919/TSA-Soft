@@ -1,0 +1,26 @@
+{
+  "id": "tx-ser-split",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The 30 ohm drop",
+  "skills": [
+    "ck_series"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ser-split",
+  "scaffold": 0,
+  "prompt": "10 ohm and 30 ohm resistors are in series across 8 V. Find the voltage across the 30 ohm.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "A series loop has one current, 0.2 A, through both. V = 0.2 x 30 = 6 V.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Total R = 10 + 30 = 40 ohm",
+      "I = 8 / 40 = 0.2 A",
+      "Each resistor has its own current: I = 8 / 30 = 0.27 A",
+      "V = 0.27 x 30 = 8 V"
+    ],
+    "answer": 2
+  }
+}

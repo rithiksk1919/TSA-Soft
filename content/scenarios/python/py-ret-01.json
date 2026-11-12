@@ -1,0 +1,67 @@
+{
+  "id": "py-ret-01",
+  "domain": "python",
+  "title": "Average",
+  "skills": [
+    "py_returns"
+  ],
+  "difficulty": 0.2,
+  "surface_form": "numeric-result",
+  "scaffold": 2,
+  "estimated_minutes": 3,
+  "prompt": "average(nums) should return the mean of a list, or 0 for an empty list. Callers keep getting None.",
+  "starter": "def average(nums):\n    # mean of the list, or 0 for an empty list\n    # Tip: does the caller receive the value, or only see it on screen?\n    if not nums:\n        return 0\n    total = sum(nums)\n    mean = total / len(nums)\n    print(mean)\n",
+  "hints": [
+    "Click Run. The value is printed, but what does the caller get?",
+    "A function with no return statement returns None.",
+    "Replace print(mean) with return mean."
+  ],
+  "explanation": "The function printed the mean instead of returning it, so callers received None.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "average",
+    "sample": "x = average([2, 4])\nprint('caller got:', x)",
+    "tests": [
+      {
+        "name": "average of 2 and 4",
+        "expected": 3.0,
+        "args": [
+          [
+            2,
+            4
+          ]
+        ],
+        "visible": true
+      },
+      {
+        "name": "empty list",
+        "expected": 0,
+        "args": [
+          []
+        ],
+        "visible": true
+      },
+      {
+        "name": "single value",
+        "expected": 5.0,
+        "args": [
+          [
+            5
+          ]
+        ],
+        "visible": true
+      },
+      {
+        "name": "negative numbers",
+        "expected": -2.0,
+        "args": [
+          [
+            -1,
+            -3
+          ]
+        ]
+      }
+    ]
+  },
+  "solution": "def average(nums):\n    if not nums:\n        return 0\n    total = sum(nums)\n    mean = total / len(nums)\n    return mean\n"
+}

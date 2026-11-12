@@ -1,0 +1,27 @@
+{
+  "id": "tx-scope-discount",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "The sale price",
+  "skills": [
+    "py_scope"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-scope-discount",
+  "scaffold": 0,
+  "prompt": "apply_discount works out the sale price and the program prints it.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "sale only exists inside the function. The returned value is thrown away, so print(sale) fails. Keep it: sale = apply_discount(50).",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def apply_discount(price):",
+      "    sale = price * 0.8",
+      "    return sale",
+      "apply_discount(50)",
+      "print(sale)"
+    ],
+    "answer": 3
+  }
+}

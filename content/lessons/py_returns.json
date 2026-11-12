@@ -1,0 +1,160 @@
+{
+  "skill": "py_returns",
+  "chapter": 4,
+  "title": "print shows, return gives back",
+  "chalkboard": {
+    "title": "Where did the total go?",
+    "local_label": "cart_total(prices)",
+    "code": [
+      "def cart_total(prices):",
+      "    total = 0",
+      "    for price in prices:",
+      "        total += price",
+      "    print(total)",
+      "",
+      "bill = cart_total([3, 4])",
+      "print(bill + 1)"
+    ],
+    "steps": [
+      {
+        "line": 6,
+        "say": "We call cart_total([3, 4]) and want to keep the answer in bill.",
+        "memory": {
+          "global": {},
+          "local": {}
+        }
+      },
+      {
+        "line": 0,
+        "say": "Inside the call, prices is [3, 4].",
+        "memory": {
+          "global": {},
+          "local": {
+            "prices": "[3, 4]"
+          }
+        }
+      },
+      {
+        "line": 1,
+        "say": "total starts at 0.",
+        "memory": {
+          "global": {},
+          "local": {
+            "prices": "[3, 4]",
+            "total": "0"
+          }
+        }
+      },
+      {
+        "line": 3,
+        "say": "The loop adds 3, then 4, so total is 7.",
+        "memory": {
+          "global": {},
+          "local": {
+            "prices": "[3, 4]",
+            "total": "7"
+          }
+        }
+      },
+      {
+        "line": 4,
+        "say": "print puts 7 on the screen, but the function hands nothing back.",
+        "memory": {
+          "global": {},
+          "local": {
+            "prices": "[3, 4]",
+            "total": "7"
+          }
+        },
+        "error": true,
+        "error_label": "Bug: print is not return. The caller receives None."
+      },
+      {
+        "line": 6,
+        "say": "The call ends. bill gets None, because there was no return.",
+        "memory": {
+          "global": {
+            "bill": "None"
+          },
+          "local": {}
+        }
+      },
+      {
+        "line": 7,
+        "say": "None + 1 raises TypeError. With return total on line 5, bill would be 7.",
+        "memory": {
+          "global": {
+            "bill": "None"
+          },
+          "local": {}
+        }
+      }
+    ]
+  },
+  "textbook": {
+    "pages": [
+      {
+        "kicker": "Chapter 4 · Function return values",
+        "title": "print shows, return gives back",
+        "paragraphs": [
+          "print writes a value on the screen for a person to read. return hands a value back to the line that called the function.",
+          "A function with no return gives back None. If the caller stores the result, it stores None, and the next line that uses it breaks."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "caller: bill = cart_total([3, 4])",
+            "lines": [
+              "receives the returned value"
+            ]
+          },
+          "inner": {
+            "label": "cart_total(prices)",
+            "lines": [
+              "return total   (sends 7 back)"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Return value",
+          "definition": "the value a function hands back to the line that called it."
+        }
+      },
+      {
+        "kicker": "Chapter 4 · Function return values",
+        "title": "return ends the function",
+        "paragraphs": [
+          "The moment Python reaches a return, the function stops, even in the middle of a loop.",
+          "A return False inside a loop gives up after the first item. Put it after the loop, once every item has been checked."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "for letter in word:",
+            "lines": [
+              "checks each letter"
+            ]
+          },
+          "inner": {
+            "label": "if letter in 'aeiou':",
+            "lines": [
+              "return True   (ends the function at once)"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Early return",
+          "definition": "leaving a function before its last line because the answer is already known."
+        }
+      }
+    ]
+  },
+  "listen": {
+    "transcript": [
+      "print and return look similar, but they do different jobs.",
+      "print shows a value on the screen for you to read.",
+      "return hands the value back to whoever called the function.",
+      "If a function never returns, the caller gets None.",
+      "return also ends the function straight away, even inside a loop.",
+      "So put return False after the loop, once every item has been checked."
+    ]
+  }
+}

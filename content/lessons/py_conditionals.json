@@ -1,0 +1,147 @@
+{
+  "skill": "py_conditionals",
+  "chapter": 1,
+  "title": "Every rule has an edge",
+  "chalkboard": {
+    "title": "Seniors pay 6. Does 65 count?",
+    "local_label": "ticket_price(age)",
+    "code": [
+      "def ticket_price(age):",
+      "    if age < 12:",
+      "        return 5",
+      "    if age > 65:",
+      "        return 6",
+      "    return 10",
+      "",
+      "price = ticket_price(65)"
+    ],
+    "steps": [
+      {
+        "line": 7,
+        "say": "We call ticket_price(65). The rule says people aged 65 or over pay the senior price, 6.",
+        "memory": {
+          "global": {},
+          "local": {}
+        }
+      },
+      {
+        "line": 0,
+        "say": "Inside the call, the name age holds 65.",
+        "memory": {
+          "global": {},
+          "local": {
+            "age": "65"
+          }
+        }
+      },
+      {
+        "line": 1,
+        "say": "Is 65 < 12? No, so the child price is skipped.",
+        "memory": {
+          "global": {},
+          "local": {
+            "age": "65"
+          }
+        }
+      },
+      {
+        "line": 3,
+        "say": "Is 65 > 65? No. A number is never greater than itself, so 65 misses the senior price.",
+        "memory": {
+          "global": {},
+          "local": {
+            "age": "65"
+          }
+        },
+        "error": true,
+        "error_label": "Bug: the edge value 65 is left out. The test needs age >= 65."
+      },
+      {
+        "line": 5,
+        "say": "Nothing matched, so the function falls through to return 10.",
+        "memory": {
+          "global": {},
+          "local": {
+            "age": "65"
+          }
+        }
+      },
+      {
+        "line": 7,
+        "say": "price is 10 instead of 6. Changing line 4 to age >= 65 fixes it.",
+        "memory": {
+          "global": {
+            "price": "10"
+          },
+          "local": {}
+        }
+      }
+    ]
+  },
+  "textbook": {
+    "pages": [
+      {
+        "kicker": "Chapter 1 · Conditional logic",
+        "title": "Every rule has an edge",
+        "paragraphs": [
+          "An if statement asks a yes-or-no question. Python runs the indented lines under it only when the answer is True.",
+          "Most bugs hide at the edge of a rule, the exact value where the answer flips. 'Over 65' and '65 or over' differ only for 65 itself, so always test the edge value."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "if age >= 65:",
+            "lines": [
+              "True for 65, 66, 67, ..."
+            ]
+          },
+          "inner": {
+            "label": "body",
+            "lines": [
+              "return 6"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Boundary value",
+          "definition": "the exact value where a condition switches from False to True."
+        }
+      },
+      {
+        "kicker": "Chapter 1 · Conditional logic",
+        "title": "and, or, not",
+        "paragraphs": [
+          "'and' is True only when both sides are True. 'or' is True when at least one side is True. 'not' flips True and False.",
+          "A condition that can never be True, like hour < 6 and hour >= 20, means its body never runs. Read each condition with a real value and ask: can this ever happen?"
+        ],
+        "diagram": {
+          "outer": {
+            "label": "if hour < 6 or hour >= 20:",
+            "lines": [
+              "night time"
+            ]
+          },
+          "inner": {
+            "label": "body",
+            "lines": [
+              "lights_on = True"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Compound condition",
+          "definition": "two or more tests joined with and, or, or not."
+        }
+      }
+    ]
+  },
+  "listen": {
+    "transcript": [
+      "An if statement asks a question that is either True or False.",
+      "Python only runs the lines under it when the answer is True.",
+      "Bugs love the edge of a rule: the exact value where the answer flips.",
+      "Greater than 65 and 65 or over only disagree about the number 65.",
+      "So whenever you write a comparison, test the edge value by hand.",
+      "And when you join tests with and or or, ask whether the whole thing can ever be True."
+    ]
+  }
+}

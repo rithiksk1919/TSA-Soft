@@ -1,204 +1,467 @@
 {
-  "_note": "Reading desk scenarios: find the wrong step in a classmate's solution, with a scripted (mock) tutor. Ids match subjects.json next.id. g = 9.8 m/s^2; O2 = 32.00, H2O = 18.02, H2 = 2.016 g/mol. Arithmetic checked in tests/unit/data.test.cjs.",
-  "tutor": {
-    "name": "Tutor",
-    "fallback": "I’m a scripted demo tutor, so I only know this problem. Try “hint”, “why”, or ask about a word in the step.",
-    "noSpoil": "I’d rather not hand you the answer: you’ll keep it longer if you find it. Here’s a nudge instead.",
-    "hintsOut": "That was my last hint for this part. Read the step out loud, slowly; the slip is usually where a word and a symbol disagree."
-  },
-  "scenarios": [
+ "_note": "Reading desk scenarios: find the wrong step in a classmate's worked solution (two circuit problems and one Python trace).",
+ "tutor": {
+  "name": "Tutor",
+  "fallback": "I’m not sure what you mean by that. Try “hint”, “why”, or ask about a word in the step.",
+  "noSpoil": "I’d rather not hand you the answer: you’ll keep it longer if you find it. Here’s a nudge instead.",
+  "hintsOut": "That was my last hint for this part. Read the step out loud, slowly; the slip is usually where a word and a symbol disagree."
+ },
+ "scenarios": [
+  {
+   "id": "ck-series-current",
+   "subject": "circuits",
+   "call": "AP.CK.001",
+   "skill": "Series circuits",
+   "title": "Current in a series loop",
+   "problem": "A 12 V battery is connected to a 100 Ω resistor and a 200 Ω resistor in series. What current flows around the loop?",
+   "theirs": "I ≈ 0.18 A",
+   "key": "I = 0.040 A",
+   "_derivation": "R = 100 + 200 = 300; I = 12 / 300 = 0.040 A; drops 4 V and 8 V add to 12 V. Their path: 1/R = 0.015, R = 66.7, I = 0.18 A.",
+   "figure": "series",
+   "intro": [
+    "Hi. A classmate worked this one and got I ≈ 0.18 A, but the key says 0.040 A. Somewhere in their four steps, one line went wrong. We’ll find it together.",
+    "First, the problem itself. Read it on the sheet: what is it actually asking for?"
+   ],
+   "read": {
+    "question": "What does the problem ask for?",
+    "options": [
+     "The current around the loop",
+     "The voltage across the 200 Ω resistor",
+     "The total resistance"
+    ],
+    "answer": 0,
+    "right": "Yes: one number, the current. The total resistance is a stepping stone to it.",
+    "wrong": "Not quite. That could show up along the way, but look at the last sentence: “What current flows around the loop?”"
+   },
+   "check": "Now the classmate’s working. I’ll lay each step on the desk. Tell me if it holds up.",
+   "steps": [
     {
-      "id": "phy-incline-forces", "subject": "physics", "call": "AP.PHY.001", "skill": "Newton’s laws",
-      "title": "Forces on a block on an incline",
-      "problem": "A 2.0 kg block slides down a 30° incline. The coefficient of kinetic friction is 0.20. Find the block’s acceleration. Take g = 9.8 m/s².",
-      "theirs": "a ≈ 2.9 m/s²", "key": "a ≈ 3.2 m/s²",
-      "_derivation": "mg = 19.6 N; mg sin30 = 9.8 N; N = mg cos30 = 19.6 x 0.8660 = 16.97 N; f = 0.20 x 16.97 = 3.39 N; a = (9.8 - 3.39)/2.0 = 3.20 m/s^2. Wrong path: f = 0.20 x 19.6 = 3.92 N; a = (9.8 - 3.92)/2.0 = 2.94 m/s^2.",
-      "figure": "incline",
-      "intro": [
-        "Hi Priya. A classmate worked this one and got a ≈ 2.9 m/s², but the key says 3.2 m/s². Somewhere in their five steps, one line went wrong. We’ll find it together.",
-        "First, the problem itself. Read it on the sheet: what is it actually asking for?"
-      ],
-      "read": {
-        "question": "What does the problem ask for?",
-        "options": ["The block’s acceleration down the slope", "The normal force on the block", "The coefficient of friction"],
-        "answer": 0,
-        "right": "Yes: one number, the acceleration along the slope. Everything else (normal force, friction) is a stepping stone to it.",
-        "wrong": "Not quite. That shows up along the way, but look at the last sentence of the problem: “Find the block’s …”"
-      },
-      "check": "Now the classmate’s working. I’ll lay each step on the desk. Tell me if it holds up, or if something’s off.",
-      "steps": [
-        { "text": "Forces on the block: weight mg straight down, normal force N perpendicular to the slope, kinetic friction f up the slope.", "focus": ["mg", "N", "f"],
-          "say": "Step 1 is the free-body diagram. I’ve lit the three forces on the sketch. Does this list look right to you?",
-          "ok": "Agreed. The block slides down, so friction points up the slope, against the motion.",
-          "nudge": "This one actually holds up: three forces, and friction opposes the sliding, so up the slope is right. Keep it in mind as we go." },
-        { "text": "Along the slope, gravity pulls with mg sin 30° = 19.6 × 0.5 = 9.8 N.", "focus": ["sin", "theta"],
-          "say": "Step 2 takes the part of the weight that runs along the slope. Check the trig and the arithmetic.",
-          "ok": "Right. The along-slope part uses sin θ, and 19.6 × 0.5 is 9.8 N.",
-          "nudge": "Look again: sin 30° is exactly 0.5, and the along-slope part of the weight is mg sin θ. This step is fine." },
-        { "text": "The normal force balances the weight: N = mg = 2.0 × 9.8 = 19.6 N.", "focus": ["N", "cos"], "wrong": true,
-          "say": "Step 3 finds the normal force. This is the one the friction depends on, so look carefully.",
-          "missed": "Hmm, look again. On a flat floor N = mg. But this floor is tilted 30°. Does the surface push back against the whole weight, or only part of it?",
-          "caught": "Good catch. That’s the slip: N = mg is only true on a flat surface." }
-      ],
-      "why": {
-        "question": "Why is N = mg wrong here?",
-        "options": ["On a slope the surface only pushes back against mg cos θ, the part of the weight pressing into it", "The normal force should be mg sin θ", "The normal force should include friction"],
-        "answer": 0,
-        "right": "Exactly. The weight splits in two: mg cos θ presses into the slope, and mg sin θ pulls along it. The surface only answers the first.",
-        "wrong": "Not that one. Look at the sketch: which dashed part of the weight points straight into the slope?"
-      },
-      "fix": {
-        "question": "So what should step 3 say?",
-        "options": ["N = mg cos 30° = 19.6 × 0.866 ≈ 17.0 N", "N = mg sin 30° = 9.8 N", "N = mg + f"],
-        "answer": 0,
-        "right": "That’s the line. I’ll fix the card, and then the rest of the solution follows from your number.",
-        "wrong": "Close, but that’s the along-slope part. We want the part perpendicular to the slope."
-      },
-      "fixed": "N = mg cos 30° = 19.6 × 0.866 ≈ 17.0 N.",
-      "after": [
-        { "text": "Friction: f = μN = 0.20 × 17.0 ≈ 3.4 N.", "focus": ["f"], "say": "With your N, friction drops to about 3.4 N. The classmate’s 3.92 N came from the wrong N." },
-        { "text": "Net force along the slope: ma = 9.8 − 3.4 = 6.4 N, so a = 6.4 ÷ 2.0 ≈ 3.2 m/s².", "focus": ["sin", "f"], "say": "Pull minus friction, divided by mass: 3.2 m/s². That matches the key." }
-      ],
-      "result": "a ≈ 3.2 m/s²",
-      "rule": "On a slope, N = mg cos θ, not mg. Check N first: friction inherits any error in it.",
-      "hints": {
-        "read": ["The last sentence of a problem usually names the unknown.", "It starts “Find the block’s …”"],
-        "check": ["One step uses a rule that’s true on flat ground but not on a slope.", "Compare each force with the sketch: does the surface push back against all of the weight?", "Look at step 3: does N really equal mg on a 30° slope?"],
-        "fix": ["The part of the weight pressing into the slope uses cos θ.", "cos 30° ≈ 0.866, so N ≈ 19.6 × 0.866."]
-      },
-      "faq": [
-        { "match": ["cos", "sin", "trig", "angle"], "reply": "The angle between the weight and the line perpendicular to the slope equals the incline angle θ. So the perpendicular part is mg cos θ and the along-slope part is mg sin θ." },
-        { "match": ["friction", "μ", "mu", "coefficient"], "reply": "Kinetic friction is f = μN. It always uses the normal force, which is why an error in N spreads into friction and then into the acceleration." },
-        { "match": ["normal", "perpendicular"], "reply": "“Normal” means perpendicular. The normal force is the surface pushing straight out of itself, against whatever presses into it." }
-      ]
+     "text": "Draw the loop: battery, R1 = 100 Ω and R2 = 200 Ω, with one path for the current.",
+     "focus": [
+      "loop",
+      "vs"
+     ],
+     "say": "Step 1 is the sketch. One path means the same current goes through both resistors. Does this match the circuit?",
+     "ok": "Agreed. One loop, so one current.",
+     "nudge": "This one holds up: it just redraws the circuit as described."
     },
     {
-      "id": "chem-grams-moles-grams", "subject": "chemistry", "call": "AP.CHE.001", "skill": "Mole conversions",
-      "title": "Grams to moles to grams",
-      "problem": "Hydrogen burns in oxygen: 2H₂ + O₂ → 2H₂O. How many grams of water form when 8.0 g of O₂ reacts completely? Use O₂ = 32.00 g/mol and H₂O = 18.02 g/mol.",
-      "theirs": "0.028 g of water", "key": "9.0 g of water",
-      "_derivation": "n(O2) = 8.0/32.00 = 0.25 mol; n(H2O) = 2 x 0.25 = 0.50 mol; m = 0.50 x 18.02 = 9.01 g = 9.0 g. Wrong path: 0.50/18.02 = 0.0277 g = 0.028 g. Mass check: n(H2) = 0.50 mol x 2.016 = 1.008 g; 8.0 + 1.0 = 9.0 g.",
-      "figure": "chain",
-      "intro": [
-        "Hi Priya. A classmate got 0.028 g of water from this reaction; the key says 9.0 g. That’s a big gap, so one step must have flipped something. Let’s find it.",
-        "Start with the sheet. What quantity is the problem after?"
-      ],
-      "read": {
-        "question": "What does the problem ask for?",
-        "options": ["The mass of water produced", "The moles of oxygen used", "The mass of hydrogen needed"],
-        "answer": 0,
-        "right": "Right: grams of water. So the chain has to start in grams of O₂ and end in grams of H₂O. I’ve lit that path on the sheet.",
-        "wrong": "That’s a stop along the way. Read the question again: “How many grams of …”"
-      },
-      "check": "Here’s the classmate’s chain, one step at a time. Watch the units at each step: they’re the best lie detector in chemistry.",
-      "steps": [
-        { "text": "Moles of O₂: 8.0 g ÷ 32.00 g/mol = 0.25 mol.", "focus": ["A", "AB", "B"],
-          "say": "Step 1 turns grams of O₂ into moles. Divide by molar mass: do the units cancel to mol?",
-          "ok": "Yes. g ÷ (g/mol) leaves mol, and they used O₂ = 32.00, not O = 16.00. Nice.",
-          "nudge": "This one’s sound: 8.0 ÷ 32.00 = 0.25, and grams divided by grams-per-mole leaves moles." },
-        { "text": "Mole ratio from the equation: 0.25 mol O₂ × (2 mol H₂O ÷ 1 mol O₂) = 0.50 mol H₂O.", "focus": ["B", "BC", "C"],
-          "say": "Step 2 crosses the equation with the mole ratio. Check the coefficients: 2H₂ + O₂ → 2H₂O.",
-          "ok": "Right. One O₂ makes two H₂O, so the moles double.",
-          "nudge": "Look again: the equation has 1 O₂ and 2 H₂O, so 0.25 mol of O₂ really does make 0.50 mol of water. This step holds." },
-        { "text": "Mass of water: 0.50 mol ÷ 18.02 g/mol ≈ 0.028 g.", "focus": ["C", "CD", "D"], "wrong": true,
-          "say": "Step 3 turns moles of water back into grams. Track the units here.",
-          "missed": "Let’s check the units together: mol ÷ (g/mol) = mol²/g. Is that a mass?",
-          "caught": "Exactly. Dividing by molar mass goes from grams to moles. Going back to grams, you multiply." }
-      ],
-      "why": {
-        "question": "What went wrong in step 3?",
-        "options": ["It divided by molar mass; to get grams from moles you multiply, and the units show it", "It should have used the molar mass of O₂", "The mole ratio is upside down"],
-        "answer": 0,
-        "right": "Yes. mol × (g/mol) = g. The units would have caught it: their answer was in mol²/g.",
-        "wrong": "Not quite. Steps 1 and 2 checked out. Look only at the last arrow on the sketch and its units."
-      },
-      "fix": {
-        "question": "What should step 3 say?",
-        "options": ["0.50 mol × 18.02 g/mol ≈ 9.0 g", "0.50 mol ÷ 32.00 g/mol ≈ 0.016 g", "0.25 mol × 18.02 g/mol ≈ 4.5 g"],
-        "answer": 0,
-        "right": "That’s it. I’ll fix the card and the arrow on the sketch.",
-        "wrong": "Check which amount of water you have (step 2) and which way the units need to go."
-      },
-      "fixed": "Mass of water: 0.50 mol × 18.02 g/mol ≈ 9.0 g.",
-      "after": [
-        { "text": "Check by conservation of mass: 0.50 mol H₂ × 2.016 g/mol ≈ 1.0 g of H₂ reacts, and 8.0 g + 1.0 g = 9.0 g. It balances.", "focus": ["A", "D"], "say": "A quick sanity check: the mass going in must equal the mass coming out. 9.0 g in, 9.0 g out." }
-      ],
-      "result": "9.0 g of water",
-      "rule": "Grams → moles: divide by molar mass. Moles → grams: multiply. If the units don’t end in grams, the step is wrong.",
-      "hints": {
-        "read": ["Look for the unit in the question: “how many grams of …”", "The unknown is a mass of water."],
-        "check": ["Write the units next to every number.", "One step ends in mol²/g, which isn’t a mass.", "Look at step 3: should you divide or multiply by g/mol to get grams?"],
-        "fix": ["mol × (g/mol) = g.", "Use the 0.50 mol of water from step 2."]
-      },
-      "faq": [
-        { "match": ["molar", "mass", "g/mol"], "reply": "Molar mass is grams per mole. Divide grams by it to get moles; multiply moles by it to get grams." },
-        { "match": ["ratio", "coefficient", "equation"], "reply": "The coefficients in the balanced equation are mole ratios: 2H₂ + O₂ → 2H₂O means 1 mol O₂ makes 2 mol H₂O." },
-        { "match": ["unit", "units"], "reply": "Carry units through every step, like numbers. If they don’t cancel down to the unit you want, the step is wrong." }
-      ]
+     "text": "Total resistance: 1/R = 1/100 + 1/200 = 0.015, so R ≈ 66.7 Ω.",
+     "focus": [
+      "rtotal"
+     ],
+     "wrong": true,
+     "say": "Step 2 combines the two resistors into one. Check which rule fits this arrangement.",
+     "missed": "Hmm, look again. Reciprocals are for branches that share the same two ends. Are these resistors side by side, or one after the other?",
+     "caught": "Good catch. That’s the parallel rule, but these resistors are in series."
     },
     {
-      "id": "bio-dna-to-protein", "subject": "biology", "call": "AP.BIO.001", "skill": "Protein synthesis",
-      "title": "From DNA to protein",
-      "problem": "A DNA template strand reads 3′-TAC AAG CCT ATT GCA-5′. Write the amino acid sequence of the protein it codes for.",
-      "theirs": "Met–Phe–Gly–Arg", "key": "Met–Phe–Gly",
-      "_derivation": "Template 3'-TAC AAG CCT ATT GCA-5' -> mRNA 5'-AUG UUC GGA UAA CGU-3'. AUG Met, UUC Phe, GGA Gly, UAA stop. CGU (Arg) is after the stop and is not translated.",
-      "figure": "codons",
-      "intro": [
-        "Hi Priya. A classmate turned this DNA into Met–Phe–Gly–Arg, but the key stops at Met–Phe–Gly. One amino acid too many. Let’s see where it crept in.",
-        "I’ll scaffold the first part with you. On the sheet: what form should the answer take?"
-      ],
-      "read": {
-        "question": "What does the problem ask for?",
-        "options": ["The amino acid sequence of the protein", "The mRNA sequence", "The coding DNA strand"],
-        "answer": 0,
-        "right": "Right: amino acids. The mRNA is a step on the way there. DNA → mRNA → protein, left to right on the sketch.",
-        "wrong": "That’s a middle step. The last word of the question tells you the final form: “the protein it codes for”."
-      },
-      "check": "Here are the classmate’s steps. Use the sketch: each column is one codon, read top to bottom.",
-      "steps": [
-        { "text": "Transcribe: pair each template base, A→U, T→A, C→G, G→C. mRNA: 5′-AUG UUC GGA UAA CGU-3′.", "focus": ["dna", "mrna"],
-          "say": "Step 1 builds the mRNA from the template. Check a codon or two against the pairing rules.",
-          "ok": "Correct. TAC pairs to AUG, and so on. RNA uses U in place of T.",
-          "nudge": "This one’s right: T pairs with A, A with U (RNA has no T), C with G. TAC → AUG checks out." },
-        { "text": "Start at the start codon AUG: Met. Then UUC → Phe, GGA → Gly.", "focus": ["c1", "c2", "c3"],
-          "say": "Step 2 starts translating. AUG is the start codon. Check the next two in the codon table.",
-          "ok": "Yes. Start at AUG, then read three bases at a time: UUC Phe, GGA Gly.",
-          "nudge": "Look again: AUG is Met (and the start signal), UUC is Phe, GGA is Gly. This one holds up." },
-        { "text": "Next, UAA has no amino acid, so skip it and read on: CGU → Arg. Protein: Met–Phe–Gly–Arg.", "focus": ["c4", "c5"], "wrong": true,
-          "say": "Step 3 deals with the last two codons. What does UAA tell the ribosome?",
-          "missed": "Look at UAA again. “No amino acid” is true, but is it a gap to skip, or a signal?",
-          "caught": "That’s the one. UAA isn’t a gap, it’s a stop signal." }
-      ],
-      "why": {
-        "question": "Why is step 3 wrong?",
-        "options": ["UAA is a stop codon: the ribosome lets go, so nothing after it is translated", "UAA codes for leucine", "The reading frame shifted by one base"],
-        "answer": 0,
-        "right": "Yes. A stop codon ends translation. CGU is still in the mRNA, but it’s never read.",
-        "wrong": "Not quite. The pairing and the frame were fine in steps 1 and 2. Focus on what UAA means."
-      },
-      "fix": {
-        "question": "What should step 3 say?",
-        "options": ["UAA is a stop codon, so translation ends. Protein: Met–Phe–Gly", "Skip UAA and read on. Protein: Met–Phe–Gly–Arg", "UAA codes for Tyr. Protein: Met–Phe–Gly–Tyr–Arg"],
-        "answer": 0,
-        "right": "That’s the fix. I’ll update the card and mark the stop on the sketch.",
-        "wrong": "Remember what a stop codon does to the ribosome."
-      },
-      "fixed": "UAA is a stop codon, so translation ends. Protein: Met–Phe–Gly.",
-      "after": [
-        { "text": "Check: three codons before the stop give three amino acids. The stop codon itself codes for none.", "focus": ["c1", "c2", "c3", "c4"], "say": "Count check: three codons before the stop, three amino acids. The key agrees." }
-      ],
-      "result": "Met–Phe–Gly",
-      "rule": "Translation runs from AUG to the first stop codon (UAA, UAG or UGA). Nothing after the stop is read.",
-      "hints": {
-        "read": ["Read the last few words of the question.", "“The protein it codes for” means amino acids."],
-        "check": ["Not every codon codes for an amino acid.", "Three codons don’t code for any amino acid. What do they do instead?", "Look at step 3: is UAA something to skip, or a stop?"],
-        "fix": ["The ribosome releases the chain at a stop codon.", "Only the codons before UAA are translated."]
-      },
-      "faq": [
-        { "match": ["stop", "uaa", "uag", "uga"], "reply": "UAA, UAG and UGA are stop codons. A release factor binds there and the finished chain is let go." },
-        { "match": ["template", "coding", "strand"], "reply": "The template strand is the one RNA polymerase reads. The mRNA is complementary to it, so it matches the coding strand (with U for T)." },
-        { "match": ["aug", "start", "met"], "reply": "AUG is the start codon and codes for methionine (Met), so most proteins begin with Met." }
-      ]
+     "text": "Ohm’s law: I = V / R = 12 / 66.7 ≈ 0.18 A.",
+     "focus": [
+      "I",
+      "vs"
+     ],
+     "say": "Step 3 applies Ohm’s law with the total from step 2. The formula itself is fine.",
+     "ok": "Ohm’s law is fine. The number is only off because it uses the total from step 2.",
+     "nudge": "The rule is right. Check the numbers you put into it."
+    },
+    {
+     "text": "So about 0.18 A flows around the loop.",
+     "focus": [
+      "I"
+     ],
+     "say": "Step 4 states the answer from step 3.",
+     "ok": "It follows from step 3, so it inherits that error but adds none of its own.",
+     "nudge": "This line only repeats step 3."
     }
-  ]
+   ],
+   "why": {
+    "question": "Why is 66.7 Ω wrong here?",
+    "options": [
+     "It is the parallel formula, but these resistors are in series",
+     "It forgot to square the resistances",
+     "The battery voltage should have been used"
+    ],
+    "answer": 0,
+    "right": "Exactly. In series the same current must pass through both, so the resistances add.",
+    "wrong": "Not that one. Think about how the resistors are connected: one after the other, or side by side?"
+   },
+   "fix": {
+    "question": "So what should step 2 say?",
+    "options": [
+     "R = 100 + 200 = 300 Ω",
+     "R = 100 × 200 = 20 000 Ω",
+     "R = (100 + 200) / 2 = 150 Ω"
+    ],
+    "answer": 0,
+    "right": "That’s the line. In series, resistances simply add.",
+    "wrong": "Close, but no. For one loop you add the resistances directly."
+   },
+   "fixed": "R = 100 + 200 = 300 Ω.",
+   "after": [
+    {
+     "text": "Ohm’s law: I = V / R = 12 / 300 = 0.040 A.",
+     "focus": [
+      "I",
+      "vs"
+     ],
+     "say": "With R = 300 Ω, Ohm’s law gives 0.040 A. That matches the key."
+    },
+    {
+     "text": "Check: 0.040 A × 100 Ω = 4 V and 0.040 A × 200 Ω = 8 V, and 4 + 8 = 12 V.",
+     "focus": [
+      "rtotal",
+      "vs"
+     ],
+     "say": "The two drops add up to the battery voltage, so we can trust the answer."
+    }
+   ],
+   "result": "I = 0.040 A",
+   "rule": "In series, add the resistances. In parallel, add the reciprocals. Decide how the parts are connected before you pick the rule.",
+   "hints": {
+    "read": [
+     "The last sentence of a problem usually names the unknown.",
+     "It starts “What current …”"
+    ],
+    "check": [
+     "One step uses a rule meant for a different kind of connection.",
+     "Compare the step with the sketch: are the resistors on one path, or on separate branches?",
+     "Look at step 2: does 1/R = 1/R1 + 1/R2 fit a single loop?"
+    ],
+    "fix": [
+     "For one loop, resistances simply add.",
+     "What is 100 + 200?"
+    ]
+   },
+   "faq": [
+    {
+     "match": [
+      "series",
+      "parallel",
+      "branch"
+     ],
+     "reply": "Series means one path: the same current goes through every part, so resistances add. Parallel means branches that share both ends: each branch gets the same voltage, and you add the reciprocals."
+    },
+    {
+     "match": [
+      "ohm",
+      "v = ir",
+      "formula"
+     ],
+     "reply": "Ohm’s law is I = V ÷ R. Here V is the battery’s 12 V and R is the total resistance of the loop."
+    },
+    {
+     "match": [
+      "why",
+      "reciprocal",
+      "1/"
+     ],
+     "reply": "The reciprocal rule works because each branch carries part of the current. A single loop has nothing to split, so there are no reciprocals."
+    }
+   ]
+  },
+  {
+   "id": "ck-parallel-total",
+   "subject": "circuits",
+   "call": "AP.CK.002",
+   "skill": "Parallel circuits",
+   "title": "Total current from a parallel pair",
+   "problem": "Two 60 Ω resistors are connected in parallel across a 12 V supply. What total current does the supply provide?",
+   "theirs": "I = 0.10 A",
+   "key": "I = 0.40 A",
+   "_derivation": "1/R = 1/60 + 1/60, R = 30; I = 12/30 = 0.40 A; each branch 0.20 A. Their path: R = 120; I = 0.10 A.",
+   "figure": "branches",
+   "intro": [
+    "Hi. A classmate worked this one and got I = 0.10 A, but the key says 0.40 A. Somewhere in their four steps, one line went wrong. We’ll find it together.",
+    "First, the problem itself. Read it on the sheet: what is it actually asking for?"
+   ],
+   "read": {
+    "question": "What does the problem ask for?",
+    "options": [
+     "The total current from the supply",
+     "The current in one resistor",
+     "The total resistance"
+    ],
+    "answer": 0,
+    "right": "Yes: the total current the supply provides. The total resistance is a stepping stone.",
+    "wrong": "Not quite. Look at the last sentence: “What total current does the supply provide?”"
+   },
+   "check": "Now the classmate’s working. I’ll lay each step on the desk. Tell me if it holds up.",
+   "steps": [
+    {
+     "text": "Draw the circuit: a 12 V supply with a 60 Ω resistor on each of two separate branches.",
+     "focus": [
+      "vs",
+      "branches"
+     ],
+     "say": "Step 1 is the sketch. Two branches means the current can split. Does this match the circuit?",
+     "ok": "Agreed. Two branches across the same supply.",
+     "nudge": "This one holds up: it redraws the circuit as described."
+    },
+    {
+     "text": "Total resistance: R = 60 + 60 = 120 Ω.",
+     "focus": [
+      "rtotal"
+     ],
+     "wrong": true,
+     "say": "Step 2 combines the two resistors. Check which rule fits this arrangement.",
+     "missed": "Hmm, look again. The sketch shows two separate branches. Does the current have to squeeze through both resistors, or can it split?",
+     "caught": "Good catch. Adding is the series rule. Here the current has two routes."
+    },
+    {
+     "text": "Ohm’s law: I = V / R = 12 / 120 = 0.10 A.",
+     "focus": [
+      "I",
+      "vs"
+     ],
+     "say": "Step 3 applies Ohm’s law with the total from step 2.",
+     "ok": "Ohm’s law is fine. The number only inherits the error from step 2.",
+     "nudge": "The rule is right. Check the numbers you put into it."
+    },
+    {
+     "text": "So the supply provides 0.10 A.",
+     "focus": [
+      "I"
+     ],
+     "say": "Step 4 states the answer.",
+     "ok": "It follows from step 3.",
+     "nudge": "This line only repeats step 3."
+    }
+   ],
+   "why": {
+    "question": "Why is 120 Ω wrong here?",
+    "options": [
+     "Adding is the series rule, but these are on separate branches",
+     "60 + 60 should be 100",
+     "Resistances can never be added"
+    ],
+    "answer": 0,
+    "right": "Exactly. With two routes the current splits, so the total resistance is lower than either branch.",
+    "wrong": "Not that one. Think about whether the current has one path or two."
+   },
+   "fix": {
+    "question": "So what should step 2 say?",
+    "options": [
+     "1/R = 1/60 + 1/60, so R = 30 Ω",
+     "R = 60 × 60 = 3 600 Ω",
+     "R = 60 Ω"
+    ],
+    "answer": 0,
+    "right": "That’s the line. Two equal parallel resistors give half the resistance.",
+    "wrong": "Close, but no. For branches you add the reciprocals."
+   },
+   "fixed": "1/R = 1/60 + 1/60 = 1/30, so R = 30 Ω.",
+   "after": [
+    {
+     "text": "Ohm’s law: I = V / R = 12 / 30 = 0.40 A.",
+     "focus": [
+      "I",
+      "vs"
+     ],
+     "say": "With R = 30 Ω, Ohm’s law gives 0.40 A. That matches the key."
+    },
+    {
+     "text": "Check by branches: each has 12 V across 60 Ω, so 0.20 A each, and 0.20 + 0.20 = 0.40 A.",
+     "focus": [
+      "branches"
+     ],
+     "say": "Each branch carries 0.20 A, and together that is 0.40 A, so we can trust it."
+    }
+   ],
+   "result": "I = 0.40 A",
+   "rule": "In parallel the total resistance is always smaller than the smallest branch. If your total is bigger, you used the wrong rule.",
+   "hints": {
+    "read": [
+     "The last sentence of a problem usually names the unknown.",
+     "It starts “What total current …”"
+    ],
+    "check": [
+     "One step uses a rule meant for a different kind of connection.",
+     "Compare the step with the sketch: is the current forced through one resistor after the other?",
+     "Look at step 2: is 120 Ω bigger or smaller than one branch? What should a parallel total be?"
+    ],
+    "fix": [
+     "For branches, add the reciprocals.",
+     "1/60 + 1/60 = 2/60 = 1/30."
+    ]
+   },
+   "faq": [
+    {
+     "match": [
+      "series",
+      "parallel",
+      "branch"
+     ],
+     "reply": "Parallel means branches that share both ends: the current splits, each branch gets the full 12 V, and the total resistance is smaller than any single branch."
+    },
+    {
+     "match": [
+      "ohm",
+      "v = ir",
+      "formula"
+     ],
+     "reply": "Ohm’s law is I = V ÷ R. For the whole circuit, use the supply voltage and the total resistance."
+    },
+    {
+     "match": [
+      "why",
+      "reciprocal",
+      "1/",
+      "half"
+     ],
+     "reply": "Two equal resistors in parallel give half of one. A quick check: your total must come out smaller than 60 Ω."
+    }
+   ]
+  },
+  {
+   "id": "py-range-trace",
+   "subject": "python",
+   "call": "AP.PY.001",
+   "skill": "Off-by-one errors",
+   "title": "Tracing a range loop",
+   "problem": "What does this code print?  total = 0;  for i in range(1, 5): total += i;  print(total)",
+   "theirs": "15",
+   "key": "10",
+   "_derivation": "range(1, 5) = 1, 2, 3, 4; 0 + 1 + 2 + 3 + 4 = 10. Their path: 1..5, sum 15.",
+   "figure": "trace",
+   "intro": [
+    "Hi. A classmate traced this program by hand and got 15, but the key says 10. Somewhere in their four steps, one line went wrong. We’ll find it together.",
+    "First, the code itself. Read it on the sheet: what is it actually asking for?"
+   ],
+   "read": {
+    "question": "What does the question ask for?",
+    "options": [
+     "The value printed at the end",
+     "The last value of i",
+     "How many times the loop runs"
+    ],
+    "answer": 0,
+    "right": "Yes: the final value of total, which is what print shows.",
+    "wrong": "Not quite. Look at the last line of the code: print(total)."
+   },
+   "check": "Now the classmate’s trace. I’ll lay each step on the desk. Tell me if it holds up.",
+   "steps": [
+    {
+     "text": "total starts at 0.",
+     "focus": [
+      "tot"
+     ],
+     "say": "Step 1 sets up the running total. Does it match the first line of the code?",
+     "ok": "Agreed. total = 0.",
+     "nudge": "This one holds up: it copies the first line."
+    },
+    {
+     "text": "range(1, 5) gives 1, 2, 3, 4, 5.",
+     "focus": [
+      "rng",
+      "c5"
+     ],
+     "wrong": true,
+     "say": "Step 2 lists the values i takes. Check where range stops.",
+     "missed": "Hmm, look again. range(a, b) starts at a, but does it include b?",
+     "caught": "Good catch. range stops before its second number, so 5 never appears."
+    },
+    {
+     "text": "Add them up: 0 + 1 + 2 + 3 + 4 + 5 = 15.",
+     "focus": [
+      "tot"
+     ],
+     "say": "Step 3 adds the values from step 2.",
+     "ok": "The addition is right for those six numbers. The list from step 2 is the problem.",
+     "nudge": "The sum is correct for the numbers it was given. Check the list."
+    },
+    {
+     "text": "So the program prints 15.",
+     "focus": [
+      "tot"
+     ],
+     "say": "Step 4 states the output.",
+     "ok": "It follows from step 3.",
+     "nudge": "This line only repeats step 3."
+    }
+   ],
+   "why": {
+    "question": "Why is 5 not in range(1, 5)?",
+    "options": [
+     "The stop value is never included",
+     "range counts from 0, so it starts at 0",
+     "range only gives even numbers"
+    ],
+    "answer": 0,
+    "right": "Exactly. range(1, 5) starts at 1 and stops before 5, so it gives 1, 2, 3, 4.",
+    "wrong": "Not that one. Think about whether the second number in range is included."
+   },
+   "fix": {
+    "question": "So what should step 2 say?",
+    "options": [
+     "range(1, 5) gives 1, 2, 3, 4",
+     "range(1, 5) gives 0, 1, 2, 3, 4",
+     "range(1, 5) gives 2, 3, 4, 5"
+    ],
+    "answer": 0,
+    "right": "That’s the line. Four numbers: the start is included and the stop is not.",
+    "wrong": "Close, but no. It starts at 1 and stops just before 5."
+   },
+   "fixed": "range(1, 5) gives 1, 2, 3, 4.",
+   "after": [
+    {
+     "text": "Add them up: 0 + 1 + 2 + 3 + 4 = 10.",
+     "focus": [
+      "tot"
+     ],
+     "say": "With four values, the total is 10. That matches the key."
+    },
+    {
+     "text": "Check: range(1, 5) has 5 − 1 = 4 numbers, and 1 + 2 + 3 + 4 = 10.",
+     "focus": [
+      "rng"
+     ],
+     "say": "The count of numbers is stop minus start, which confirms four values."
+    }
+   ],
+   "result": "10",
+   "rule": "range(a, b) starts at a and stops before b. It has b − a numbers. Write out the first and last value before you add anything.",
+   "hints": {
+    "read": [
+     "The last line of a program usually shows what the question wants.",
+     "It is print(total)."
+    ],
+    "check": [
+     "One step lists more numbers than the loop really visits.",
+     "Count how many numbers range(1, 5) gives. Is it 4 or 5?",
+     "Look at step 2: does range include its second number?"
+    ],
+    "fix": [
+     "range stops before its second number.",
+     "So the last value is 4."
+    ]
+   },
+   "faq": [
+    {
+     "match": [
+      "range",
+      "stop",
+      "include"
+     ],
+     "reply": "range(start, stop) gives numbers from start up to, but not including, stop. So range(1, 5) is 1, 2, 3, 4."
+    },
+    {
+     "match": [
+      "loop",
+      "iteration",
+      "+="
+     ],
+     "reply": "Each pass through the loop adds the current i to total. total += i means total = total + i."
+    },
+    {
+     "match": [
+      "why",
+      "off by one",
+      "off-by-one"
+     ],
+     "reply": "An off-by-one error is being one step off at the start or end of a range. Writing out the first and last value catches most of them."
+    }
+   ]
+  }
+ ]
 }

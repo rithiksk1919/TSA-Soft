@@ -1,0 +1,26 @@
+{
+  "id": "tx-short-lamp",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The shorted lamp",
+  "skills": [
+    "ck_short"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-short-lamp",
+  "scaffold": 0,
+  "prompt": "A lamp and a 10 ohm resistor are in series on 6 V. The lamp is shorted.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Removing resistance from a loop makes the current rise, not fall: I = 6 / 10 = 0.6 A.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "A short is a path with almost zero resistance",
+      "Voltage across it: V = I x 0",
+      "So a meter across the lamp reads about 0 V",
+      "The loop current falls, because a part stopped working"
+    ],
+    "answer": 3
+  }
+}

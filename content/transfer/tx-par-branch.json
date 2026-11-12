@@ -1,0 +1,26 @@
+{
+  "id": "tx-par-branch",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The third branch",
+  "skills": [
+    "ck_parallel"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-par-branch",
+  "scaffold": 0,
+  "prompt": "Three resistors are in parallel across a 9 V battery. Find the voltage across the third one.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Branches sharing the same two nodes each get the full 9 V. Voltage only splits in series.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Parallel branches connect to the same two nodes",
+      "The voltage splits between branches: 9 / 3 = 3 V each",
+      "So the third resistor has 3 V",
+      "Answer: 3 V"
+    ],
+    "answer": 1
+  }
+}

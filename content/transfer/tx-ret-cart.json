@@ -1,0 +1,27 @@
+{
+  "id": "tx-ret-cart",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Shopping cart total",
+  "skills": [
+    "py_returns"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ret-cart",
+  "scaffold": 0,
+  "prompt": "cart_total should give the caller the sum of the prices.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "print shows the number but the caller receives None. The function must return total.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def cart_total(prices):",
+      "    total = 0",
+      "    for price in prices:",
+      "        total += price",
+      "    print(total)"
+    ],
+    "answer": 4
+  }
+}

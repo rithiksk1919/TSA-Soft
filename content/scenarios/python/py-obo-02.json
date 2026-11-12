@@ -1,0 +1,110 @@
+{
+  "id": "py-obo-02",
+  "domain": "python",
+  "title": "Pagination",
+  "skills": [
+    "py_off_by_one"
+  ],
+  "difficulty": 0.5,
+  "surface_form": "slice-indices",
+  "scaffold": 1,
+  "estimated_minutes": 6,
+  "prompt": "page_items(items, page, per_page) returns the items on a page, where page numbers start at 1. Page 1 is showing the second page.",
+  "starter": "def page_items(items, page, per_page):\n    # pages are numbered from 1\n    start = page * per_page\n    end = start + per_page\n    return items[start:end]\n",
+  "hints": [
+    "Work out start for page 1 by hand. What should the first index be?",
+    "List indices start at 0, but page numbers start at 1.",
+    "Convert the page number to a zero-based index first: (page - 1) * per_page."
+  ],
+  "explanation": "Page numbers start at 1 but slice indices start at 0, so start = page * per_page skipped a whole page. It should be (page - 1) * per_page.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "page_items",
+    "sample": "print(page_items(list(range(10)), 1, 3))",
+    "tests": [
+      {
+        "name": "page 1 of 3 per page",
+        "expected": [
+          0,
+          1,
+          2
+        ],
+        "args": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          1,
+          3
+        ],
+        "visible": true
+      },
+      {
+        "name": "last partial page",
+        "expected": [
+          9
+        ],
+        "args": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          4,
+          3
+        ]
+      },
+      {
+        "name": "page 2 of 5 per page",
+        "expected": [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "args": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          2,
+          5
+        ]
+      },
+      {
+        "name": "empty list",
+        "expected": [],
+        "args": [
+          [],
+          1,
+          5
+        ]
+      }
+    ]
+  },
+  "solution": "def page_items(items, page, per_page):\n    start = (page - 1) * per_page\n    end = start + per_page\n    return items[start:end]\n"
+}

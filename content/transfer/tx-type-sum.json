@@ -1,0 +1,25 @@
+{
+  "id": "tx-type-sum",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Adding two typed numbers",
+  "skills": [
+    "py_types"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-type-sum",
+  "scaffold": 0,
+  "prompt": "Read two whole numbers typed by the user and print their sum.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "input always gives text. b is never converted, so a + b mixes int and str. Use int(input(...)).",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "a = int(input(\"First: \"))",
+      "b = input(\"Second: \")",
+      "print(a + b)"
+    ],
+    "answer": 1
+  }
+}

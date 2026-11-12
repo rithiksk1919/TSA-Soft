@@ -1,0 +1,71 @@
+{
+  "id": "py-loop-01",
+  "domain": "python",
+  "title": "Countdown",
+  "skills": [
+    "py_loops"
+  ],
+  "difficulty": 0.25,
+  "surface_form": "while-counter",
+  "scaffold": 2,
+  "estimated_minutes": 4,
+  "prompt": "countdown(n) should return [n, n-1, ..., 1]. Right now it never finishes.",
+  "starter": "def countdown(n):\n    # countdown(3) -> [3, 2, 1]\n    # Tip: a while loop needs something inside it that moves toward the exit.\n    result = []\n    while n > 0:\n        result.append(n)\n    return result\n",
+  "hints": [
+    "The tests time out, so the loop never stops. What would make 'n > 0' become False?",
+    "Nothing inside the loop changes n.",
+    "Decrease n by one each time round the loop: n -= 1."
+  ],
+  "explanation": "The loop condition depended on n, but n was never changed inside the loop, so it ran forever.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "countdown",
+    "sample": "print(countdown(3))",
+    "tests": [
+      {
+        "name": "countdown(3)",
+        "expected": [
+          3,
+          2,
+          1
+        ],
+        "args": [
+          3
+        ],
+        "visible": true
+      },
+      {
+        "name": "countdown(1)",
+        "expected": [
+          1
+        ],
+        "args": [
+          1
+        ],
+        "visible": true
+      },
+      {
+        "name": "countdown(0) is empty",
+        "expected": [],
+        "args": [
+          0
+        ],
+        "visible": true
+      },
+      {
+        "name": "countdown(5)",
+        "expected": [
+          5,
+          4,
+          3,
+          2,
+          1
+        ],
+        "args": [
+          5
+        ]
+      }
+    ]
+  },
+  "solution": "def countdown(n):\n    result = []\n    while n > 0:\n        result.append(n)\n        n -= 1\n    return result\n"
+}

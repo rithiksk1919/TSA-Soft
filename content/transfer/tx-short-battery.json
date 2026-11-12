@@ -1,0 +1,26 @@
+{
+  "id": "tx-short-battery",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "After the short",
+  "skills": [
+    "ck_short"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-short-battery",
+  "scaffold": 0,
+  "prompt": "Two 100 ohm resistors are in series on 5 V. One of them is shorted. Find the new current.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "With one resistor shorted, R = 100 + 0 = 100 ohm, so I = 5 / 100 = 0.05 A.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Before: R = 200 ohm, I = 5 / 200 = 0.025 A",
+      "A short makes one resistor about 0 ohm",
+      "After the short: R = 100 + 100 = 200 ohm",
+      "I = 5 / R"
+    ],
+    "answer": 2
+  }
+}

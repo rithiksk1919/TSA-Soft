@@ -1,0 +1,109 @@
+{
+  "id": "ck-11",
+  "domain": "circuits",
+  "title": "Voltmeter only",
+  "skills": [
+    "ck_short",
+    "ck_series"
+  ],
+  "difficulty": 0.8,
+  "surface_form": "voltage-only-short",
+  "scaffold": 0,
+  "estimated_minutes": 7,
+  "prompt": "Four 1 kΩ resistors are in series on 12 V. The circuit runs warm. You only have a voltmeter. Find the faulty part.",
+  "starter": null,
+  "hints": [
+    "Healthy: 12 V shared by four equal resistors.",
+    "If one resistor drops nothing, the other three share 12 V.",
+    "Measure across R1 to R4 (e.g. A to B, B to C, C to D, D to E)."
+  ],
+  "explanation": "R3 is shorted: it reads 0 V while R1, R2 and R4 each read 4 V instead of 3 V.",
+  "evaluator": {
+    "type": "circuit_fault",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "C": [
+          4,
+          0
+        ],
+        "D": [
+          4,
+          2
+        ],
+        "E": [
+          2,
+          2
+        ],
+        "G": [
+          0,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 12
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "A",
+          "b": "B",
+          "value": 1000
+        },
+        {
+          "id": "R2",
+          "type": "resistor",
+          "a": "B",
+          "b": "C",
+          "value": 1000
+        },
+        {
+          "id": "R3",
+          "type": "resistor",
+          "a": "C",
+          "b": "D",
+          "value": 1000
+        },
+        {
+          "id": "R4",
+          "type": "resistor",
+          "a": "D",
+          "b": "E",
+          "value": 1000
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "E",
+          "b": "G",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [
+      "voltage"
+    ],
+    "fault": {
+      "component": "R3",
+      "kind": "short"
+    },
+    "value_tolerance": 0.1
+  },
+  "solution": {
+    "component": "R3",
+    "kind": "short"
+  }
+}

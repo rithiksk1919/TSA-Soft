@@ -1,0 +1,26 @@
+{
+  "id": "tx-cond-lights",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Street lights at night",
+  "skills": [
+    "py_conditionals"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-cond-lights",
+  "scaffold": 0,
+  "prompt": "Street lights are on before 6 in the morning, or from hour 20 onwards (hours run 0 to 23).",
+  "kicker": "Same idea, new story",
+  "hints": [],
+  "explanation": "No hour is both below 6 and at least 20, so the lights never turn on. The two cases need 'or'.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def lights_on(hour):",
+      "    if hour < 6 and hour >= 20:",
+      "        return True",
+      "    return False"
+    ],
+    "answer": 1
+  }
+}

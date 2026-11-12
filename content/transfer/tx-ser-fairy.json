@@ -1,0 +1,26 @@
+{
+  "id": "tx-ser-fairy",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "Fairy lights",
+  "skills": [
+    "ck_series"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ser-fairy",
+  "scaffold": 0,
+  "prompt": "Four 5 ohm bulbs are in series on a 12 V supply. Find the current.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "In series the 12 V is shared between the bulbs. Use the total: I = 12 / 20 = 0.6 A.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Series: total R = 5 + 5 + 5 + 5",
+      "Total R = 20 ohm",
+      "Each bulb gets the full 12 V, so I = 12 / 5 = 2.4 A",
+      "So 2.4 A flows"
+    ],
+    "answer": 2
+  }
+}

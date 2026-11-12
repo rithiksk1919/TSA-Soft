@@ -1,0 +1,26 @@
+{
+  "id": "tx-obo-playlist",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Last song in the playlist",
+  "skills": [
+    "py_off_by_one"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-obo-playlist",
+  "scaffold": 0,
+  "prompt": "Return the last song in the playlist, or None when the playlist is empty.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "Indexes run from 0 to len - 1, so playlist[len(playlist)] is one past the end. Use playlist[len(playlist) - 1].",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def last_song(playlist):",
+      "    if not playlist:",
+      "        return None",
+      "    return playlist[len(playlist)]"
+    ],
+    "answer": 3
+  }
+}

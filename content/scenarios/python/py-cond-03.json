@@ -1,0 +1,76 @@
+{
+  "id": "py-cond-03",
+  "domain": "python",
+  "title": "Shipping cost",
+  "skills": [
+    "py_conditionals"
+  ],
+  "difficulty": 0.8,
+  "surface_form": "branch-structure",
+  "scaffold": 0,
+  "estimated_minutes": 8,
+  "prompt": "shipping_cost(weight_kg, express) should charge 4 under 1 kg, 9 from 1 to 5 kg, and 9 + 2 per started kg above 5 kg. Express doubles the total. Light parcels are being overcharged.",
+  "starter": "import math\n\ndef shipping_cost(weight_kg, express):\n    # under 1 kg -> 4; 1 to 5 kg (inclusive) -> 9; over 5 kg -> 9 + 2 per started extra kg\n    # express doubles the total\n    if weight_kg < 1:\n        cost = 4\n    if weight_kg <= 5:\n        cost = 9\n    else:\n        extra = math.ceil(weight_kg - 5)\n        cost = 9 + 2 * extra\n    if express:\n        cost = cost * 2\n    return cost\n",
+  "hints": [
+    "Only parcels under 1 kg are wrong. Follow 0.5 kg through every 'if'.",
+    "Two separate 'if' statements are both checked. The second one overwrites cost.",
+    "The three weight bands are mutually exclusive, so they should be one if/elif/else chain."
+  ],
+  "explanation": "The weight bands were written as two independent if statements, so a light parcel set cost = 4 and the next 'if weight_kg <= 5' overwrote it with 9. The fix is 'elif'.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "shipping_cost",
+    "sample": "print(shipping_cost(0.5, False))",
+    "tests": [
+      {
+        "name": "0.5 kg standard",
+        "expected": 4,
+        "args": [
+          0.5,
+          false
+        ]
+      },
+      {
+        "name": "0.5 kg express",
+        "expected": 8,
+        "args": [
+          0.5,
+          true
+        ]
+      },
+      {
+        "name": "3 kg standard",
+        "expected": 9,
+        "args": [
+          3,
+          false
+        ]
+      },
+      {
+        "name": "exactly 5 kg",
+        "expected": 9,
+        "args": [
+          5,
+          false
+        ]
+      },
+      {
+        "name": "6.5 kg standard",
+        "expected": 13,
+        "args": [
+          6.5,
+          false
+        ]
+      },
+      {
+        "name": "7 kg express",
+        "expected": 26,
+        "args": [
+          7,
+          true
+        ]
+      }
+    ]
+  },
+  "solution": "import math\n\ndef shipping_cost(weight_kg, express):\n    if weight_kg < 1:\n        cost = 4\n    elif weight_kg <= 5:\n        cost = 9\n    else:\n        extra = math.ceil(weight_kg - 5)\n        cost = 9 + 2 * extra\n    if express:\n        cost = cost * 2\n    return cost\n"
+}

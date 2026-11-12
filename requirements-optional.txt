@@ -1,0 +1,1 @@
+matplotlib>=3.7   # only for `python3 run.py simulate` (plots)

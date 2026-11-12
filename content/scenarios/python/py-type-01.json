@@ -1,0 +1,54 @@
+{
+  "id": "py-type-01",
+  "domain": "python",
+  "title": "Describe a person",
+  "skills": [
+    "py_types"
+  ],
+  "difficulty": 0.2,
+  "surface_form": "string-building",
+  "scaffold": 2,
+  "estimated_minutes": 3,
+  "prompt": "describe(name, age) should build a sentence like \"Ana is 16 years old\". It raises a TypeError.",
+  "starter": "def describe(name, age):\n    # describe(\"Ana\", 16) -> \"Ana is 16 years old\"\n    # Tip: read the TypeError message carefully. Which two types are being mixed?\n    return name + \" is \" + age + \" years old\"\n",
+  "hints": [
+    "Click Run and read the error message.",
+    "'+' between a str and an int is not allowed in Python.",
+    "Convert the number with str(age), or use an f-string."
+  ],
+  "explanation": "age is an int and '+' cannot join a str and an int. It must be converted with str(age) or formatted with an f-string.",
+  "evaluator": {
+    "type": "python_tests",
+    "entry": "describe",
+    "sample": "print(describe(\"Ana\", 16))",
+    "tests": [
+      {
+        "name": "Ana, 16",
+        "expected": "Ana is 16 years old",
+        "args": [
+          "Ana",
+          16
+        ],
+        "visible": true
+      },
+      {
+        "name": "Bo, 7",
+        "expected": "Bo is 7 years old",
+        "args": [
+          "Bo",
+          7
+        ],
+        "visible": true
+      },
+      {
+        "name": "age 100",
+        "expected": "Cy is 100 years old",
+        "args": [
+          "Cy",
+          100
+        ]
+      }
+    ]
+  },
+  "solution": "def describe(name, age):\n    return name + \" is \" + str(age) + \" years old\"\n"
+}

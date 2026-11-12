@@ -1,0 +1,126 @@
+{
+  "skill": "py_types",
+  "chapter": 6,
+  "title": "Every value has a type",
+  "chalkboard": {
+    "title": "How old next year?",
+    "local_label": "",
+    "code": [
+      "age = input(\"Age: \")",
+      "next_year = age + 1",
+      "print(\"Next year you will be \" + next_year)"
+    ],
+    "steps": [
+      {
+        "line": 0,
+        "say": "The learner types 15. input always gives back text, so age is the string '15'.",
+        "memory": {
+          "global": {
+            "age": "'15'  (str)"
+          },
+          "local": {}
+        }
+      },
+      {
+        "line": 1,
+        "say": "age + 1 tries to add text and a number. Python refuses.",
+        "memory": {
+          "global": {
+            "age": "'15'  (str)"
+          },
+          "local": {}
+        },
+        "error": true,
+        "error_label": "TypeError: can only concatenate str (not \"int\") to str"
+      },
+      {
+        "line": 1,
+        "say": "Fix: convert first with age = int(input(\"Age: \")). Now age is 15 and next_year is 16.",
+        "memory": {
+          "global": {
+            "age": "15  (int)",
+            "next_year": "16  (int)"
+          },
+          "local": {}
+        }
+      },
+      {
+        "line": 2,
+        "say": "Joining text needs text on both sides, so this line needs str(next_year).",
+        "memory": {
+          "global": {
+            "age": "15  (int)",
+            "next_year": "16  (int)"
+          },
+          "local": {}
+        }
+      }
+    ]
+  },
+  "textbook": {
+    "pages": [
+      {
+        "kicker": "Chapter 6 · Type errors",
+        "title": "Every value has a type",
+        "paragraphs": [
+          "Every value in Python has a type. 15 is an int, 1.5 is a float, '15' is a str (text), and True is a bool.",
+          "The type decides what you can do with a value. You can add two numbers or join two strings, but not add a string to a number."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "value: '15'",
+            "lines": [
+              "type: str (text)"
+            ]
+          },
+          "inner": {
+            "label": "int('15')",
+            "lines": [
+              "15   (type: int)"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Type",
+          "definition": "the kind of value (int, float, str, bool); it decides which operations are allowed."
+        }
+      },
+      {
+        "kicker": "Chapter 6 · Type errors",
+        "title": "input() always gives text",
+        "paragraphs": [
+          "Whatever the user types, input gives it back as a string, even if it looks like a number.",
+          "Convert it before you do arithmetic with int() or float(), and convert numbers back with str() before you join them to text."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "input('Age: ')",
+            "lines": [
+              "gives '15' (str)"
+            ]
+          },
+          "inner": {
+            "label": "int(input('Age: '))",
+            "lines": [
+              "gives 15 (int)"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Type conversion",
+          "definition": "making a new value of another type, such as int('15') or str(15)."
+        }
+      }
+    ]
+  },
+  "listen": {
+    "transcript": [
+      "Every value in Python has a type, like int for whole numbers and str for text.",
+      "The type decides what you are allowed to do with the value.",
+      "You can add numbers, and you can join text, but you cannot add text to a number.",
+      "input always gives you text, even when the user types digits.",
+      "So convert with int before doing arithmetic.",
+      "And convert back with str before joining a number onto a sentence."
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "tx-ser-doorbell",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The doorbell loop",
+  "skills": [
+    "ck_series"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ser-doorbell",
+  "scaffold": 0,
+  "prompt": "A 9 V battery, a 100 ohm resistor and a 200 ohm buzzer are in one loop. Find the total resistance.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Reciprocals are the parallel rule. In series the resistances add: 100 + 200 = 300 ohm.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Two parts in one loop: they are in series",
+      "Series rule: 1/R = 1/100 + 1/200",
+      "R = 66.7 ohm",
+      "Total resistance is 66.7 ohm"
+    ],
+    "answer": 1
+  }
+}

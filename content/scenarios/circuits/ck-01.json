@@ -1,0 +1,85 @@
+{
+  "id": "ck-01",
+  "domain": "circuits",
+  "title": "Current through one resistor",
+  "skills": [
+    "ck_ohms"
+  ],
+  "difficulty": 0.2,
+  "surface_form": "single-loop-calc",
+  "scaffold": 2,
+  "estimated_minutes": 3,
+  "prompt": "A 9 V battery drives a single 450 Ω resistor. Using Ohm's law, how much current flows through R1? Answer in mA.",
+  "starter": null,
+  "hints": [
+    "Ohm's law links voltage, current and resistance: V = I × R.",
+    "Rearrange it for current: I = V / R.",
+    "9 / 450 gives amps. Multiply by 1000 for mA."
+  ],
+  "explanation": "I = V / R = 9 V / 450 Ω = 0.020 A = 20 mA.",
+  "evaluator": {
+    "type": "circuit_calc",
+    "circuit": {
+      "ground": "G",
+      "nodes": {
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          3,
+          0
+        ],
+        "C": [
+          3,
+          2
+        ],
+        "G": [
+          0,
+          2
+        ]
+      },
+      "components": [
+        {
+          "id": "V1",
+          "type": "battery",
+          "a": "A",
+          "b": "G",
+          "value": 9
+        },
+        {
+          "id": "R1",
+          "type": "resistor",
+          "a": "A",
+          "b": "B",
+          "value": 450
+        },
+        {
+          "id": "W1",
+          "type": "wire",
+          "a": "B",
+          "b": "C",
+          "value": 0
+        },
+        {
+          "id": "W2",
+          "type": "wire",
+          "a": "C",
+          "b": "G",
+          "value": 0
+        }
+      ]
+    },
+    "meter": [],
+    "question": {
+      "text": "Current through R1",
+      "unit": "mA",
+      "answer": 20.0,
+      "tolerance": 0.02
+    }
+  },
+  "solution": {
+    "answer": 20.0,
+    "unit": "mA"
+  }
+}

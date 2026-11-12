@@ -1,0 +1,27 @@
+{
+  "id": "tx-loop-vending",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "The vending machine that never stops",
+  "skills": [
+    "py_loops"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-loop-vending",
+  "scaffold": 0,
+  "prompt": "Refill the shelf until it holds exactly 10 snacks. Some shelves start with an odd number.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "Adding two snacks per pass jumps an odd shelf from 9 to 11, so len(shelf) never equals 10 and the loop never ends. Add one snack per pass.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def refill(shelf):",
+      "    while len(shelf) != 10:",
+      "        shelf.append(\"snack\")",
+      "        shelf.append(\"snack\")",
+      "    return shelf"
+    ],
+    "answer": 3
+  }
+}

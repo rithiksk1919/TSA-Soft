@@ -1,0 +1,146 @@
+{
+  "skill": "py_scope",
+  "chapter": 5,
+  "title": "Where variables live",
+  "chalkboard": {
+    "title": "Two names called total",
+    "local_label": "add(n)",
+    "code": [
+      "total = 0",
+      "",
+      "def add(n):",
+      "    total = total + n",
+      "    return total",
+      "",
+      "add(5)"
+    ],
+    "steps": [
+      {
+        "line": 0,
+        "say": "total = 0 runs at the top of the file, so total is a global name.",
+        "memory": {
+          "global": {
+            "total": "0"
+          },
+          "local": {}
+        }
+      },
+      {
+        "line": 6,
+        "say": "We call add(5).",
+        "memory": {
+          "global": {
+            "total": "0"
+          },
+          "local": {}
+        }
+      },
+      {
+        "line": 2,
+        "say": "Inside the call, n is 5. This call has its own local names.",
+        "memory": {
+          "global": {
+            "total": "0"
+          },
+          "local": {
+            "n": "5"
+          }
+        }
+      },
+      {
+        "line": 3,
+        "say": "This line assigns to total, so inside add, total is a new local name. Python reads that local before it has a value.",
+        "memory": {
+          "global": {
+            "total": "0"
+          },
+          "local": {
+            "n": "5",
+            "total": "(no value yet)"
+          }
+        },
+        "error": true,
+        "error_label": "UnboundLocalError: local variable 'total' referenced before assignment"
+      },
+      {
+        "line": 3,
+        "say": "Fix: pass total in and return the new value: def add(total, n): return total + n, then total = add(total, 5).",
+        "memory": {
+          "global": {
+            "total": "5"
+          },
+          "local": {
+            "total": "0",
+            "n": "5"
+          }
+        }
+      }
+    ]
+  },
+  "textbook": {
+    "pages": [
+      {
+        "kicker": "Chapter 5 · Variable scope",
+        "title": "Where variables live",
+        "paragraphs": [
+          "Every name in a Python program has a home. The home decides which parts of your code are allowed to see it.",
+          "A name you create at the top of the file is global, so every function can read it. A name a function assigns to is local, and it disappears when that call finishes."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "FILE (global)",
+            "lines": [
+              "total = 0"
+            ]
+          },
+          "inner": {
+            "label": "add(n) (local)",
+            "lines": [
+              "n = 5"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Scope",
+          "definition": "the region of code where a name can be used."
+        }
+      },
+      {
+        "kicker": "Chapter 5 · Variable scope",
+        "title": "Pass in, return out",
+        "paragraphs": [
+          "Assigning to a name inside a function makes a new local name, even if a global one has the same name.",
+          "The safe way to change a value is to pass it in and return the new one. The caller stores what comes back."
+        ],
+        "diagram": {
+          "outer": {
+            "label": "FILE (global)",
+            "lines": [
+              "total = add(total, 5)"
+            ]
+          },
+          "inner": {
+            "label": "add(total, n) (local)",
+            "lines": [
+              "return total + n"
+            ]
+          }
+        },
+        "key_term": {
+          "term": "Local variable",
+          "definition": "a name created inside a function; it only exists while that call runs."
+        }
+      }
+    ]
+  },
+  "listen": {
+    "transcript": [
+      "Every name in a program lives somewhere.",
+      "Names made at the top of the file are global, and every function can read them.",
+      "Names a function assigns to are local, and they vanish when the call ends.",
+      "If a function assigns to total, Python treats total as local inside it.",
+      "Reading that local before it has a value raises UnboundLocalError.",
+      "So pass values in, return the result, and let the caller keep it."
+    ]
+  }
+}

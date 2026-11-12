@@ -1,0 +1,25 @@
+{
+  "id": "tx-ret-speed",
+  "pool": "transfer",
+  "domain": "python",
+  "title": "Average speed",
+  "skills": [
+    "py_returns"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ret-speed",
+  "scaffold": 0,
+  "prompt": "Work out distance / time and give the result back to the caller.",
+  "kicker": "New names, new story",
+  "hints": [],
+  "explanation": "A bare return sends back None. It has to return speed.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "def average_speed(distance, time):",
+      "    speed = distance / time",
+      "    return"
+    ],
+    "answer": 2
+  }
+}

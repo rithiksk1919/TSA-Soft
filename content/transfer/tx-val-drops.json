@@ -1,0 +1,26 @@
+{
+  "id": "tx-val-drops",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "Uneven drops",
+  "skills": [
+    "ck_value"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-val-drops",
+  "scaffold": 0,
+  "prompt": "Two resistors in series on 12 V should each drop 6 V. R1 drops 4 V and R2 drops 8 V.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "With the same current, the bigger drop belongs to the bigger resistance. R2 has the larger value.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "The same current flows through both (series)",
+      "A bigger drop means a bigger resistance: V = I x R",
+      "R2 drops more, so R2 has the smaller resistance",
+      "The drops still add to 12 V, so nothing is open"
+    ],
+    "answer": 2
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "tx-ohm-charger",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "The charger resistor",
+  "skills": [
+    "ck_ohms"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ohm-charger",
+  "scaffold": 0,
+  "prompt": "A 5 V supply pushes 0.25 A through a resistor. Find its resistance.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "Resistance is voltage divided by current: R = V / I = 5 / 0.25 = 20 ohm.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Known: V = 5 V, I = 0.25 A",
+      "Ohm's law: R = V x I",
+      "R = 5 x 0.25 = 1.25 ohm",
+      "So the resistor is 1.25 ohm"
+    ],
+    "answer": 1
+  }
+}

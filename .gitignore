@@ -9,3 +9,11 @@ qa/traces/*.json
 qa/test-results-*/
 qa/traces/
 qa/poses/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+data/
+.env
+sim/output/summary.json

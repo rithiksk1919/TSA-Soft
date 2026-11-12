@@ -1,0 +1,296 @@
+// The gym: Bug Hoops, the transfer check. Every shot is graded on the server against the hidden answer key.
+import { api, esc, fixed, main, getProfileId, renderTopBar, toast, query } from "./common.js";
+import { gymScene, ballSvg } from "./art.js";
+
+const HOOP_X = 1210;   // the rim in the scene's 1440 x 860 drawing
+const HOOP_Y = 280;
+
+let game = null;
+let currentSkillName = "";
+
+export async function showGym(summary) {
+  const ready = summary.rooms.gym.ready;
+  let skill = null;
+  const wanted = query().skill;
+  for (const item of ready) {
+    if (item.skill === wanted) {
+      skill = item;
+    }
+  }
+  if (!skill && ready.length > 0) {
+    skill = ready[0];
+  }
+  let note = "Transfer check: nothing ready yet";
+  if (skill) {
+    note = "Transfer check: " + skill.name.toLowerCase();
+  }
+  renderTopBar("gym", summary, note);
+
+  if (!skill) {
+    showClosed(summary);
+    return;
+  }
+  currentSkillName = skill.name;
+  showIntro(skill, ready);
+}
+
+function sceneStart() {
+  let html = '<div class="scene" id="gym-scene">' + gymScene();
+  html += '<div class="chip"><span class="kicker">Transfer check game</span><strong>Bug Hoops</strong></div>';
+  return html;
+}
+
+function showClosed(summary) {
+  const rows = summary.skills_table.slice();
+  rows.sort(function (a, b) {
+    return b.mastery - a.mastery;
+  });
+  let list = "";
+  for (const row of rows.slice(0, 5)) {
+    let left = fixed(Math.max(0, 0.8 - row.mastery), 2) + " to go";
+    if (row.mastered) {
+      left = "mastered";
+    }
+    list += "<li>" + esc(row.name) + ": " + fixed(row.mastery, 2) + " (" + left + ")</li>";
+  }
+  let html = sceneStart();
+  html += '<section class="final" aria-labelledby="closed-title"><div class="kicker">Not open yet</div><h2 id="closed-title">The gym opens at mastery 0.80</h2>';
+  html += "<p>The transfer check proves you can solve a problem you have never seen, with no hints. A skill gets one once its mastery reaches 0.80.</p>";
+  html += '<ul style="text-align:left">' + list + '</ul><div class="actions"><a class="btn" href="#/">Back to hub</a></div></section></div>';
+  main.innerHTML = html;
+}
+
+function showIntro(skill, ready) {
+  let picker = "";
+  if (ready.length > 1) {
+    picker = '<p><label for="gym-skill">Skill </label><select id="gym-skill" style="min-height:44px;border-radius:8px;font:inherit;padding:0 8px">';
+    for (const item of ready) {
+      let selected = "";
+      if (item.skill === skill.skill) {
+        selected = " selected";
+      }
+      picker += '<option value="' + item.skill + '"' + selected + ">" + esc(item.name) + "</option>";
+    }
+    picker += "</select></p>";
+  }
+  let html = sceneStart();
+  html += '<section class="final" aria-labelledby="intro-title"><div class="kicker">Transfer check · ' + esc(skill.name) + "</div>";
+  html += '<h2 id="intro-title">Three shots, no hints</h2>';
+  html += "<p>Each round is a problem you have never seen, with new names and a new story. Click the line that has the bug to take your shot. Make 2 of 3 to pass.</p>";
+  html += picker + '<div class="actions"><button type="button" class="btn btn-brass" id="start-game">Start game</button><a class="btn btn-light" href="#/">Back to hub</a></div></section></div>';
+  main.innerHTML = html;
+  const picked = document.getElementById("gym-skill");
+  if (picked) {
+    picked.addEventListener("change", function () {
+      location.hash = "#/gym?skill=" + picked.value;
+    });
+  }
+  const startButton = document.getElementById("start-game");
+  startButton.addEventListener("click", async function () {
+    startButton.disabled = true;
+    try {
+      game = await api("/api/profiles/" + getProfileId() + "/gym/start", { skill: skill.skill });
+      showRound();
+    } catch (error) {
+      toast(error.message);
+      startButton.disabled = false;
+    }
+  });
+}
+
+function streak(rounds) {
+  let count = 0;
+  for (const round of rounds) {
+    if (!round.shot) {
+      break;
+    }
+    if (round.shot.made) {
+      count = count + 1;
+    } else {
+      count = 0;
+    }
+  }
+  return count;
+}
+
+function hudHtml(roundNumber) {
+  if (roundNumber > game.rounds.length) {
+    roundNumber = game.rounds.length;
+  }
+  let html = '<div class="hud" aria-live="polite">';
+  html += "<span>ROUND " + roundNumber + " OF " + game.rounds.length + "</span>";
+  html += "<span>SCORE " + game.made + "</span>";
+  html += "<span>STREAK " + streak(game.rounds) + "</span>";
+  html += '<span class="locked">Hints locked</span></div>';
+  return html;
+}
+
+function showRound() {
+  const round = game.rounds[game.shots_taken];
+  let lines = "";
+  for (let i = 0; i < round.lines.length; i = i + 1) {
+    lines += '<li><button type="button" data-line="' + i + '" aria-label="Line ' + (i + 1) + ": " + esc(round.lines[i]) + '">';
+    lines += '<span class="n">' + (i + 1) + "</span><span>" + esc(round.lines[i]) + '</span><span class="mark"></span></button></li>';
+  }
+  let html = sceneStart() + hudHtml(game.shots_taken + 1);
+  html += '<section class="board" aria-labelledby="round-title"><div class="row"><span class="kicker">' + esc(currentSkillName) + '</span><span class="kicker">' + esc(round.kicker) + "</span></div>";
+  html += '<h2 id="round-title">' + esc(round.title) + "</h2><p>" + esc(round.story) + "</p>";
+  html += '<ol class="lines">' + lines + "</ol>";
+  html += '<p id="shot-help" style="margin-top:12px">Click the line that has the bug to take your shot.</p><div id="shot-result" aria-live="polite"></div></section>';
+  html += '<aside class="info"><span class="kicker">How it counts</span>Every shot is graded by the evaluator against a fixed answer key. Hints stay locked so a pass proves you can do it alone.</aside>';
+  html += '<div class="ball" id="ball">' + ballSvg() + "</div></div>";
+  main.innerHTML = html;
+
+  const buttons = main.querySelectorAll(".lines button");
+  for (const button of buttons) {
+    button.addEventListener("click", function () {
+      shoot(Number(button.dataset.line), buttons);
+    });
+  }
+  buttons[0].focus();
+}
+
+async function shoot(line, buttons) {
+  for (const button of buttons) {
+    button.disabled = true;
+  }
+  let shot;
+  try {
+    shot = await api("/api/gym/" + game.id + "/shot", { line: line });
+  } catch (error) {
+    toast(error.message);
+    for (const button of buttons) {
+      button.disabled = false;
+    }
+    return;
+  }
+  await animateBall(shot.made);
+
+  const chosen = buttons[shot.chosen_line];
+  const answer = buttons[shot.correct_line];
+  if (shot.made) {
+    chosen.classList.add("made");
+    chosen.querySelector(".mark").textContent = "Bug found";
+  } else {
+    chosen.classList.add("missed");
+    chosen.querySelector(".mark").textContent = "Not this one";
+    answer.classList.add("answer");
+    answer.querySelector(".mark").textContent = "The bug";
+  }
+
+  game = await api("/api/gym/" + game.id);
+  let heading = "Swish! That is the bug.";
+  if (!shot.made) {
+    heading = "Off the rim. The bug was on line " + (shot.correct_line + 1) + ".";
+  }
+  let nextLabel = "Next round";
+  if (shot.finished) {
+    nextLabel = "See the result";
+  }
+  const box = document.getElementById("shot-result");
+  box.innerHTML = '<div class="result"><strong>' + esc(heading) + "</strong>" + esc(shot.explanation) + '</div><p><button type="button" class="btn btn-brass" id="next-round">' + nextLabel + "</button></p>";
+  document.getElementById("shot-help").hidden = true;
+  const hud = main.querySelector(".hud");
+  hud.outerHTML = hudHtml(shot.round);
+  const nextButton = document.getElementById("next-round");
+  nextButton.focus();
+  nextButton.addEventListener("click", function () {
+    if (shot.finished) {
+      showFinal(shot.result);
+    } else {
+      showRound();
+    }
+  });
+}
+
+function hoopOnScreen() {
+  const scene = document.getElementById("gym-scene");
+  const box = scene.getBoundingClientRect();
+  const scale = Math.max(box.width / 1440, box.height / 860);
+  const offsetX = (box.width - 1440 * scale) / 2;
+  const offsetY = (box.height - 860 * scale) / 2;
+  return { x: box.left + offsetX + HOOP_X * scale, y: box.top + offsetY + HOOP_Y * scale };
+}
+
+function animateBall(made) {
+  const ball = document.getElementById("ball");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!ball || reduce || !ball.animate) {
+    return Promise.resolve();
+  }
+  const start = ball.getBoundingClientRect();
+  const hoop = hoopOnScreen();
+  const dx = hoop.x - (start.left + start.width / 2);
+  const dy = hoop.y - (start.top + start.height / 2);
+  let frames;
+  if (made) {
+    frames = [
+      { transform: "translate(0px, 0px)" },
+      { transform: "translate(" + dx * 0.5 + "px, " + (dy - 160) + "px)", offset: 0.45 },
+      { transform: "translate(" + dx + "px, " + (dy - 20) + "px)", offset: 0.75 },
+      { transform: "translate(" + dx + "px, " + (dy + 70) + "px)" },
+    ];
+  } else {
+    frames = [
+      { transform: "translate(0px, 0px)" },
+      { transform: "translate(" + dx * 0.5 + "px, " + (dy - 160) + "px)", offset: 0.45 },
+      { transform: "translate(" + (dx - 40) + "px, " + (dy - 6) + "px)", offset: 0.7 },
+      { transform: "translate(" + (dx - 190) + "px, " + (dy + 220) + "px)" },
+    ];
+  }
+  const animation = ball.animate(frames, { duration: 1000, easing: "ease-in-out", fill: "forwards" });
+  return animation.finished.catch(function () {});
+}
+
+function showFinal(result) {
+  let message;
+  if (result.passed) {
+    message = "<p><strong>Passed.</strong> 2 of 3 with no hints counts as the transfer check for " + esc(currentSkillName) + ".</p>";
+    if (result.newly_mastered && result.newly_mastered.length > 0) {
+      message += "<p>" + esc(currentSkillName) + " is now mastered.</p>";
+    } else {
+      message += "<p>Mastery is confirmed once your last two near-level solves include this check, so keep practising if it is not marked mastered yet.</p>";
+    }
+    if (!game.counts_as_transfer) {
+      message += '<p class="note">You had already seen these problems, so this game was practice and does not count as a fresh transfer check.</p>';
+    }
+  } else {
+    message = "<p><strong>Not this time.</strong> " + esc(currentSkillName) + " goes back to practice, and a worked example comes first.</p>";
+  }
+  let changes = "";
+  let stillReady = true;
+  const keys = Object.keys(result.mastery_changes || {});
+  for (const key of keys) {
+    const pair = result.mastery_changes[key];
+    changes += "<li>Mastery " + fixed(pair[0], 2) + " to " + fixed(pair[1], 2) + "</li>";
+    if (pair[1] < 0.8) {
+      stillReady = false;
+    }
+  }
+  if (result.newly_mastered && result.newly_mastered.length > 0) {
+    stillReady = false;
+  }
+  let againButton = '<button type="button" class="btn btn-brass" id="play-again">Play again</button>';
+  if (!stillReady && !result.passed) {
+    againButton = '<a class="btn btn-brass" href="#/classroom?skill=' + game.skill + '">Worked example in the classroom</a>';
+  } else if (!stillReady) {
+    againButton = "";
+  }
+  let html = sceneStart() + hudHtml(game.rounds.length);
+  html += '<section class="final" aria-labelledby="final-title"><div class="kicker">Bug Hoops · ' + esc(currentSkillName) + "</div>";
+  html += '<h2 id="final-title">' + result.made + " of 3 shots made</h2>" + message;
+  if (changes) {
+    html += '<ul style="text-align:left">' + changes + "</ul>";
+  }
+  html += '<div class="actions">' + againButton + '<a class="btn btn-light" href="#/">Back to hub</a></div></section></div>';
+  main.innerHTML = html;
+  const title = document.getElementById("final-title");
+  title.setAttribute("tabindex", "-1");
+  title.focus();
+  const again = document.getElementById("play-again");
+  if (again) {
+    again.addEventListener("click", function () {
+      window.dispatchEvent(new Event("hashchange"));
+    });
+  }
+}

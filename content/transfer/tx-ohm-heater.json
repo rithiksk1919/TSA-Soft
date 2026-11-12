@@ -1,0 +1,26 @@
+{
+  "id": "tx-ohm-heater",
+  "pool": "transfer",
+  "domain": "circuits",
+  "title": "Units on the heater",
+  "skills": [
+    "ck_ohms"
+  ],
+  "difficulty": 0.7,
+  "surface_form": "transfer-tx-ohm-heater",
+  "scaffold": 0,
+  "prompt": "2 mA flows through a 4.5 kilo-ohm element. Find the voltage across it.",
+  "kicker": "New numbers, new story",
+  "hints": [],
+  "explanation": "4.5 kilo-ohm is 4500 ohm, not 4.5 ohm. V = 0.002 x 4500 = 9 V.",
+  "evaluator": {
+    "type": "bug_line",
+    "lines": [
+      "Known: I = 2 mA, R = 4.5 kilo-ohm",
+      "Ohm's law: V = I x R",
+      "In base units: I = 0.002 A, R = 4.5 ohm",
+      "V = 0.002 x 4.5 = 0.009 V"
+    ],
+    "answer": 2
+  }
+}
