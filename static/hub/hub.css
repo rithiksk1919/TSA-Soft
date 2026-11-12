@@ -66,9 +66,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 main, main:focus, main:focus-visible { outline: none; }
 
 /* ---- hub layout ---- */
-.hub { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; max-width: 1760px; margin: 0 auto; padding: 18px 28px 28px; }
-.hub-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.hub-right { display: flex; flex-direction: column; gap: 12px; }
+.hub { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 14px 20px 28px; }
+/* the banner and the school fill the window below the top bar */
+.hub-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; height: calc(100svh - 92px); min-height: 620px; }
+.hub-right { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 
 .banner { display: flex; align-items: center; gap: 20px; background: var(--dark); color: var(--cream); border-radius: 12px; padding: 18px 24px; flex-wrap: wrap; }
 .banner .text { flex: 1; min-width: 300px; }
@@ -79,14 +80,15 @@ main, main:focus, main:focus-visible { outline: none; }
 .banner .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* the school building: a dollhouse cut open, each room a small lit 3D scene (rooms3d.js/.css) */
-.school { background: #DCE6E2; border-radius: 12px; padding: 18px 18px 0; overflow: hidden; }
+.school { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #DCE6E2; border-radius: 12px; padding: 18px 18px 0; overflow: hidden; }
+.house { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .roof { position: relative; height: 70px; margin: 0 6px; }
 .roof-shape { position: absolute; inset: 0; background: var(--wood-dark); clip-path: polygon(3% 100%, 12% 0, 88% 0, 97% 100%); }
 .roof-sign { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); background: var(--cream); border: 2px solid var(--brass-dark); border-radius: 4px; padding: 6px 28px; font-family: var(--mono); font-size: 14px; letter-spacing: .18em; font-weight: 500; white-space: nowrap; }
 .flag { position: absolute; right: 9%; top: -10px; width: 26px; height: 18px; background: #4F6B45; clip-path: polygon(0 0, 100% 30%, 0 60%); }
-.building { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; background: var(--wood-dark); margin: 0 6px; }
+.building { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 12px; background: var(--wood-dark); margin: 0 6px; }
 .lawn { height: 22px; background: #7E9B67; margin: 0 -18px; }
-.room { position: relative; display: block; aspect-ratio: 16 / 9.4; min-width: 0; overflow: hidden; border-radius: 3px; text-decoration: none; color: var(--ink); background: #2E241C; }
+.room { position: relative; display: block; min-width: 0; min-height: 0; overflow: hidden; border-radius: 3px; text-decoration: none; color: var(--ink); background: #2E241C; }
 .room:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
 .room .chip, .room .pill, .room .next-tag { z-index: 2; }
 .chip { position: absolute; left: 12px; top: 12px; background: var(--cream); border-radius: 4px; padding: 6px 12px 8px; box-shadow: 0 1px 2px rgba(58, 42, 31, .2); }
@@ -249,14 +251,16 @@ main, main:focus, main:focus-visible { outline: none; }
 .empty-msg { padding: 40px; text-align: center; }
 
 @media (max-width: 1100px) {
-  .hub { grid-template-columns: 1fr; }
+  .hub-right { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
   .chalk-grid, .spread { grid-template-columns: 1fr; }
   .hud { left: 28px; top: 96px; }
   .board { top: 150px; }
   .info { display: none; }
 }
 @media (max-width: 700px) {
-  .building { grid-template-columns: 1fr; }
+  .building { grid-template-columns: 1fr; grid-template-rows: none; }
+  .hub-left { height: auto; min-height: 0; }
+  .room { aspect-ratio: 16 / 10; }
   .topbar { padding: 8px 14px; }
   .hub { padding: 14px; }
   .sign { display: none; }

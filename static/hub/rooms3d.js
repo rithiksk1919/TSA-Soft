@@ -111,21 +111,36 @@ function windowOnWall(world, x, y, w, h, patch) {
   }
 }
 
+// A lamp hanging from the ceiling on a cord, in its own group so it can swing from the ceiling.
 function pendant(world, x, z, drop) {
-  plane(world, { cls: "cord3", x: x, y: -H + drop / 2, z: z, w: 2, h: drop });
-  box(world, { cls: "pendant3", x: x, y: -H + drop + 16, z: z, w: 44, h: 16, d: 44, faces: "front left right bottom" });
+  const g = node("g3");
+  g.style.transform = "translate3d(" + px(x) + "," + px(-H) + "," + px(z) + ")";
+  world.appendChild(g);
+  plane(g, { cls: "cord3", x: 0, y: drop / 2, z: 0, w: 2, h: drop });
+  box(g, { cls: "pendant3", x: 0, y: drop + 16, z: 0, w: 44, h: 16, d: 44, faces: "front left right bottom" });
+  return g;
+}
+
+// Plays keyframes on an element and resolves when done (or at once if it cannot animate).
+function play(el, frames, opts) {
+  if (!el || !el.animate) {
+    return Promise.resolve();
+  }
+  return el.animate(frames, opts).finished.catch(function () {});
 }
 
 /* ---- the classroom ---- */
+const NOTE = "# y is not defined";
 function classroom(world) {
   shell(world, "class");
   windowOnWall(world, 222, -160, 92, 120, { x: 150, z: -96, w: 120, h: 190, rz: -18 });
   // the chalkboard, its frame and chalk ledge
   box(world, { cls: "wood wood--dark", x: -30, y: -78, z: BACK + 5, w: 296, h: 150, d: 10, faces: "front top left right bottom" });
   plane(world, { cls: "chalk3", x: -30, y: -153, z: BACK + 10.6, w: 276, h: 130,
-    html: '<span class="chalk3__code">def scope_demo():\n    x = 1\n    return x + y</span><span class="chalk3__mark"></span>' });
+    html: '<span class="chalk3__code">def scope_demo():\n    x = 1\n    return x + y\n<span class="chalk3__new">' +
+      NOTE.split("").map(function (c) { return "<i>" + c + "</i>"; }).join("") + '</span></span><span class="chalk3__mark"></span>' });
   box(world, { cls: "wood", x: -30, y: -78, z: BACK + 15, w: 280, h: 5, d: 12, faces: "front top" });
-  box(world, { cls: "chalkstick", x: 60, y: -83, z: BACK + 15, w: 14, h: 3, d: 3, faces: "front top" });
+  const chalk = box(world, { cls: "chalkstick", x: 60, y: -83, z: BACK + 15, w: 14, h: 3, d: 3, faces: "front top" });
   // the teacher's desk, with a stack of books and an apple
   shade(world, { cls: "sh3--deep", x: -206, z: -150, w: 170, h: 100 });
   box(world, { cls: "wood wood--warm", x: -210, y: 0, z: -156, w: 120, h: 62, d: 54, faces: "front top left right" });
@@ -146,6 +161,38 @@ function classroom(world) {
       box(world, { cls: "wood wood--warm", x: x, y: -34, z: z + 56, w: 40, h: 30, d: 4, faces: "front top left right" });
     }
   }
+  // The moment: the chalk lifts off the ledge and writes, letter by letter, why the code fails.
+  return function () {
+    const line = world.querySelector(".chalk3__new");
+    const letters = line.querySelectorAll("i");
+    const base = chalk.style.transform;
+    const y = -119;
+    const x0 = -146;
+    const x1 = x0 + NOTE.length * 9;
+    const z = BACK + 16;
+    const step = 70;
+    const write = NOTE.length * step;
+    function at(x, yy) {
+      return "translate3d(" + px(x) + "," + px(yy) + "," + px(z) + ") rotateZ(-30deg)";
+    }
+    line.style.opacity = "1";
+    for (let i = 0; i < letters.length; i = i + 1) {
+      play(letters[i], [{ opacity: 0 }, { opacity: 1 }], { duration: 120, delay: 500 + i * step, fill: "forwards" });
+    }
+    return play(chalk, [
+      { transform: base, offset: 0 },
+      { transform: at(x0, y + 6), offset: 500 / (write + 1100) },
+      { transform: at(x1, y + 6), offset: (500 + write) / (write + 1100) },
+      { transform: base, offset: 1 }
+    ], { duration: write + 1100, easing: "ease-in-out" }).then(function () {
+      return play(line, [{ opacity: 1 }, { opacity: 0 }], { duration: 600, delay: 2200 });
+    }).then(function () {
+      line.style.opacity = "";
+      for (const l of letters) {
+        l.getAnimations().forEach(function (a) { a.cancel(); });
+      }
+    });
+  };
 }
 
 /* ---- the library ---- */
@@ -171,17 +218,26 @@ function library(world) {
     return (seed - 1) / 2147483646;
   }
   const shelves = [0, -76, -152];
+  let pick = null;
+  const books = [];
   for (let s = 0; s < shelves.length; s = s + 1) {
     const sy = shelves[s];
     box(world, { cls: "wood", x: cx, y: sy, z: cz, w: cw - 20, h: 8, d: cd - 2, faces: "front top" });
     let bx = cx - cw / 2 + 14;
     const end = cx + cw / 2 - 14;
+    let n = 0;
     while (bx < end - 10) {
+      n = n + 1;
       const bw = 9 + Math.round(rnd() * 7);
       const bh = 44 + Math.round(rnd() * 20);
       const lean = rnd() < 0.08 ? 8 : 0;
       const color = BOOK_COLORS[Math.floor(rnd() * BOOK_COLORS.length)];
-      box(world, { cls: "book3", x: bx + bw / 2, y: sy - 8, z: cz + 2, w: bw, h: bh, d: 30, rz: lean, faces: "front top right", style: "--c:" + color });
+      const b = box(world, { cls: "book3", x: bx + bw / 2, y: sy - 8, z: cz + 2, w: bw, h: bh, d: 30, rz: lean, faces: "front top right", style: "--c:" + color });
+      if (s === 1 && n === 6) {
+        pick = b;
+      } else {
+        books.push({ el: b, order: n, shelf: 2 - s });
+      }
       bx = bx + bw + 1 + (lean ? 5 : 0);
     }
   }
@@ -190,7 +246,7 @@ function library(world) {
   shade(world, { cls: "sh3--deep", x: -60, z: -76, w: 220, h: 120 });
   legs(world, "wood wood--warm", -70, -90, 160, 70, 64, 7);
   box(world, { cls: "wood wood--warm", x: -70, y: -64, z: -90, w: 170, h: 7, d: 76 });
-  plane(world, { cls: "lamp3__pool", x: -94, y: -71.6, z: -96, w: 150, h: 90, rx: 90 });
+  const pool = plane(world, { cls: "lamp3__pool", x: -94, y: -71.6, z: -96, w: 150, h: 90, rx: 90 });
   box(world, { cls: "book3 book3--open", x: -100, y: -71, z: -82, w: 54, h: 2, d: 34, faces: "front top", style: "--c:#FBF8F1" });
   box(world, { cls: "brass", x: -12, y: -71, z: -108, w: 20, h: 4, d: 16 });
   box(world, { cls: "brass", x: -12, y: -75, z: -108, w: 3, h: 44, d: 3, faces: "front right" });
@@ -198,6 +254,27 @@ function library(world) {
   // a chair pulled up to the desk
   legs(world, "wood wood--dark", -70, -30, 40, 34, 34, 4);
   box(world, { cls: "wood wood--dark", x: -70, y: -34, z: -30, w: 46, h: 5, d: 38 });
+  // The moment: the lamp flickers, a wave runs along the shelves with each book tipping forward in
+  // turn, and one book comes most of the way out before sliding home.
+  return function () {
+    play(pool, [{ opacity: 1 }, { opacity: 0.25, offset: 0.08 }, { opacity: 1, offset: 0.14 }, { opacity: 0.4, offset: 0.2 }, { opacity: 1, offset: 0.3 }, { opacity: 1 }], { duration: 1600 });
+    for (const b of books) {
+      const base = b.el.style.transform;
+      play(b.el, [
+        { transform: base },
+        { transform: base + " translateZ(10px) translateY(-6px) rotateX(-16deg)", offset: 0.4 },
+        { transform: base }
+      ], { duration: 700, delay: 200 + b.order * 22 + b.shelf * 160, easing: "ease-in-out" });
+    }
+    const base = pick.style.transform;
+    return play(pick, [
+      { transform: base },
+      { transform: base + " translateZ(40px)", offset: 0.3 },
+      { transform: base + " translateZ(44px) translateY(-10px) rotateX(-24deg)", offset: 0.45 },
+      { transform: base + " translateZ(44px) translateY(-10px) rotateX(-24deg)", offset: 0.75 },
+      { transform: base }
+    ], { duration: 2600, delay: 1500, easing: "cubic-bezier(.3,.7,.3,1)" });
+  };
 }
 
 /* ---- the gym ---- */
@@ -226,10 +303,68 @@ function gym(world) {
   box(world, { cls: "board3", x: hx, y: -170, z: BACK + 70, w: 120, h: 80, d: 5, faces: "front top left right bottom",
     html: { front: '<span class="board3__square"></span>' } });
   plane(world, { cls: "rim3", x: hx, y: -176, z: BACK + 92, w: 44, h: 44, rx: 90 });
-  plane(world, { cls: "net3", x: hx, y: -160, z: BACK + 104, w: 40, h: 32 });
+  const net = plane(world, { cls: "net3", x: hx, y: -160, z: BACK + 92, w: 40, h: 32 });
   // a ball resting on the court, and its shadow
-  shade(world, { cls: "sh3--deep", x: 70, z: -36, w: 46, h: 22 });
-  plane(world, { cls: "ball3", x: 64, y: -15, z: -40, w: 30, h: 30, html: '<span class="ball3__seams"></span>' });
+  const shadow = shade(world, { cls: "sh3--deep", x: 70, z: -36, w: 46, h: 22 });
+  const ball = plane(world, { cls: "ball3", x: 64, y: -15, z: -40, w: 30, h: 30, html: '<span class="ball3__seams"></span>' });
+
+  // The ball's path: two dribbles, a jump shot over the rim, down through the net, a bounce and a
+  // roll back to where it started. Each piece is a parabola (or a straight drop) between two points.
+  const R = 15;
+  const start = { x: 64, y: -R, z: -40 };
+  const above = { x: hx, y: -212, z: BACK + 92 };
+  const under = { x: hx, y: -140, z: BACK + 92 };
+  const land = { x: hx - 18, y: -R, z: BACK + 120 };
+  const hop = { x: 150, y: -R, z: -80 };
+  const legs3 = [
+    { from: start, to: start, lift: 52, t: 0.42 },
+    { from: start, to: start, lift: 36, t: 0.36 },
+    { from: start, to: above, lift: 120, t: 0.95 },
+    { from: above, to: under, lift: 0, t: 0.26, fall: true },
+    { from: under, to: land, lift: 0, t: 0.34, fall: true },
+    { from: land, to: hop, lift: 46, t: 0.56 },
+    { from: hop, to: start, lift: 18, t: 0.42 },
+    { from: start, to: start, lift: 0, t: 0.3 }
+  ];
+  const total = legs3.reduce(function (a, l) { return a + l.t; }, 0);
+  return function () {
+    const ballFrames = [];
+    const shadowFrames = [];
+    let tSum = 0;
+    let netAt = 0;
+    for (let i = 0; i < legs3.length; i = i + 1) {
+      const l = legs3[i];
+      if (i === 3) {
+        netAt = tSum / total;
+      }
+      const n = Math.max(4, Math.round(l.t * 40));
+      for (let k = i === 0 ? 0 : 1; k <= n; k = k + 1) {
+        const u = k / n;
+        const e = l.fall ? u * u : u;
+        const x = l.from.x + (l.to.x - l.from.x) * e;
+        const z = l.from.z + (l.to.z - l.from.z) * e;
+        const y = l.from.y + (l.to.y - l.from.y) * e - l.lift * 4 * u * (1 - u);
+        const spin = (x - start.x) * 3 + (tSum + l.t * u) * 120;
+        const offset = (tSum + l.t * u) / total;
+        ballFrames.push({ offset: offset, transform: "translate3d(" + px(x) + "," + px(y) + "," + px(z) + ") rotateZ(" + spin.toFixed(1) + "deg)" });
+        const lift = Math.min(1, (-y - R) / 160);
+        shadowFrames.push({ offset: offset, opacity: (1 - lift * 0.8).toFixed(3),
+          transform: "translate3d(" + px(x + 6) + ",-0.6px," + px(z + 4) + ") rotateX(90deg) scale(" + (1 - lift * 0.5).toFixed(3) + ")" });
+      }
+      tSum = tSum + l.t;
+    }
+    const ms = total * 1000;
+    play(shadow, shadowFrames, { duration: ms });
+    play(net, [
+      { transform: net.style.transform, offset: 0 },
+      { transform: net.style.transform, offset: netAt },
+      { transform: net.style.transform + " scaleY(1.25) translateY(3px)", offset: Math.min(1, netAt + 0.04) },
+      { transform: net.style.transform + " scaleY(.92)", offset: Math.min(1, netAt + 0.09) },
+      { transform: net.style.transform, offset: Math.min(1, netAt + 0.14) },
+      { transform: net.style.transform, offset: 1 }
+    ], { duration: ms });
+    return play(ball, ballFrames, { duration: ms });
+  };
 }
 
 /* ---- the lunchroom ---- */
@@ -238,6 +373,7 @@ function lunchroom(world) {
   // the clock
   plane(world, { cls: "clock3", x: 70, y: -222, z: BACK + 2, w: 62, h: 62,
     html: '<span class="clock3__h" style="transform:rotate(-30deg)"></span><span class="clock3__m" style="transform:rotate(120deg)"></span><span class="clock3__pin"></span>' });
+  const lamps = [];
   // the serving counter, with trays and food on it
   shade(world, { cls: "sh3--strip", x: -132, z: BACK + 56, w: 280, h: 60 });
   box(world, { cls: "wood wood--dark", x: -140, y: 0, z: BACK + 30, w: 260, h: 74, d: 52 });
@@ -266,9 +402,26 @@ function lunchroom(world) {
   }
   // pendant lamps over the table, and their light on it
   for (const x of [tx - 80, tx + 80]) {
-    pendant(world, x, tz, 120);
+    lamps.push(pendant(world, x, tz, 120));
     plane(world, { cls: "lamp3__pool lamp3__pool--soft", x: x, y: -61.2, z: tz, w: 200, h: 120, rx: 90 });
   }
+  // The moment: the clock's hands race round to break time and the lamps swing a little.
+  return function () {
+    const hour = world.querySelector(".clock3__h");
+    const minute = world.querySelector(".clock3__m");
+    play(hour, [{ transform: "rotate(-30deg)" }, { transform: "rotate(60deg)" }, { transform: "rotate(-30deg)" }],
+      { duration: 2600, easing: "cubic-bezier(.4,0,.2,1)" });
+    play(minute, [{ transform: "rotate(120deg)" }, { transform: "rotate(1200deg)" }, { transform: "rotate(1200deg)", offset: 0.75 }, { transform: "rotate(840deg)" }],
+      { duration: 2600, easing: "cubic-bezier(.4,0,.2,1)" });
+    const swings = lamps.map(function (g, i) {
+      const base = g.style.transform;
+      const a = i ? -1 : 1;
+      return play(g, [0, 7, -5, 3.5, -2, 1, 0].map(function (deg) {
+        return { transform: base + " rotateZ(" + (deg * a) + "deg)" };
+      }), { duration: 2400, delay: i * 120, easing: "ease-in-out" });
+    });
+    return Promise.all(swings);
+  };
 }
 
 const BUILDERS = { classroom: classroom, library: library, gym: gym, lunch: lunchroom };
@@ -288,8 +441,18 @@ export function mountRooms(root) {
     const world = node("world3");
     cam.appendChild(world);
     stage.appendChild(cam);
-    build(world);
+    const moment = build(world);
     const state = { stage: stage, cam: cam, k: 1, yaw: 0, pitch: 0, dolly: 0, ty: 0, tp: 0, td: 0, frame: 0 };
+    let playing = false;
+    function playMoment() {
+      if (playing || !moment || calm.matches) {
+        return;
+      }
+      playing = true;
+      Promise.resolve(moment()).then(function () {
+        playing = false;
+      });
+    }
     cams.push(state);
     const room = stage.closest(".room");
     if (room) {
@@ -303,6 +466,11 @@ export function mountRooms(root) {
         state.td = 60;
         run(state);
       });
+      room.addEventListener("pointerenter", function (event) {
+        if (event.pointerType === "mouse") {
+          playMoment();
+        }
+      });
       room.addEventListener("pointerleave", function () {
         state.ty = 0;
         state.tp = 0;
@@ -310,6 +478,7 @@ export function mountRooms(root) {
         run(state);
       });
       room.addEventListener("focus", function () {
+        playMoment();
         if (!calm.matches) {
           state.td = 60;
           run(state);
@@ -354,7 +523,9 @@ export function mountRooms(root) {
       }
       // A slightly wider view than the room, so the side walls show; the perspective scales with
       // the room so every size sees the same picture.
-      s.k = w / (W * 0.94);
+      const h = s.stage.clientHeight;
+      // Fit the whole room in view: on a wide, short room the side walls run on to fill the edges.
+      s.k = Math.min(w / (W * 0.94), h / (H * 0.98));
       s.stage.style.perspective = px(PERSPECTIVE * s.k);
       pose(s);
     }
