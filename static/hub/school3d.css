@@ -1,0 +1,115 @@
+/* The lunchroom (lunch3d.js) and the gym (gym3d.js): the same construction and light as the
+   classroom and the library, with their own materials. Shared 3D rules live in rooms3d.css and
+   classroom.css. */
+
+/* ---------- lunchroom ---------- */
+.c3wall.c3--lunch { background-color: #E3E6D6; }
+.c3wall--left.c3--lunch { background-color: #D3D8C4; }
+.c3wall--right.c3--lunch { background-color: #C9CFBA; }
+.c3ceil.c3--lunch { background: #BDBFA8; }
+/* linoleum in two tones, laid as squares */
+.c3floor.c3--lunch {
+  background-color: #CBB894;
+  background-image:
+    conic-gradient(#B9A47E 25%, #D7C6A2 0 50%, #B9A47E 0 75%, #D7C6A2 0),
+    radial-gradient(ellipse 60% 50% at 40% 30%, rgba(255, 236, 196, .2), rgba(255, 236, 196, 0));
+  background-size: 140px 140px, 100% 100% !important;
+}
+/* glazed tiles below the rail */
+.c3wainscot.c3--lunch { background: #7E9682; background-image: linear-gradient(90deg, rgba(255, 255, 255, .12) 1px, transparent 1px), linear-gradient(rgba(255, 255, 255, .12) 1px, transparent 1px); background-size: 35px 35px; }
+.c3wainscot--side.c3--lunch { background-color: #728A76; }
+
+.menu3 { background: #2F4A3E; box-shadow: inset 0 0 0 10px #5E4733, inset 0 0 40px rgba(0, 0, 0, .35); padding: 24px 34px; color: #ECE7D8; }
+.menu3__title { position: static !important; display: block; font-family: var(--serif); font-size: 34px; font-weight: 600; margin-bottom: 10px; color: #F4EFDF; }
+.menu3 .menu3__row { position: static !important; display: flex; gap: 20px; justify-content: space-between; font-size: 21px; line-height: 1.6; }
+.menu3 .menu3__row b { font-weight: 400; }
+.menu3 .menu3__row i { font-style: normal; font-family: var(--mono); color: #EAD48A; }
+.c3panel--lunch { background: #6B5038; box-shadow: inset 0 0 0 6px #5B4230; }
+.glass3 { background: rgba(220, 236, 240, .22); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .45); pointer-events: none; }
+.glow3c--on { opacity: 1; }
+
+.vend3 .f3 { background: #9B3A28; }
+.vend3 .f3--front { background: #A84433; box-shadow: inset 0 0 0 8px #7E2D20; }
+.vend3__glass { left: 16px; top: 18px; width: 120px; bottom: 120px; background: #1E2A30; box-shadow: inset 0 0 0 3px #3A2A1F, inset 0 0 30px rgba(255, 236, 190, .35); display: grid !important; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 6px; padding: 10px; }
+.vend3__glass i { position: static; display: block; border-radius: 3px; box-shadow: inset 0 -6px 0 rgba(0, 0, 0, .2); }
+.vend3__panel { right: 14px; top: 30px; width: 28px; height: 90px; background: #E8E2D2; box-shadow: inset 0 0 0 2px #3A2A1F; border-radius: 3px; }
+.vend3__slot { left: 30px; bottom: 34px; width: 92px; height: 44px; background: #2A1D16; border-radius: 4px; }
+
+.mug3 .f3 { background: var(--c); }
+.mug3 .f3--top { background: #5A3A26; box-shadow: inset 0 0 0 4px var(--c); }
+.mug3__handle { border: 4px solid var(--c); border-left: 0; border-radius: 0 9px 9px 0; }
+/* steam: three soft wisps rising and fading in turn */
+.steam3__wisp { position: absolute; top: -40px; width: 14px; height: 40px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0));
+  opacity: 0; animation: steam 3.3s ease-out infinite; }
+@keyframes steam {
+  0% { opacity: 0; transform: translate3d(0, 10px, 0) scale(.6); }
+  25% { opacity: .9; }
+  100% { opacity: 0; transform: translate3d(6px, -50px, 0) scale(1.4); }
+}
+.pendant3--lunch .f3 { background: #4F6B45; }
+.pendant3--lunch .f3--bottom { background: #FFE9B0; }
+
+/* the break card sits to the left of the room; a breathing guide shows while the break runs */
+.break-card--3d { z-index: 3; left: 40px; top: 50%; transform: translateY(-50%); }
+.breath { display: none; align-items: center; justify-content: center; gap: 14px; margin: 4px 0 8px; }
+.break-card--3d.is-running .breath { display: flex; }
+.breath__dot { width: 34px; height: 34px; border-radius: 50%; background: #8DAA7A; transform: scale(.55); animation: breathe 8s ease-in-out infinite; }
+.breath__label { position: relative; width: 104px; height: 22px; text-align: left; }
+.breath__label i { position: absolute; left: 0; top: 0; font-style: normal; font-weight: 500; color: var(--ink); }
+.breath__in { animation: breatheIn 8s ease-in-out infinite; }
+.breath__out { opacity: 0; animation: breatheOut 8s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(.55); } 50% { transform: scale(1); } }
+@keyframes breatheIn { 0%, 44% { opacity: 1; } 50%, 94% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes breatheOut { 0%, 44% { opacity: 0; } 50%, 94% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- gym ---------- */
+.c3wall.c3--gym { background-color: #E8E0CC; }
+.c3wall--left.c3--gym { background-color: #DCD2BB; }
+.c3wall--right.c3--gym { background-color: #D2C7AF; }
+.c3ceil.c3--gym { background: #A99C83; background-image: repeating-linear-gradient(90deg, transparent 0 220px, rgba(40, 26, 14, .18) 220px 226px); }
+.c3floor.c3--gym {
+  background-color: #CFA472;
+  background-image:
+    repeating-linear-gradient(to right, rgba(110, 72, 40, .2) 0 1px, transparent 1px 36px),
+    repeating-linear-gradient(to bottom, transparent 0 239px, rgba(110, 72, 40, .14) 239px 241px),
+    radial-gradient(ellipse 60% 50% at 50% 40%, rgba(255, 240, 210, .28), rgba(255, 240, 210, 0));
+}
+/* padded wall mats instead of wood panelling */
+.c3wainscot.c3--gym { background: #4F6B45; background-image: repeating-linear-gradient(90deg, transparent 0 116px, rgba(0, 0, 0, .2) 116px 120px); }
+.c3wainscot--side.c3--gym { background-color: #465F3D; }
+.c3win--high .c3win__view { background-size: 100% 30%, 100% 100%; }
+.c3sun--gym { background: radial-gradient(ellipse 45% 60% at 50% 40%, rgba(255, 236, 190, .34), rgba(255, 236, 190, 0)); }
+
+.court3--key { border: 5px solid #FBF8F1; background: rgba(155, 58, 40, .35); }
+.court3--arc { border: 5px solid #FBF8F1; border-radius: 50%; clip-path: inset(50% 0 0 0); }
+.court3--circle { border-width: 5px !important; }
+.padding3 .f3 { background: #2D4A6E; }
+.rim3__bracket .f3 { background: #C0562F; }
+.rim3--big { border: 6px solid #C0562F; }
+.net3--big { background: repeating-linear-gradient(60deg, transparent 0 8px, rgba(251, 248, 241, .9) 8px 10px), repeating-linear-gradient(-60deg, transparent 0 8px, rgba(251, 248, 241, .9) 8px 10px); transform-origin: top; }
+.board3 .f3--front { box-shadow: inset 0 0 0 6px #6B4C34; }
+
+.sb3 .f3 { background: #2A2420; }
+.sb3__face { inset: 12px; display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #15110E; border-radius: 6px; padding: 14px; }
+.sb3__cell { position: static !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.sb3__cell i { font-style: normal; font-size: 17px; color: #D9C9AE; }
+.sb3__cell b { font-family: var(--mono); font-size: 46px; font-weight: 500; color: #F2B451; line-height: 1; }
+
+.ball3--player, .ball3--rack { backface-visibility: visible; }
+.ceil-light3 { background: #FFF6DC; box-shadow: inset 0 0 0 5px #CFC6AF, 0 0 30px 10px rgba(255, 240, 200, .5); }
+.c3pool--gym { background: radial-gradient(closest-side, rgba(255, 238, 200, .3), rgba(255, 238, 200, 0)); }
+
+/* the game's panels float over the room */
+.gym3c #gym-ui > * { z-index: 3; }
+@media (min-width: 1101px) { .gym3c .board { top: 110px; } }
+
+@media (max-width: 700px) {
+  .gym3c .board { top: 200px; max-height: calc(100% - 214px); }
+  .break-card--3d { left: 50%; top: auto; bottom: 16px; transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .steam3__wisp, .breath__dot, .breath__in, .breath__out { animation: none; }
+  .breath__dot { transform: scale(.8); }
+  .breath__out { display: none; }
+}

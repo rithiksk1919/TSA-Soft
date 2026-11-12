@@ -238,7 +238,7 @@
   .cb-hl, .cb-hl i, .cb-dot::before, .cb-dot::after, .glow3c, .plaque3::after { transition: none; }
   .c3clock__s { animation: none; }
 }
-/* on a tall, narrow screen the room sits lower, so the space above the ceiling is not left empty */
+/* on a tall, narrow screen the room sits higher, so its ceiling reaches the top of the screen */
 @media (max-aspect-ratio: 3 / 4) {
-  .c3cam { top: 62%; }
+  .c3cam { top: 42%; }
 }

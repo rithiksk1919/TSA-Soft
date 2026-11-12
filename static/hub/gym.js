@@ -1,11 +1,9 @@
 // The gym: Bug Hoops, the transfer check. Every shot is graded on the server against the hidden answer key.
 import { api, esc, fixed, main, getProfileId, renderTopBar, toast, query } from "./common.js";
-import { gymScene, ballSvg } from "./art.js";
-
-const HOOP_X = 1210;   // the rim in the scene's 1440 x 860 drawing
-const HOOP_Y = 280;
+import { buildGym } from "./gym3d.js";
 
 let game = null;
+let gymRoom = null;
 let currentSkillName = "";
 
 export async function showGym(summary) {
@@ -34,10 +32,34 @@ export async function showGym(summary) {
   showIntro(skill, ready);
 }
 
+// The 3D gym is built once per visit; each screen of the game only replaces the panels over it.
 function sceneStart() {
-  let html = '<div class="scene" id="gym-scene">' + gymScene();
-  html += '<div class="chip"><span class="kicker">Transfer check game</span><strong>Bug Hoops</strong></div>';
-  return html;
+  return '<div class="chip"><span class="kicker">Transfer check game</span><strong>Bug Hoops</strong></div>';
+}
+
+function setUI(html) {
+  let ui = document.getElementById("gym-ui");
+  if (!ui || !document.getElementById("gym-stage")) {
+    main.innerHTML = '<div class="scene scene3c gym3c" id="gym-scene"><div class="stage3c" id="gym-stage"></div><div id="gym-ui"></div></div>';
+    if (gymRoom) {
+      gymRoom.destroy();
+    }
+    gymRoom = buildGym(document.getElementById("gym-stage"));
+    ui = document.getElementById("gym-ui");
+    // for the QA probes: play a shot without a game in progress
+    window.__gymShoot = function (made) {
+      gymRoom.resetBall();
+      return gymRoom.shoot(made);
+    };
+  }
+  ui.innerHTML = html;
+}
+
+function showScore(roundNumber) {
+  if (!gymRoom || !game) {
+    return;
+  }
+  gymRoom.score({ round: Math.min(roundNumber, game.rounds.length) + "/" + game.rounds.length, score: game.made, streak: streak(game.rounds) });
 }
 
 function showClosed(summary) {
@@ -56,8 +78,8 @@ function showClosed(summary) {
   let html = sceneStart();
   html += '<section class="final" aria-labelledby="closed-title"><div class="kicker">Not open yet</div><h2 id="closed-title">The gym opens at mastery 0.80</h2>';
   html += "<p>The transfer check proves you can solve a problem you have never seen, with no hints. A skill gets one once its mastery reaches 0.80.</p>";
-  html += '<ul style="text-align:left">' + list + '</ul><div class="actions"><a class="btn" href="#/">Back to hub</a></div></section></div>';
-  main.innerHTML = html;
+  html += '<ul style="text-align:left">' + list + '</ul><div class="actions"><a class="btn" href="#/">Back to hub</a></div></section>';
+  setUI(html);
 }
 
 function showIntro(skill, ready) {
@@ -77,8 +99,12 @@ function showIntro(skill, ready) {
   html += '<section class="final" aria-labelledby="intro-title"><div class="kicker">Transfer check · ' + esc(skill.name) + "</div>";
   html += '<h2 id="intro-title">Three shots, no hints</h2>';
   html += "<p>Each round is a problem you have never seen, with new names and a new story. Click the line that has the bug to take your shot. Make 2 of 3 to pass.</p>";
-  html += picker + '<div class="actions"><button type="button" class="btn btn-brass" id="start-game">Start game</button><a class="btn btn-light" href="#/">Back to hub</a></div></section></div>';
-  main.innerHTML = html;
+  html += picker + '<div class="actions"><button type="button" class="btn btn-brass" id="start-game">Start game</button><a class="btn btn-light" href="#/">Back to hub</a></div></section>';
+  setUI(html);
+  if (gymRoom) {
+    gymRoom.resetBall();
+    gymRoom.score({ round: "-", score: 0, streak: 0 });
+  }
   const picked = document.getElementById("gym-skill");
   if (picked) {
     picked.addEventListener("change", function () {
@@ -138,8 +164,9 @@ function showRound() {
   html += '<ol class="lines">' + lines + "</ol>";
   html += '<p id="shot-help" style="margin-top:12px">Click the line that has the bug to take your shot.</p><div id="shot-result" aria-live="polite"></div></section>';
   html += '<aside class="info"><span class="kicker">How it counts</span>Every shot is graded by the evaluator against a fixed answer key. Hints stay locked so a pass proves you can do it alone.</aside>';
-  html += '<div class="ball" id="ball">' + ballSvg() + "</div></div>";
-  main.innerHTML = html;
+  setUI(html);
+  gymRoom.resetBall();
+  showScore(game.shots_taken + 1);
 
   const buttons = main.querySelectorAll(".lines button");
   for (const button of buttons) {
@@ -164,7 +191,7 @@ async function shoot(line, buttons) {
     }
     return;
   }
-  await animateBall(shot.made);
+  await gymRoom.shoot(shot.made);
 
   const chosen = buttons[shot.chosen_line];
   const answer = buttons[shot.correct_line];
@@ -192,6 +219,7 @@ async function shoot(line, buttons) {
   document.getElementById("shot-help").hidden = true;
   const hud = main.querySelector(".hud");
   hud.outerHTML = hudHtml(shot.round);
+  showScore(shot.round);
   const nextButton = document.getElementById("next-round");
   nextButton.focus();
   nextButton.addEventListener("click", function () {
@@ -201,45 +229,6 @@ async function shoot(line, buttons) {
       showRound();
     }
   });
-}
-
-function hoopOnScreen() {
-  const scene = document.getElementById("gym-scene");
-  const box = scene.getBoundingClientRect();
-  const scale = Math.max(box.width / 1440, box.height / 860);
-  const offsetX = (box.width - 1440 * scale) / 2;
-  const offsetY = (box.height - 860 * scale) / 2;
-  return { x: box.left + offsetX + HOOP_X * scale, y: box.top + offsetY + HOOP_Y * scale };
-}
-
-function animateBall(made) {
-  const ball = document.getElementById("ball");
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!ball || reduce || !ball.animate) {
-    return Promise.resolve();
-  }
-  const start = ball.getBoundingClientRect();
-  const hoop = hoopOnScreen();
-  const dx = hoop.x - (start.left + start.width / 2);
-  const dy = hoop.y - (start.top + start.height / 2);
-  let frames;
-  if (made) {
-    frames = [
-      { transform: "translate(0px, 0px)" },
-      { transform: "translate(" + dx * 0.5 + "px, " + (dy - 160) + "px)", offset: 0.45 },
-      { transform: "translate(" + dx + "px, " + (dy - 20) + "px)", offset: 0.75 },
-      { transform: "translate(" + dx + "px, " + (dy + 70) + "px)" },
-    ];
-  } else {
-    frames = [
-      { transform: "translate(0px, 0px)" },
-      { transform: "translate(" + dx * 0.5 + "px, " + (dy - 160) + "px)", offset: 0.45 },
-      { transform: "translate(" + (dx - 40) + "px, " + (dy - 6) + "px)", offset: 0.7 },
-      { transform: "translate(" + (dx - 190) + "px, " + (dy + 220) + "px)" },
-    ];
-  }
-  const animation = ball.animate(frames, { duration: 1000, easing: "ease-in-out", fill: "forwards" });
-  return animation.finished.catch(function () {});
 }
 
 function showFinal(result) {
@@ -282,8 +271,9 @@ function showFinal(result) {
   if (changes) {
     html += '<ul style="text-align:left">' + changes + "</ul>";
   }
-  html += '<div class="actions">' + againButton + '<a class="btn btn-light" href="#/">Back to hub</a></div></section></div>';
-  main.innerHTML = html;
+  html += '<div class="actions">' + againButton + '<a class="btn btn-light" href="#/">Back to hub</a></div></section>';
+  setUI(html);
+  showScore(game.rounds.length);
   const title = document.getElementById("final-title");
   title.setAttribute("tabindex", "-1");
   title.focus();

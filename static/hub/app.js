@@ -1,6 +1,6 @@
 // The school: hub (home), classic view and lunchroom. Classroom and gym live in their own files.
 import { api, esc, fixed, main, getProfileId, setProfileId, renderTopBar, openPanel, toast, startPractice } from "./common.js";
-import { lunchScene } from "./art.js";
+import { buildLunchroom } from "./lunch3d.js";
 import { mountRooms } from "./rooms3d.js";
 import { showClassroom } from "./classroom.js";
 import { showGym } from "./gym.js";
@@ -280,8 +280,19 @@ function showClassic(summary) {
 // ================= LUNCHROOM =================
 const BREAK_SECONDS = 5 * 60;
 let lunchTimer = null;
+let lunchRoom = null;
+let driftTimer = null;
+
+function stopDrift() {
+  clearInterval(driftTimer);
+  driftTimer = null;
+  if (lunchRoom) {
+    lunchRoom.lean(0, 0, 0.02);
+  }
+}
 
 function stopLunchTimer() {
+  stopDrift();
   if (lunchTimer) {
     clearInterval(lunchTimer);
     lunchTimer = null;
@@ -303,16 +314,33 @@ function showLunch(summary) {
     message = "<p>You used hints on " + lunch.hinted + " of your last " + lunch.window + " scenarios.</p>";
     message += '<p class="note">After your break, the next scenario will be more guided so you can rebuild confidence.</p>';
   }
-  let html = '<div class="scene lunch-scene">' + lunchScene();
-  html += '<section class="break-card" aria-labelledby="lunch-title"><div class="kicker">Take a break</div><h1 id="lunch-title">The lunchroom</h1>';
+  let html = '<div class="scene scene3c lunch3c"><div class="stage3c" id="lunch-stage"></div>';
+  html += '<section class="break-card break-card--3d" id="break-card" aria-labelledby="lunch-title"><div class="kicker">Take a break</div><h1 id="lunch-title">The lunchroom</h1>';
   html += '<div class="ring"><svg viewBox="0 0 168 168" aria-hidden="true"><circle cx="84" cy="84" r="74" fill="none" stroke="#E6DBC6" stroke-width="12"/>';
   html += '<circle id="ring-arc" cx="84" cy="84" r="74" fill="none" stroke="#3A2A1F" stroke-width="12" stroke-dasharray="' + circumference + '" stroke-dashoffset="0"/></svg>';
   html += '<div class="time"><b id="break-clock" role="timer" aria-live="off">' + clockText(BREAK_SECONDS) + "</b><span>suggested break</span></div></div>";
+  // while the break runs: a slow breathing guide (4 s in, 4 s out)
+  html += '<div class="breath" aria-hidden="true"><span class="breath__dot"></span><span class="breath__label"><i class="breath__in">Breathe in</i><i class="breath__out">Breathe out</i></span></div>';
   html += message;
   html += '<div class="actions"><button type="button" class="btn" id="break-start">Start break</button>';
   html += '<button type="button" class="btn btn-light" id="break-skip">Skip for now</button></div>';
   html += '<p class="note">Breaks never change your mastery scores.</p></section></div>';
   main.innerHTML = html;
+  if (lunchRoom) {
+    lunchRoom.destroy();
+  }
+  lunchRoom = buildLunchroom(document.getElementById("lunch-stage"));
+  const card = document.getElementById("break-card");
+
+  // During the break the room drifts very slowly from side to side.
+  function startDrift() {
+    let side = 1;
+    lunchRoom.lean(1.6, 0.5, 0.01);
+    driftTimer = setInterval(function () {
+      side = -side;
+      lunchRoom.lean(1.6 * side, 0.5 * side, 0.01);
+    }, 7000);
+  }
 
   let left = BREAK_SECONDS;
   let running = false;
@@ -331,6 +359,7 @@ function showLunch(summary) {
     if (running) {
       running = false;
       stopLunchTimer();
+      card.classList.remove("is-running");
       startButton.textContent = "Resume break";
       return;
     }
@@ -338,6 +367,8 @@ function showLunch(summary) {
       api("/api/profiles/" + pid + "/break", { event: "start" }).catch(function () {});
     }
     running = true;
+    card.classList.add("is-running");
+    startDrift();
     startButton.textContent = "Pause";
     lunchTimer = setInterval(function () {
       left = left - 1;
@@ -345,6 +376,7 @@ function showLunch(summary) {
       if (left <= 0) {
         stopLunchTimer();
         running = false;
+        card.classList.remove("is-running");
         startButton.textContent = "Back to hub";
         startButton.onclick = function () {
           location.hash = "#/";

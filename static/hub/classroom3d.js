@@ -7,10 +7,10 @@
 // 820 high; the back wall is at z = -700.
 import { px, node, plane, box, shade, legs } from "./rooms3d.js";
 
-const W = 1800;
-const H = 820;
-const BACK = -700;
-const FRONT = 700;
+export const W = 1800;
+export const H = 820;
+export const BACK = -700;
+export const FRONT = 700;
 const P = 1500;            // perspective, in world units
 
 function esc(text) {
@@ -20,7 +20,7 @@ function esc(text) {
 }
 
 // A big surface as a grid of tiles: one huge plane, magnified, can drop out of the compositor.
-function tiled(parent, o, cols, rows) {
+export function tiled(parent, o, cols, rows) {
   const g = node("g3");
   let t = "translate3d(" + px(o.x || 0) + "," + px(o.y || 0) + "," + px(o.z || 0) + ")";
   if (o.ry) {
@@ -42,7 +42,7 @@ function tiled(parent, o, cols, rows) {
   return g;
 }
 
-function group(parent, cls, transform, attrs) {
+export function group(parent, cls, transform, attrs) {
   const g = node("g3 " + (cls || ""));
   if (transform) {
     g.style.transform = transform;
@@ -57,7 +57,7 @@ function group(parent, cls, transform, attrs) {
 }
 
 // A station's plaque: brass-edged, standing on two posts (or hanging on two chains).
-function plaque(parent, o) {
+export function plaque(parent, o) {
   const g = group(parent, "sign3c", "translate3d(" + px(o.x) + "," + px(o.y) + "," + px(o.z) + ")");
   if (o.hang) {
     for (const x of [-120, 120]) {
@@ -74,19 +74,20 @@ function plaque(parent, o) {
   return g;
 }
 
-function shell(world) {
+export function shell(world, kind) {
+  const k = kind ? " c3--" + kind : "";
   const depth = FRONT - BACK;
-  tiled(world, { cls: "c3floor", x: 0, y: 0, z: (BACK + FRONT) / 2, w: W, h: depth, rx: 90 }, 4, 4);
-  tiled(world, { cls: "c3wall c3wall--back", x: 0, y: -H / 2, z: BACK, w: W, h: H }, 4, 2);
-  tiled(world, { cls: "c3wall c3wall--left", x: -W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: 90 }, 4, 2);
-  tiled(world, { cls: "c3wall c3wall--right", x: W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: -90 }, 4, 2);
-  tiled(world, { cls: "c3ceil", x: 0, y: -H, z: (BACK + FRONT) / 2, w: W, h: depth, rx: -90 }, 4, 4);
+  tiled(world, { cls: "c3floor" + k, x: 0, y: 0, z: (BACK + FRONT) / 2, w: W, h: depth, rx: 90 }, 4, 4);
+  tiled(world, { cls: "c3wall c3wall--back" + k, x: 0, y: -H / 2, z: BACK, w: W, h: H }, 4, 2);
+  tiled(world, { cls: "c3wall c3wall--left" + k, x: -W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: 90 }, 4, 2);
+  tiled(world, { cls: "c3wall c3wall--right" + k, x: W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: -90 }, 4, 2);
+  tiled(world, { cls: "c3ceil" + k, x: 0, y: -H, z: (BACK + FRONT) / 2, w: W, h: depth, rx: -90 }, 4, 4);
   // wainscot, rail and skirting along the back wall
-  plane(world, { cls: "c3wainscot", x: 0, y: -70, z: BACK + 1, w: W, h: 140 });
+  plane(world, { cls: "c3wainscot" + k, x: 0, y: -70, z: BACK + 1, w: W, h: 140 });
   box(world, { cls: "wood wood--dark", x: 0, y: -140, z: BACK + 4, w: W, h: 8, d: 8, faces: "front top" });
   box(world, { cls: "wood wood--dark", x: 0, y: 0, z: BACK + 4, w: W, h: 14, d: 8, faces: "front top" });
   for (const side of [-1, 1]) {
-    plane(world, { cls: "c3wainscot c3wainscot--side", x: side * (W / 2 - 1), y: -70, z: (BACK + FRONT) / 2, w: depth, h: 140, ry: side * -90 });
+    plane(world, { cls: "c3wainscot c3wainscot--side" + k, x: side * (W / 2 - 1), y: -70, z: (BACK + FRONT) / 2, w: depth, h: 140, ry: side * -90 });
   }
 }
 
@@ -125,8 +126,10 @@ function chalkboard(world, lesson, look) {
   return g;
 }
 
-function clock(world) {
-  plane(world, { cls: "c3clock", x: 640, y: -560, z: BACK + 2, w: 120, h: 120,
+export function clock(world, x, y) {
+  x = x === undefined ? 640 : x;
+  y = y === undefined ? -560 : y;
+  plane(world, { cls: "c3clock", x: x, y: y, z: BACK + 2, w: 120, h: 120,
     html: '<span class="c3clock__h"></span><span class="c3clock__m"></span><span class="c3clock__s"></span><span class="c3clock__pin"></span>' });
 }
 
@@ -213,19 +216,30 @@ const POSES = {
   listen: { ox: -560, oy: -190, oz: -250, depth: 720, yaw: 6, pitch: -20 }
 };
 
-// Builds the room into `stage` and returns its camera controls.
+// Builds the classroom into `stage` and returns its camera controls.
 export function buildClassroom(stage, lesson, look) {
+  return mountRoom(stage, POSES, function (world) {
+    shell(world);
+    windowAndLight(world);
+    clock(world);
+    pendants(world);
+    studentDesks(world);
+    return [chalkboard(world, lesson, look), teacherDesk(world, lesson, look), listeningDesk(world)];
+  });
+}
+
+// A room in a stage: builds it with `build(world)` (which returns its clickable stations), fits it
+// to the stage, keeps any wall clock on real time, warms a station on hover, leans the camera toward
+// the pointer in the overview and flies the camera between `poses` (transform only, one rAF loop).
+// opts.fit(w, h) can choose the scale; opts.minWidth keeps that many world units in view.
+export function mountRoom(stage, poses, build, opts) {
+  opts = opts || {};
   const cam = node("cam3 c3cam");
   const world = node("world3");
   cam.appendChild(world);
   stage.appendChild(cam);
-  shell(world);
-  windowAndLight(world);
-  clock(world);
-  pendants(world);
-  studentDesks(world);
-  const stations = [chalkboard(world, lesson, look), teacherDesk(world, lesson, look), listeningDesk(world)];
-
+  const stations = build(world) || [];
+  const POSES = poses;
   const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
   let k = 1;
   let pose = Object.assign({}, POSES.overview);
@@ -242,8 +256,8 @@ export function buildClassroom(stage, lesson, look) {
   function fit() {
     const w = stage.clientWidth;
     const h = stage.clientHeight;
-    // Fill the screen; on a tall, narrow one keep at least the chalkboard's width in view.
-    k = Math.max(w / 1750, Math.min(h / 1000, w / 900));
+    // Fill the screen; on a tall, narrow one keep at least the room's middle in view.
+    k = Math.max(w / 1750, Math.min(h / 1000, Math.max(w / (opts.minWidth || 900), h / 1300)));
     stage.style.perspective = px(P * k);
     render();
   }
@@ -289,8 +303,9 @@ export function buildClassroom(stage, lesson, look) {
 
   // In the overview the camera leans a little toward the pointer.
   function lookTick() {
-    look3.yaw = look3.yaw + (look3.ty - look3.yaw) * 0.08;
-    look3.pitch = look3.pitch + (look3.tp - look3.pitch) * 0.08;
+    const rate = look3.rate || 0.08;
+    look3.yaw = look3.yaw + (look3.ty - look3.yaw) * rate;
+    look3.pitch = look3.pitch + (look3.tp - look3.pitch) * rate;
     render();
     if (Math.abs(look3.ty - look3.yaw) + Math.abs(look3.tp - look3.pitch) > 0.01) {
       look3.frame = requestAnimationFrame(lookTick);
@@ -303,6 +318,7 @@ export function buildClassroom(stage, lesson, look) {
       return;
     }
     const r = stage.getBoundingClientRect();
+    look3.rate = 0.08;
     look3.ty = ((event.clientX - r.left) / r.width - 0.5) * 5;
     look3.tp = ((event.clientY - r.top) / r.height - 0.5) * -2.5;
     if (!look3.frame) {
@@ -324,17 +340,31 @@ export function buildClassroom(stage, lesson, look) {
 
   // The clock keeps the real time; its second hand sweeps (a CSS animation from the current second).
   const now = new Date();
-  const hands = stage.querySelector(".c3clock");
+  for (const hands of stage.querySelectorAll(".c3clock")) {
   hands.querySelector(".c3clock__h").style.transform = "rotate(" + ((now.getHours() % 12) * 30 + now.getMinutes() * 0.5) + "deg)";
   hands.querySelector(".c3clock__m").style.transform = "rotate(" + (now.getMinutes() * 6 + now.getSeconds() * 0.1) + "deg)";
   hands.querySelector(".c3clock__s").style.animationDelay = "-" + now.getSeconds() + "s";
+  }
 
   fit();
   const ro = new ResizeObserver(fit);
   ro.observe(stage);
 
   return {
+    world: world,
     fly: fly,
+    // Turns the overview camera a little (eased), for an idle drift.
+    lean: function (yaw, pitch, rate) {
+      if (at !== "overview" || calm.matches) {
+        return;
+      }
+      look3.rate = rate || 0.08;
+      look3.ty = yaw;
+      look3.tp = pitch;
+      if (!look3.frame) {
+        look3.frame = requestAnimationFrame(lookTick);
+      }
+    },
     at: function () {
       return at;
     },
