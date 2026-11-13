@@ -119,6 +119,128 @@ function whyCard(nextUp) {
   return html;
 }
 
+// From the hub into a room: the room's picture lifts out of the school and grows to fill the
+// screen while its camera pushes in; then the room's own page is put underneath and the picture
+// fades away as that room's camera eases back from close in (see mountRoom). Transform and opacity
+// only. The library is its own page, so after the zoom the browser cross-fades into it.
+let zooming = false;
+function zoomInto(link) {
+  const href = link.getAttribute("href");
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (zooming) {
+    return;
+  }
+  if (calm || !link.animate) {
+    go(href);
+    return;
+  }
+  zooming = true;
+  const r = link.getBoundingClientRect();
+  const bar = document.getElementById("topbar");
+  const top = bar ? bar.getBoundingClientRect().bottom : 0;
+  const W = window.innerWidth;
+  const H = window.innerHeight - top;
+  const s = Math.max(W / r.width, H / r.height);
+  const dx = W / 2 - (r.left + (r.width * s) / 2);
+  const dy = top + H / 2 - (r.top + (r.height * s) / 2);
+
+  const veil = document.createElement("div");
+  veil.className = "zoom-veil";
+  const pic = link.cloneNode(true);
+  pic.removeAttribute("href");
+  pic.setAttribute("aria-hidden", "true");
+  pic.className = link.className + " zoom-pic";
+  pic.style.left = r.left + "px";
+  pic.style.top = r.top + "px";
+  pic.style.width = r.width + "px";
+  pic.style.height = r.height + "px";
+  document.body.appendChild(veil);
+  document.body.appendChild(pic);
+  link.style.visibility = "hidden";
+
+  const ease = "cubic-bezier(.65,0,.35,1)";
+  const ms = 760;
+  // The veil darkens the hub quickly; once it is opaque the room's page is built underneath,
+  // while the zoom (a compositor animation) carries on unaffected.
+  const veiled = veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: "ease-out", fill: "forwards" }).finished;
+  for (const label of pic.querySelectorAll(".chip, .pill, .next-tag")) {
+    label.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" });
+  }
+  const cam = pic.querySelector(".cam3");
+  if (cam) {
+    const base = cam.style.transform;
+    cam.animate([{ transform: base }, { transform: base + " translateZ(70px)" }], { duration: ms, easing: ease, fill: "forwards" });
+  }
+  const zoomed = pic.animate([
+    { transform: "translate(0px, 0px) scale(1)" },
+    { transform: "translate(" + dx.toFixed(1) + "px, " + dy.toFixed(1) + "px) scale(" + s.toFixed(4) + ")" }
+  ], { duration: ms, easing: ease, fill: "forwards" }).finished;
+
+  if (href.charAt(0) !== "#") {
+    // The library is its own page: leave once the zoom lands; it fades in from the same dark.
+    zoomed.then(function () {
+      try {
+        sessionStorage.setItem("sb-from-hub", "1");
+      } catch (error) {
+        /* private mode: the library just appears */
+      }
+      location.href = href;
+    });
+    return;
+  }
+  veiled.then(function () {
+    window.__sbEnter = performance.now();
+    location.hash = href.slice(1);
+  });
+  // When the zoom has landed and the room is built and painted, fade the picture away over it
+  // and let the room's camera ease back from close in.
+  zoomed.then(function () {
+    const t0 = performance.now();
+    (function wait() {
+      const cam3 = document.querySelector(".stage3c .c3cam");
+      if ((!cam3 || cam3.childElementCount === 0) && performance.now() - t0 < 3000) {
+        requestAnimationFrame(wait);
+        return;
+      }
+      // A new room paints all its pieces for the first time over the next frames; wait until frames
+      // come at full rate again (four in a row under 20 ms, at most 1.2 s) so what follows is smooth.
+      let calmFrames = 0;
+      let last = performance.now();
+      const t1 = last;
+      (function settle(now) {
+        calmFrames = now - last < 20 ? calmFrames + 1 : 0;
+        last = now;
+        if (calmFrames < 4 && now - t1 < 1200) {
+          requestAnimationFrame(settle);
+          return;
+        }
+        (function () {
+          // Cross-fade first (the room holds still, so only the two layers blend), then the room's
+          // camera eases back on its own.
+          const out = { duration: 420, easing: "ease-out", fill: "forwards" };
+          pic.animate([{ opacity: 1 }, { opacity: 0 }], out);
+          veil.animate([{ opacity: 1 }, { opacity: 0 }], out).finished.then(function () {
+            pic.remove();
+            veil.remove();
+            zooming = false;
+            if (window.__sbEnterFly) {
+              window.__sbEnterFly();
+            }
+          });
+        })();
+      })(performance.now());
+    })();
+  });
+}
+
+function go(href) {
+  if (href.charAt(0) === "#") {
+    location.hash = href.slice(1);
+  } else {
+    location.href = href;
+  }
+}
+
 function showHub(summary) {
   renderTopBar("hub", summary);
   const nextUp = summary.next_up;
@@ -158,6 +280,15 @@ function showHub(summary) {
   main.innerHTML = '<div class="hub"><div class="hub-left">' + banner + building + '</div><aside class="hub-right">' +
     masteryCard(summary) + whyCard(nextUp) + small + "</aside></div>";
   mountRooms(main);
+  for (const link of main.querySelectorAll(".school .room")) {
+    link.addEventListener("click", function (event) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      zoomInto(link);
+    });
+  }
 
   if (nextUp) {
     const goButton = document.getElementById("go-next");

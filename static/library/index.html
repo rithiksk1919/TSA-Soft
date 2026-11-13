@@ -14,6 +14,8 @@
   /* Show the 3D room from the first paint: the scripts that build and reveal it run at the end of
      <body>, and without this the flat library page can flash first. Test and desk links start elsewhere. */
   (function () { var h = location.hash; if (h !== "#test-shelf" && h !== "#test-practice" && h !== "#desk") document.documentElement.classList.add("room-boot"); })();
+  /* Arriving from the school hub's zoom: fade in (library.css). */
+  (function () { try { if (sessionStorage.getItem("sb-from-hub")) { sessionStorage.removeItem("sb-from-hub"); document.documentElement.classList.add("from-hub"); } } catch (e) {} })();
 </script>
 <link rel="stylesheet" href="library.css">
 <link rel="stylesheet" href="cabinet.css">

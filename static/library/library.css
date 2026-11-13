@@ -791,3 +791,9 @@ body {
 .reader.over-room .reader__bg { background: #1B1712; }
 .reader.over-room.is-open .reader__bg { opacity: .62; }
 .reader.over-room .back { opacity: 1; }
+
+/* Arriving from the school hub, which zoomed into this room and darkened: fade in from that dark. */
+html.from-hub { background: #2E241C; }
+html.from-hub body { animation: sb-from-hub .7s ease-out both; }
+@keyframes sb-from-hub { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { html.from-hub body { animation: none; } }

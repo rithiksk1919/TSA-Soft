@@ -263,7 +263,7 @@ export function mountRoom(stage, poses, build, opts) {
   }
 
   // The camera eases from where it is to a station's pose (transform only, one rAF loop).
-  function fly(name) {
+  function fly(name, duration) {
     const to = POSES[name];
     at = name;
     cancelAnimationFrame(flight);
@@ -279,7 +279,7 @@ export function mountRoom(stage, poses, build, opts) {
     const from = Object.assign({}, pose);
     const ly = look3.yaw;
     const lp = look3.pitch;
-    const ms = 900;
+    const ms = duration || 900;
     const t0 = performance.now();
     return new Promise(function (resolve) {
       function tick(now) {
@@ -347,6 +347,19 @@ export function mountRoom(stage, poses, build, opts) {
   }
 
   fit();
+  // Arriving from the hub (which zoomed into this room): start a little closer in and ease back to
+  // the overview. The hub calls window.__sbEnterFly once its zoom has faded away. (A closer start
+  // magnifies the walls and floor so much that repainting them costs frames.)
+  if (window.__sbEnter && performance.now() - window.__sbEnter < 4000 && !calm.matches) {
+    window.__sbEnter = 0;
+    pose.depth = pose.depth + 160;
+    pose.pitch = pose.pitch - 3;
+    render();
+    window.__sbEnterFly = function () {
+      window.__sbEnterFly = null;
+      fly("overview", 1400);
+    };
+  }
   const ro = new ResizeObserver(fit);
   ro.observe(stage);
 

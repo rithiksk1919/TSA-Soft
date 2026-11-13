@@ -269,3 +269,7 @@ main, main:focus, main:focus-visible { outline: none; }
   .sign { transition: none; }
   .wave.playing i { animation: none; }
 }
+
+/* ---- the zoom from the hub into a room (app.js zoomInto) ---- */
+.zoom-veil { position: fixed; inset: 0; z-index: 60; background: #2E241C; opacity: 0; pointer-events: none; }
+.zoom-pic { position: fixed !important; z-index: 61; margin: 0; transform-origin: 0 0; pointer-events: none; will-change: transform; box-shadow: 0 0 0 6px var(--wood-dark); }
