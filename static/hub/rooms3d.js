@@ -73,6 +73,94 @@ export function box(parent, o) {
 }
 
 // A soft shadow (or pool of light) lying on a surface at height y.
+// Bakes the soft shadows and pools of light lying on a room's floor into the floor's own
+// background, then removes their planes. Each was a large see-through layer the compositor blended
+// on every frame the camera moved; as background layers of the floor they cost nothing in motion.
+// Shadows that move (class sh3--live) and hover glows stay as planes.
+function splitLayers(value) {
+  const out = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < value.length; i = i + 1) {
+    const c = value[i];
+    if (c === "(") {
+      depth = depth + 1;
+    } else if (c === ")") {
+      depth = depth - 1;
+    } else if (c === "," && depth === 0) {
+      out.push(value.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  out.push(value.slice(start).trim());
+  return out;
+}
+
+function translateOf(el) {
+  const m = /translate3d\(([-\d.]+)px,\s*([-\d.]+)px,\s*([-\d.]+)px\)/.exec(el.style.transform);
+  return m ? { x: Number(m[1]), y: Number(m[2]), z: Number(m[3]) } : null;
+}
+
+export function bakeFloorLight(world) {
+  const host = world.querySelector("[data-floor]");
+  if (!host) {
+    return;
+  }
+  const f = host.dataset.floor.split(" ").map(Number);
+  const left0 = f[0] - f[2] / 2;
+  const back0 = f[1] - f[3] / 2;
+  const decals = [];
+  for (const el of world.querySelectorAll(".sh3, .c3pool, .c3sun, .sun3")) {
+    if (el.classList.contains("sh3--live") || !/rotateX\(90deg\)/.test(el.style.transform)) {
+      continue;
+    }
+    if (el.parentElement !== world && el.parentElement.style.transform) {
+      continue;   // inside a moved group: not in floor coordinates
+    }
+    const t = translateOf(el);
+    if (!t || Math.abs(t.y) > 1.5) {
+      continue;   // on a table or desk, not the floor
+    }
+    const w = parseFloat(el.style.width);
+    const h = parseFloat(el.style.height);
+    const image = getComputedStyle(el).backgroundImage;
+    if (!image || image === "none") {
+      continue;
+    }
+    decals.push({ image: image, w: w, h: h, left: t.x - w / 2 - left0, top: t.z - h / 2 - back0 });
+    el.remove();
+  }
+  if (!decals.length) {
+    return;
+  }
+  const tiles = host.dataset.off ? [host] : host.querySelectorAll("[data-off]");
+  for (const tile of tiles) {
+    const off = tile.dataset.off.split(" ").map(Number);
+    const cs = getComputedStyle(tile);
+    const images = splitLayers(cs.backgroundImage);
+    const n = images.length;
+    const fill = function (list) {
+      const parts = splitLayers(list);
+      const res = [];
+      for (let i = 0; i < n; i = i + 1) {
+        res.push(parts[i % parts.length]);
+      }
+      return res;
+    };
+    const sizes = fill(cs.backgroundSize);
+    const positions = fill(cs.backgroundPosition);
+    const repeats = fill(cs.backgroundRepeat);
+    const dImages = decals.map(function (d) { return d.image; });
+    const dSizes = decals.map(function (d) { return px(d.w) + " " + px(d.h); });
+    const dPos = decals.map(function (d) { return px(d.left - off[0]) + " " + px(d.top - off[1]); });
+    const dRep = decals.map(function () { return "no-repeat"; });
+    tile.style.setProperty("background-image", dImages.concat(images[0] === "none" ? [] : images).join(", "), "important");
+    tile.style.setProperty("background-size", dSizes.concat(images[0] === "none" ? [] : sizes).join(", "), "important");
+    tile.style.setProperty("background-position", dPos.concat(images[0] === "none" ? [] : positions).join(", "), "important");
+    tile.style.setProperty("background-repeat", dRep.concat(images[0] === "none" ? [] : repeats).join(", "), "important");
+  }
+}
+
 export function shade(parent, o) {
   let y = -0.6;
   if (o.y !== undefined) {
@@ -93,7 +181,9 @@ export function legs(parent, cls, x, z, w, d, h, size) {
 // Floor, back wall, side walls and ceiling.
 function shell(world, kind) {
   const depth = -BACK + 160;   // runs out past the open front, under the frame
-  plane(world, { cls: "floor3 floor3--" + kind, x: 0, y: 0, z: BACK + depth / 2, w: W, h: depth, rx: 90 });
+  const floor = plane(world, { cls: "floor3 floor3--" + kind, x: 0, y: 0, z: BACK + depth / 2, w: W, h: depth, rx: 90 });
+  floor.dataset.floor = [0, BACK + depth / 2, W, depth].join(" ");
+  floor.dataset.off = "0 0";
   plane(world, { cls: "wall3 wall3--back wall3--" + kind, x: 0, y: -H / 2, z: BACK, w: W, h: H });
   plane(world, { cls: "wall3 wall3--side wall3--" + kind, x: -W / 2, y: -H / 2, z: BACK + depth / 2, w: depth, h: H, ry: 90 });
   plane(world, { cls: "wall3 wall3--side wall3--right wall3--" + kind, x: W / 2, y: -H / 2, z: BACK + depth / 2, w: depth, h: H, ry: -90 });
@@ -223,7 +313,11 @@ function library(world) {
   for (let s = 0; s < shelves.length; s = s + 1) {
     const sy = shelves[s];
     box(world, { cls: "wood", x: cx, y: sy, z: cz, w: cw - 20, h: 8, d: cd - 2, faces: "front top" });
-    let bx = cx - cw / 2 + 14;
+    // One flat panel of painted spines per shelf (a 3D box per book cost the compositor too much
+    // while the camera moves); only the book that comes out is a real box.
+    const x0 = cx - cw / 2 + 14;
+    const panel = plane(world, { cls: "spines3h", x: cx, y: sy - 8 - 35, z: cz + 16, w: cw - 28, h: 70 });
+    let bx = x0;
     const end = cx + cw / 2 - 14;
     let n = 0;
     while (bx < end - 10) {
@@ -232,11 +326,12 @@ function library(world) {
       const bh = 44 + Math.round(rnd() * 20);
       const lean = rnd() < 0.08 ? 8 : 0;
       const color = BOOK_COLORS[Math.floor(rnd() * BOOK_COLORS.length)];
-      const b = box(world, { cls: "book3", x: bx + bw / 2, y: sy - 8, z: cz + 2, w: bw, h: bh, d: 30, rz: lean, faces: "front top right", style: "--c:" + color });
       if (s === 1 && n === 6) {
-        pick = b;
+        pick = box(world, { cls: "book3", x: bx + bw / 2, y: sy - 8, z: cz + 2, w: bw, h: bh, d: 30, rz: lean, faces: "front top right", style: "--c:" + color });
       } else {
-        books.push({ el: b, order: n, shelf: 2 - s });
+        const sp = node("spine3h", "left:" + px(bx - x0) + ";width:" + px(bw) + ";height:" + px(bh) + ";--c:" + color + (lean ? ";transform:rotate(" + lean + "deg)" : ""));
+        panel.appendChild(sp);
+        books.push({ el: sp, order: n, shelf: 2 - s });
       }
       bx = bx + bw + 1 + (lean ? 5 : 0);
     }
@@ -262,7 +357,7 @@ function library(world) {
       const base = b.el.style.transform;
       play(b.el, [
         { transform: base },
-        { transform: base + " translateZ(10px) translateY(-6px) rotateX(-16deg)", offset: 0.4 },
+        { transform: base + " translateY(-7px)", offset: 0.4 },
         { transform: base }
       ], { duration: 700, delay: 200 + b.order * 22 + b.shelf * 160, easing: "ease-in-out" });
     }
@@ -305,7 +400,7 @@ function gym(world) {
   plane(world, { cls: "rim3", x: hx, y: -176, z: BACK + 92, w: 44, h: 44, rx: 90 });
   const net = plane(world, { cls: "net3", x: hx, y: -160, z: BACK + 92, w: 40, h: 32 });
   // a ball resting on the court, and its shadow
-  const shadow = shade(world, { cls: "sh3--deep", x: 70, z: -36, w: 46, h: 22 });
+  const shadow = shade(world, { cls: "sh3--deep sh3--live", x: 70, z: -36, w: 46, h: 22 });
   const ball = plane(world, { cls: "ball3", x: 64, y: -15, z: -40, w: 30, h: 30, html: '<span class="ball3__seams"></span>' });
 
   // The ball's path: two dribbles, a jump shot over the rim, down through the net, a bounce and a
@@ -442,6 +537,7 @@ export function mountRooms(root) {
     cam.appendChild(world);
     stage.appendChild(cam);
     const moment = build(world);
+    bakeFloorLight(world);
     const state = { stage: stage, cam: cam, k: 1, yaw: 0, pitch: 0, dolly: 0, ty: 0, tp: 0, td: 0, frame: 0 };
     let playing = false;
     function playMoment() {

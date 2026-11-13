@@ -298,7 +298,14 @@
      ===================================================================== */
 
   function check(t) { if (!run || run.token !== t) throw CANCEL; }
-  function scrollLog() { log.scrollTop = log.scrollHeight; }
+  // Keep the newest message in view. Reading scrollHeight right after adding a message forces the
+  // browser to lay out the whole page (the 3D room included) on the spot; once per frame is enough.
+  var scrollQueued = false;
+  function scrollLog() {
+    if (scrollQueued) return;
+    scrollQueued = true;
+    requestAnimationFrame(function () { scrollQueued = false; log.scrollTop = log.scrollHeight; });
+  }
   function bubble(kind, text) {
     var p = document.createElement("p");
     p.className = "tmsg tmsg--" + kind;

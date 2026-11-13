@@ -106,7 +106,7 @@ export function buildGym(stage) {
     return [];
   }, { minWidth: 1200 });
   const world = room.world;
-  const shadow = shade(world, { cls: "sh3--deep", x: START.x + 6, z: START.z + 4, w: 60, h: 28 });
+  const shadow = shade(world, { cls: "sh3--deep sh3--live", x: START.x + 6, z: START.z + 4, w: 60, h: 28 });
   const ball = plane(world, { cls: "ball3 ball3--player", x: START.x, y: START.y, z: START.z, w: R * 2, h: R * 2, html: '<span class="ball3__seams"></span>' });
 
   // The ball's flight, as pieces of parabola sampled into keyframes (transform only).

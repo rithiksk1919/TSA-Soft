@@ -206,8 +206,17 @@
     shade(shadows, { cls: "shade3--strip", x: x0 + 50, z: z0 + d / 2 + 40, w: w + 140, h: 90 });
   }
 
+  // The books on one shelf. Only the subject books (the ones you open) are 3D boxes; every other
+  // book is a spine painted on one flat panel at the books' front. A box per book was a hundred-odd
+  // 3D groups for the compositor to sort on every frame the camera moved, and cost half the frame
+  // rate. The panel keeps the same books, colours, bands, leans and flat stacks.
   function fillShelf(g, xa, xb, yBase, z, space, shelfIndex) {
     var x = xa;
+    var spines = "";
+    function spine(left, w, h, bottom, col, bands, lean) {
+      spines += '<span class="spine3" style="left:' + px(left - xa) + ";width:" + px(w) + ";height:" + px(h) + ";bottom:" + px(bottom) +
+        ";--c:" + col + (lean ? ";transform:rotate(" + lean.toFixed(2) + "deg)" : "") + '">' + bands + "</span>";
+    }
     var special = shelfIndex === 2 ? [{ id: "python", c: "#2D4A6E", t: "Python", h: 0.92 }, { id: "circuits", c: "#7B3F36", t: "Circuits", h: 0.84 }] : [];
     var placed = 0, minNext = 0;
     while (x < xb - 14) {
@@ -233,9 +242,11 @@
         opts.y = yBase - bw / 2 * s - bh / 2 * c + bh / 2;
         opts.rz = lean;
       }
-      var b = box(g, opts);
-      b.style.setProperty("--c", col);
-      if (sp) { b.setAttribute("data-book", sp.id); b.dataset.base = b.style.transform; }
+      if (sp) {
+        var b = box(g, opts);
+        b.style.setProperty("--c", col);
+        b.setAttribute("data-book", sp.id); b.dataset.base = b.style.transform;
+      } else spine(x, bw, bh, 0, col, bands, lean);
       if (lean) {
         x = xr + bh * Math.sin(lean * Math.PI / 180) + 1;
         minNext = Math.ceil(bh * Math.cos(lean * Math.PI / 180)) + 2;
@@ -244,12 +255,14 @@
       if (!lean && rnd() < 0.07 && x < xb - 80) {   // a book or two lying flat
         var n = rnd() < 0.4 ? 2 : 1;
         for (var k = 0; k < n; k++) {
-          var f = box(g, { cls: "book3", x: x + 36 + k * 3, y: yBase - k * 18, z: z, w: 68 - k * 6, h: 18, d: 90, faces: "front right top", html: { front: bandsFor() } });
-          f.style.setProperty("--c", shadeHex(BOOK_COLORS[Math.floor(rnd() * BOOK_COLORS.length)], (rnd() - 0.5) * 0.2));
+          var fw = 68 - k * 6, fb = bandsFor();
+          spine(x + 36 + k * 3 - fw / 2, fw, 18, k * 18, shadeHex(BOOK_COLORS[Math.floor(rnd() * BOOK_COLORS.length)], (rnd() - 0.5) * 0.2), fb, 0);
         }
         x += 76;
       }
     }
+    // the panel sits just behind the subject books' fronts, so they stand proud of it
+    plane(g, { cls: "spines3", x: (xa + xb) / 2, y: yBase - space / 2, z: z + 44, w: xb - xa, h: space, html: spines });
   }
   // Gilt bands on a spine: none, one near the head, or a pair at head and foot.
   function bandsFor() {

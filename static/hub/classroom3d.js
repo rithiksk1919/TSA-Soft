@@ -5,7 +5,7 @@
 //
 // World units: x right, y down (the floor is y = 0), z toward the viewer. The room is 1800 wide and
 // 820 high; the back wall is at z = -700.
-import { px, node, plane, box, shade, legs } from "./rooms3d.js";
+import { px, node, plane, box, shade, legs, bakeFloorLight } from "./rooms3d.js";
 
 export const W = 1800;
 export const H = 820;
@@ -31,12 +31,18 @@ export function tiled(parent, o, cols, rows) {
   }
   g.style.transform = t;
   parent.appendChild(g);
+  if (o.floor) {
+    g.dataset.floor = [o.x || 0, o.z || 0, o.w, o.h].join(" ");
+  }
   const tw = o.w / cols;
   const th = o.h / rows;
   for (let r = 0; r < rows; r = r + 1) {
     for (let c = 0; c < cols; c = c + 1) {
       g.appendChild(node("p3 " + o.cls, "width:" + px(tw + 1) + ";height:" + px(th + 1) + ";left:" + px(-o.w / 2 + c * tw) + ";top:" + px(-o.h / 2 + r * th) +
         ";background-size:" + px(o.w) + " " + px(o.h) + ";background-position:" + px(-c * tw) + " " + px(-r * th)));
+      if (o.floor) {
+        g.lastChild.dataset.off = (-o.w / 2 + c * tw + o.w / 2) + " " + (r * th);
+      }
     }
   }
   return g;
@@ -77,11 +83,11 @@ export function plaque(parent, o) {
 export function shell(world, kind) {
   const k = kind ? " c3--" + kind : "";
   const depth = FRONT - BACK;
-  tiled(world, { cls: "c3floor" + k, x: 0, y: 0, z: (BACK + FRONT) / 2, w: W, h: depth, rx: 90 }, 4, 4);
-  tiled(world, { cls: "c3wall c3wall--back" + k, x: 0, y: -H / 2, z: BACK, w: W, h: H }, 4, 2);
-  tiled(world, { cls: "c3wall c3wall--left" + k, x: -W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: 90 }, 4, 2);
-  tiled(world, { cls: "c3wall c3wall--right" + k, x: W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: -90 }, 4, 2);
-  tiled(world, { cls: "c3ceil" + k, x: 0, y: -H, z: (BACK + FRONT) / 2, w: W, h: depth, rx: -90 }, 4, 4);
+  tiled(world, { cls: "c3floor" + k, x: 0, y: 0, z: (BACK + FRONT) / 2, w: W, h: depth, rx: 90, floor: true }, 2, 2);
+  tiled(world, { cls: "c3wall c3wall--back" + k, x: 0, y: -H / 2, z: BACK, w: W, h: H }, 2, 1);
+  tiled(world, { cls: "c3wall c3wall--left" + k, x: -W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: 90 }, 2, 1);
+  tiled(world, { cls: "c3wall c3wall--right" + k, x: W / 2, y: -H / 2, z: (BACK + FRONT) / 2, w: depth, h: H, ry: -90 }, 2, 1);
+  tiled(world, { cls: "c3ceil" + k, x: 0, y: -H, z: (BACK + FRONT) / 2, w: W, h: depth, rx: -90 }, 2, 1);
   // wainscot, rail and skirting along the back wall
   plane(world, { cls: "c3wainscot" + k, x: 0, y: -70, z: BACK + 1, w: W, h: 140 });
   box(world, { cls: "wood wood--dark", x: 0, y: -140, z: BACK + 4, w: W, h: 8, d: 8, faces: "front top" });
@@ -239,6 +245,7 @@ export function mountRoom(stage, poses, build, opts) {
   cam.appendChild(world);
   stage.appendChild(cam);
   const stations = build(world) || [];
+  bakeFloorLight(world);
   const POSES = poses;
   const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
   let k = 1;
