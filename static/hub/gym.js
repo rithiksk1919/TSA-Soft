@@ -1,58 +1,167 @@
-// The gym: Bug Hoops, the transfer check. Every shot is graded on the server against the hidden answer key.
+// The gym: four stations on one court (gym3d.js). The gym always opens on the station picker.
+//   Bug Hoops   the transfer check: unlocks for a skill once its mastery reaches 0.80
+//   Dodgeball, Loop Laps, Ohm Toss   warm-up games, open at any mastery (gymgames.js)
+// Every shot and every answer is graded on the server against a hidden answer key.
 import { api, esc, fixed, main, getProfileId, renderTopBar, toast, query } from "./common.js";
 import { buildGym } from "./gym3d.js";
+import { playDrill, leaveDrill } from "./gymgames.js";
 
 let game = null;
 let gymRoom = null;
 let currentSkillName = "";
 
-export async function showGym(summary) {
-  const ready = summary.rooms.gym.ready;
-  let skill = null;
-  const wanted = query().skill;
-  for (const item of ready) {
-    if (item.skill === wanted) {
-      skill = item;
-    }
-  }
-  if (!skill && ready.length > 0) {
-    skill = ready[0];
-  }
-  let note = "Transfer check: nothing ready yet";
-  if (skill) {
-    note = "Transfer check: " + skill.name.toLowerCase();
-  }
-  renderTopBar("gym", summary, note);
+const ctx = {
+  room: function () {
+    return gymRoom;
+  },
+  setUI: setUI
+};
 
-  if (!skill) {
-    showClosed(summary);
+export async function showGym(summary) {
+  leaveDrill();
+  const q = query();
+  const ready = summary.rooms.gym.ready;
+  if (q.game && q.game !== "hoops") {
+    renderTopBar("gym", summary, "Warm-ups: open at any mastery");
+    await playDrill(ctx, q.game, q.skill);
     return;
   }
-  currentSkillName = skill.name;
-  showIntro(skill, ready);
+  // Bug Hoops (also reached as #/gym?skill=... from the hub's next step)
+  if (q.game === "hoops" || q.skill) {
+    let skill = null;
+    for (const item of ready) {
+      if (item.skill === q.skill) {
+        skill = item;
+      }
+    }
+    if (!skill && ready.length > 0) {
+      skill = ready[0];
+    }
+    if (skill) {
+      renderTopBar("gym", summary, "Transfer check: " + skill.name.toLowerCase());
+      currentSkillName = skill.name;
+      showIntro(skill, ready);
+      return;
+    }
+  }
+  renderTopBar("gym", summary, ready.length ? "Transfer check ready" : "Warm-ups: open at any mastery");
+  await showMenu(summary);
 }
 
-// The 3D gym is built once per visit; each screen of the game only replaces the panels over it.
-function sceneStart() {
-  return '<div class="chip"><span class="kicker">Transfer check game</span><strong>Bug Hoops</strong></div>';
-}
-
-function setUI(html) {
+// The 3D gym is built once per visit; each screen only replaces the panels over it. Game screens
+// (playing, the default) shift the scene right of their panel; the station picker centres it.
+function setUI(html, playing) {
   let ui = document.getElementById("gym-ui");
   if (!ui || !document.getElementById("gym-stage")) {
     main.innerHTML = '<div class="scene scene3c gym3c" id="gym-scene"><div class="stage3c" id="gym-stage"></div><div id="gym-ui"></div></div>';
     if (gymRoom) {
       gymRoom.destroy();
     }
-    gymRoom = buildGym(document.getElementById("gym-stage"));
+    const stage = document.getElementById("gym-stage");
+    gymRoom = buildGym(stage);
     ui = document.getElementById("gym-ui");
-    // for the QA probes: play a shot without a game in progress
+    // Clicking a station in the room opens it, the same as its card.
+    stage.addEventListener("click", function (event) {
+      const hit = event.target.closest("[data-station]");
+      if (hit && gymRoom.at() === "overview") {
+        const card = document.querySelector('.gym-card[data-game="' + hit.dataset.station + '"]');
+        if (card && card.tagName === "A") {
+          location.hash = card.getAttribute("href");
+        }
+      }
+    });
+    // for the QA probes: play a shot without a game in progress, or reach the room
     window.__gymShoot = function (made) {
       gymRoom.resetBall();
       return gymRoom.shoot(made);
     };
+    window.__gymRoom = gymRoom;
   }
+  document.getElementById("gym-scene").classList.toggle("is-playing", playing !== false);
   ui.innerHTML = html;
+}
+
+/* ---------------- the station picker ---------------- */
+
+async function showMenu(summary) {
+  let overview = { games: [] };
+  let stale = false;
+  try {
+    overview = await api("/api/profiles/" + getProfileId() + "/gym/games");
+  } catch (error) {
+    // a server started before the warm-up games existed answers 404 here
+    stale = true;
+  }
+  const ready = summary.rooms.gym.ready;
+  let cards = "";
+  if (ready.length) {
+    const names = ready.map(function (r) { return r.name; }).join(", ");
+    cards += '<a class="gym-card is-ready" data-game="hoops" href="#/gym?game=hoops&amp;skill=' + esc(ready[0].skill) + '">';
+    cards += '<span class="kicker">Transfer check · ready</span><strong>Bug Hoops</strong><span class="gym-card__for">' + esc(names) + "</span>";
+    cards += '<span class="gym-card__best">3 shots, no hints</span></a>';
+  } else {
+    let closest = null;
+    for (const row of summary.skills_table) {
+      if (!row.mastered && (!closest || row.mastery > closest.mastery)) {
+        closest = row;
+      }
+    }
+    // Not ready for the transfer check yet: the hoop is open for practice shots.
+    cards += '<a class="gym-card" data-game="hoops" href="#/gym?game=shootaround">';
+    cards += '<span class="kicker">Practice shots</span><strong>Bug Hoops</strong><span class="gym-card__for">Shootaround now; the transfer check opens at mastery 0.80.</span>';
+    if (closest) {
+      cards += '<span class="gym-card__best">Closest: ' + esc(closest.name) + " " + fixed(closest.mastery, 2) + "</span>";
+    }
+    cards += "</a>";
+  }
+  for (const g of overview.games) {
+    if (g.id === "shootaround") {
+      continue;   // reached through the Bug Hoops card
+    }
+    let best = "New";
+    if (g.best !== null && g.best !== undefined) {
+      best = "Best " + g.best + "/" + g.rounds;
+    }
+    cards += '<a class="gym-card" data-game="' + esc(g.id) + '" href="#/gym?game=' + esc(g.id) + '">';
+    cards += '<span class="kicker">' + esc(g.tagline) + "</span><strong>" + esc(g.name) + "</strong>";
+    cards += '<span class="gym-card__for">For you: ' + esc(g.focus.slice(0, 2).join(", ")) + "</span>";
+    cards += '<span class="gym-card__best">' + esc(best) + " · " + g.rounds + " rounds</span></a>";
+  }
+  let html = '<div class="chip"><span class="kicker">The gym</span><strong>Pick a station</strong></div>';
+  html += '<section class="gym-hello" aria-labelledby="gym-hello-title"><span class="kicker">Warm up, then prove it</span>';
+  html += '<h2 id="gym-hello-title">Four stations, one court</h2>';
+  html += "<p>The warm-ups drill one rule at a time and aim at your weakest skills. Every answer shows the rule behind it.</p>";
+  html += "<p>Bug Hoops is the transfer check: a problem you have never seen, with no hints.</p>";
+  if (stale) {
+    html += '<p role="alert" style="color:var(--bad);font-weight:600">The warm-up games could not load. Restart the server (python run.py) and reload this page.</p>';
+  }
+  html += "</section>";
+  html += '<nav class="gym-menu" aria-label="Gym stations">' + cards + "</nav>";
+  setUI(html, false);
+  gymRoom.resetBall();
+  gymRoom.loadBall();
+  gymRoom.resetRunner();
+  gymRoom.setRings(["?", "?", "?", "?"]);
+  gymRoom.score({ round: "-", score: 0, streak: 0 });
+  if (gymRoom.at() !== "overview") {
+    gymRoom.fly("overview", 1000);
+  }
+  // Pointing at a card lights its station in the room.
+  for (const card of main.querySelectorAll(".gym-card")) {
+    const on = function () { gymRoom.highlight(card.dataset.game); };
+    const off = function () { gymRoom.highlight(null); };
+    card.addEventListener("pointerenter", on);
+    card.addEventListener("focus", on);
+    card.addEventListener("pointerleave", off);
+    card.addEventListener("blur", off);
+  }
+}
+
+/* ---------------- Bug Hoops ---------------- */
+
+function sceneStart() {
+  return '<div class="chip"><span class="kicker">Transfer check game</span><strong>Bug Hoops</strong></div>' +
+    '<a class="btn btn-light gym-exit" href="#/gym">All stations</a>';
 }
 
 function showScore(roundNumber) {
@@ -62,30 +171,10 @@ function showScore(roundNumber) {
   gymRoom.score({ round: Math.min(roundNumber, game.rounds.length) + "/" + game.rounds.length, score: game.made, streak: streak(game.rounds) });
 }
 
-function showClosed(summary) {
-  const rows = summary.skills_table.slice();
-  rows.sort(function (a, b) {
-    return b.mastery - a.mastery;
-  });
-  let list = "";
-  for (const row of rows.slice(0, 5)) {
-    let left = fixed(Math.max(0, 0.8 - row.mastery), 2) + " to go";
-    if (row.mastered) {
-      left = "mastered";
-    }
-    list += "<li>" + esc(row.name) + ": " + fixed(row.mastery, 2) + " (" + left + ")</li>";
-  }
-  let html = sceneStart();
-  html += '<section class="final" aria-labelledby="closed-title"><div class="kicker">Not open yet</div><h2 id="closed-title">The gym opens at mastery 0.80</h2>';
-  html += "<p>The transfer check proves you can solve a problem you have never seen, with no hints. A skill gets one once its mastery reaches 0.80.</p>";
-  html += '<ul style="text-align:left">' + list + '</ul><div class="actions"><a class="btn" href="#/">Back to hub</a></div></section>';
-  setUI(html);
-}
-
 function showIntro(skill, ready) {
   let picker = "";
   if (ready.length > 1) {
-    picker = '<p><label for="gym-skill">Skill </label><select id="gym-skill" style="min-height:44px;border-radius:8px;font:inherit;padding:0 8px">';
+    picker = '<p><label for="gym-skill">Skill </label><select id="gym-skill" class="drill-select">';
     for (const item of ready) {
       let selected = "";
       if (item.skill === skill.skill) {
@@ -96,22 +185,25 @@ function showIntro(skill, ready) {
     picker += "</select></p>";
   }
   let html = sceneStart();
-  html += '<section class="final" aria-labelledby="intro-title"><div class="kicker">Transfer check · ' + esc(skill.name) + "</div>";
+  html += '<section class="board" aria-labelledby="intro-title"><div class="row"><span class="kicker">Transfer check · ' + esc(skill.name) + '</span><span class="kicker">3 rounds</span></div>';
   html += '<h2 id="intro-title">Three shots, no hints</h2>';
   html += "<p>Each round is a problem you have never seen, with new names and a new story. Click the line that has the bug to take your shot. Make 2 of 3 to pass.</p>";
-  html += picker + '<div class="actions"><button type="button" class="btn btn-brass" id="start-game">Start game</button><a class="btn btn-light" href="#/">Back to hub</a></div></section>';
+  html += picker + '<div class="actions" style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="btn btn-brass" id="start-game">Start game</button></div></section>';
   setUI(html);
-  if (gymRoom) {
-    gymRoom.resetBall();
-    gymRoom.score({ round: "-", score: 0, streak: 0 });
+  gymRoom.highlight(null);
+  gymRoom.resetBall();
+  gymRoom.score({ round: "-", score: 0, streak: 0 });
+  if (gymRoom.at() !== "hoops") {
+    gymRoom.fly("hoops", 1100);
   }
   const picked = document.getElementById("gym-skill");
   if (picked) {
     picked.addEventListener("change", function () {
-      location.hash = "#/gym?skill=" + picked.value;
+      location.hash = "#/gym?game=hoops&skill=" + picked.value;
     });
   }
   const startButton = document.getElementById("start-game");
+  startButton.focus({ preventScroll: true });
   startButton.addEventListener("click", async function () {
     startButton.disabled = true;
     try {
@@ -174,7 +266,7 @@ function showRound() {
       shoot(Number(button.dataset.line), buttons);
     });
   }
-  buttons[0].focus();
+  buttons[0].focus({ preventScroll: true });
 }
 
 async function shoot(line, buttons) {
@@ -221,7 +313,7 @@ async function shoot(line, buttons) {
   hud.outerHTML = hudHtml(shot.round);
   showScore(shot.round);
   const nextButton = document.getElementById("next-round");
-  nextButton.focus();
+  nextButton.focus({ preventScroll: true });
   nextButton.addEventListener("click", function () {
     if (shot.finished) {
       showFinal(shot.result);
@@ -271,12 +363,12 @@ function showFinal(result) {
   if (changes) {
     html += '<ul style="text-align:left">' + changes + "</ul>";
   }
-  html += '<div class="actions">' + againButton + '<a class="btn btn-light" href="#/">Back to hub</a></div></section>';
+  html += '<div class="actions">' + againButton + '<a class="btn btn-light" href="#/gym">All stations</a></div></section>';
   setUI(html);
   showScore(game.rounds.length);
   const title = document.getElementById("final-title");
   title.setAttribute("tabindex", "-1");
-  title.focus();
+  title.focus({ preventScroll: true });
   const again = document.getElementById("play-again");
   if (again) {
     again.addEventListener("click", function () {

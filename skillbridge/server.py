@@ -19,6 +19,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import demo, tts
 from .gym import Gym
+from .gym_games import GymGames
 from .hub import Hub
 from .lessons import load_lesson
 from .library import Library
@@ -45,6 +46,7 @@ class App:
         self.svc = svc
         self.lib = Library(svc)
         self.gym = Gym(svc)
+        self.games = GymGames(svc)
         self.hub = Hub(svc, self.lib, self.gym)
 
 
@@ -178,6 +180,26 @@ def gym_state(app, req, m):
 @route("POST", r"/api/gym/(\d+)/shot")
 def gym_shot(app, req, m):
     return app.gym.shoot(int(m[1]), req.body.get("line"))
+
+
+@route("GET", r"/api/profiles/(\d+)/gym/games")
+def games_overview(app, req, m):
+    return app.games.overview(int(m[1]))
+
+
+@route("POST", r"/api/profiles/(\d+)/gym/games/(\w+)/start")
+def game_start(app, req, m):
+    return app.games.start(int(m[1]), m[2], req.body.get("skill") or None)
+
+
+@route("GET", r"/api/drills/(\d+)")
+def drill_state(app, req, m):
+    return app.games.state(int(m[1]))
+
+
+@route("POST", r"/api/drills/(\d+)/answer")
+def drill_answer(app, req, m):
+    return app.games.answer(int(m[1]), req.body.get("index"), req.body.get("choice"))
 
 
 @route("POST", r"/api/profiles/(\d+)/break")

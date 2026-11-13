@@ -306,7 +306,7 @@ class Hub:
                 names.append(item["name"].lower())
             gym_label = "Ready: " + ", ".join(names[:2])
         else:
-            gym_label = "Opens at mastery 0.80"
+            gym_label = "3 warm-up games open"
 
         lunch = {"nudge": False, "hinted": 0, "window": 0, "label": "Break timer"}
         for domain in dash["domains"]:

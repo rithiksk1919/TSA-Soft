@@ -1,0 +1,114 @@
+{
+  "game": "laps",
+  "about": "Loop Laps: predict, then watch the runner trace the loop one lap per pass. `trace` holds the watched variables at the end of each lap, as Python repr. tests/test_gym_games.py runs every snippet under a tracer and checks the laps, the trace and the answer (`expr` evaluated afterwards, or the lap count when kind is laps).",
+  "items": [
+    {
+      "id": "lp-loop-1", "skill": "py_loops", "kind": "laps",
+      "lines": ["total = 0", "n = 1", "while total < 10:", "    total += n", "    n += 1"],
+      "watch": ["total", "n"],
+      "ask": "How many laps does the loop run?",
+      "choices": ["3", "4", "5", "10"], "answer": 1,
+      "trace": [{"total": "1", "n": "2"}, {"total": "3", "n": "3"}, {"total": "6", "n": "4"}, {"total": "10", "n": "5"}],
+      "why": "total goes 1, 3, 6, 10. Once it is 10, the test total < 10 is False, so the loop stops after 4 laps."
+    },
+    {
+      "id": "lp-loop-2", "skill": "py_loops", "kind": "value", "expr": "n",
+      "lines": ["n = 20", "steps = 0", "while n > 1:", "    n = n // 3", "    steps += 1"],
+      "watch": ["n", "steps"],
+      "ask": "What is n when the loop stops?",
+      "choices": ["0", "1", "2", "6"], "answer": 0,
+      "trace": [{"n": "6", "steps": "1"}, {"n": "2", "steps": "2"}, {"n": "0", "steps": "3"}],
+      "why": "20 → 6 → 2 → 0. 2 is still > 1, so one more pass floors it to 0. The loop never lands on exactly 1."
+    },
+    {
+      "id": "lp-loop-3", "skill": "py_loops", "kind": "value", "expr": "total",
+      "lines": ["i = 0", "total = 0", "while i < 5:", "    i += 1", "    if i == 3:", "        continue", "    total += i"],
+      "watch": ["i", "total"],
+      "ask": "What is total when the loop ends?",
+      "choices": ["9", "10", "12", "15"], "answer": 2,
+      "trace": [{"i": "1", "total": "1"}, {"i": "2", "total": "3"}, {"i": "3", "total": "3"}, {"i": "4", "total": "7"}, {"i": "5", "total": "12"}],
+      "why": "continue jumps straight back to the test, skipping the rest of lap 3, so 3 is never added: 1 + 2 + 4 + 5 = 12."
+    },
+    {
+      "id": "lp-loop-4", "skill": "py_loops", "kind": "laps",
+      "lines": ["n = 5", "fact = 1", "while n > 1:", "    fact = fact * n", "    n -= 1"],
+      "watch": ["n", "fact"],
+      "ask": "How many laps does the loop run?",
+      "choices": ["3", "4", "5", "120"], "answer": 1,
+      "trace": [{"n": "4", "fact": "5"}, {"n": "3", "fact": "20"}, {"n": "2", "fact": "60"}, {"n": "1", "fact": "120"}],
+      "why": "The body runs with n = 5, 4, 3 and 2. When n reaches 1 the test n > 1 fails: 4 laps, and fact ends at 120."
+    },
+    {
+      "id": "lp-obo-1", "skill": "py_off_by_one", "kind": "value", "expr": "count",
+      "lines": ["count = 0", "for i in range(2, 8):", "    count += 1"],
+      "watch": ["i", "count"],
+      "ask": "What is count when the loop ends?",
+      "choices": ["5", "6", "7", "8"], "answer": 1,
+      "trace": [{"i": "2", "count": "1"}, {"i": "3", "count": "2"}, {"i": "4", "count": "3"}, {"i": "5", "count": "4"}, {"i": "6", "count": "5"}, {"i": "7", "count": "6"}],
+      "why": "range(2, 8) gives 2 up to 7. The stop, 8, is left out, so there are 8 − 2 = 6 laps."
+    },
+    {
+      "id": "lp-obo-2", "skill": "py_off_by_one", "kind": "value", "expr": "s",
+      "lines": ["word = \"bus\"", "s = \"\"", "for i in range(len(word) - 1):", "    s += word[i]"],
+      "watch": ["i", "s"],
+      "ask": "What is s when the loop ends?",
+      "choices": ["'b'", "'bu'", "'bus'", "'us'"], "answer": 1,
+      "trace": [{"i": "0", "s": "'b'"}, {"i": "1", "s": "'bu'"}],
+      "why": "len(word) − 1 is 2, so i only takes 0 and 1. The last letter, at index 2, is never reached."
+    },
+    {
+      "id": "lp-obo-3", "skill": "py_off_by_one", "kind": "value", "expr": "best",
+      "lines": ["nums = [4, 7, 1, 9]", "best = nums[0]", "for i in range(1, len(nums) - 1):", "    if nums[i] > best:", "        best = nums[i]"],
+      "watch": ["i", "best"],
+      "ask": "What is best when the loop ends?",
+      "choices": ["1", "4", "7", "9"], "answer": 2,
+      "trace": [{"i": "1", "best": "7"}, {"i": "2", "best": "7"}],
+      "why": "range(1, len(nums) − 1) stops at index 2, so the last number, 9, is never checked. One too few in the bound gives 7."
+    },
+    {
+      "id": "lp-obo-4", "skill": "py_off_by_one", "kind": "value", "expr": "squares",
+      "lines": ["squares = []", "for n in range(1, 4):", "    squares.append(n * n)"],
+      "watch": ["n", "squares"],
+      "ask": "What is squares when the loop ends?",
+      "choices": ["[1, 4]", "[1, 4, 9]", "[0, 1, 4, 9]", "[1, 4, 9, 16]"], "answer": 1,
+      "trace": [{"n": "1", "squares": "[1]"}, {"n": "2", "squares": "[1, 4]"}, {"n": "3", "squares": "[1, 4, 9]"}],
+      "why": "range(1, 4) gives 1, 2 and 3. The stop, 4, is left out, so 16 never appears."
+    },
+    {
+      "id": "lp-cond-1", "skill": "py_conditionals", "kind": "value", "expr": "picked",
+      "lines": ["picked = 0", "for x in [3, 8, 5, 10, 12]:", "    if x % 2 == 0 and x > 9:", "        picked += 1"],
+      "watch": ["x", "picked"],
+      "ask": "What is picked when the loop ends?",
+      "choices": ["1", "2", "3", "5"], "answer": 1,
+      "trace": [{"x": "3", "picked": "0"}, {"x": "8", "picked": "0"}, {"x": "5", "picked": "0"}, {"x": "10", "picked": "1"}, {"x": "12", "picked": "2"}],
+      "why": "With and, both parts must hold. 8 is even but not over 9, so only 10 and 12 count."
+    },
+    {
+      "id": "lp-ret-1", "skill": "py_returns", "kind": "value", "expr": "pos",
+      "lines": ["def find(names, target):", "    for i in range(len(names)):", "        if names[i] == target:", "            return i", "    return -1", "", "pos = find([\"ana\", \"bo\", \"cy\"], \"bo\")"],
+      "watch": ["i"],
+      "ask": "What is pos after the call?",
+      "choices": ["-1", "0", "1", "2"], "answer": 2,
+      "trace": [{"i": "0"}, {"i": "1"}],
+      "why": "Lap 1 checks \"ana\": no match. In lap 2 names[1] is \"bo\", so return 1 ends the function in the middle of the loop. \"cy\" is never looked at."
+    },
+    {
+      "id": "lp-scope-1", "skill": "py_scope", "kind": "value", "expr": "x",
+      "lines": ["x = 10", "", "def bump():", "    x = 1", "    for k in range(3):", "        x += k", "    return x", "", "y = bump()"],
+      "watch": ["k", "x"],
+      "ask": "After y = bump(), what is the global x?",
+      "choices": ["1", "4", "10", "13"], "answer": 2,
+      "trace": [{"k": "0", "x": "1"}, {"k": "1", "x": "2"}, {"k": "2", "x": "4"}],
+      "why": "x = 1 inside bump makes a new local x. The loop changes that local (1, 2, 4); the global x stays 10."
+    },
+    {
+      "id": "lp-type-1", "skill": "py_types", "kind": "value", "expr": "total",
+      "lines": ["total = 0", "for p in [\"3\", \"4\", \"5\"]:", "    total += int(p)"],
+      "watch": ["p", "total"],
+      "ask": "What is total when the loop ends?",
+      "choices": ["0", "12", "'345'", "TypeError"], "answer": 1,
+      "trace": [{"p": "'3'", "total": "3"}, {"p": "'4'", "total": "7"}, {"p": "'5'", "total": "12"}],
+      "why": "int(p) turns each piece of text into a number, so the loop adds 3 + 4 + 5. Without int() it would raise TypeError."
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "game": "toss",
+  "about": "Ohm Toss: four answer rings are painted on the court; toss the beanbag onto the right value. `calc` is the true value in the item's unit; tests/test_gym_games.py checks it matches the answer and no other ring.",
+  "items": [
+    {
+      "id": "ts-ohm-1", "skill": "ck_ohms",
+      "ask": "A 9 V battery drives a 450 Ω resistor. How much current flows?",
+      "unit": "mA", "choices": [20, 2, 50, 0.2], "answer": 0, "calc": "9 / 450 * 1000",
+      "why": "I = V / R = 9 / 450 = 0.02 A, which is 20 mA."
+    },
+    {
+      "id": "ts-ohm-2", "skill": "ck_ohms",
+      "ask": "15 mA flows through a 200 Ω resistor. What voltage is across it?",
+      "unit": "V", "choices": [3000, 3, 0.075, 30], "answer": 1, "calc": "0.015 * 200",
+      "why": "15 mA is 0.015 A, so V = I × R = 0.015 × 200 = 3 V. Forgetting to convert gives 3000."
+    },
+    {
+      "id": "ts-ohm-3", "skill": "ck_ohms",
+      "ask": "A resistor has 5 V across it and 2 mA through it. What is its resistance?",
+      "unit": "kΩ", "choices": [0.4, 10, 2.5, 25], "answer": 2, "calc": "5 / 0.002 / 1000",
+      "why": "R = V / I = 5 / 0.002 = 2500 Ω, which is 2.5 kΩ."
+    },
+    {
+      "id": "ts-ser-1", "skill": "ck_series",
+      "ask": "1 kΩ, 2 kΩ and 3 kΩ in series on 12 V. What current flows?",
+      "unit": "mA", "choices": [12, 2, 6, 22], "answer": 1, "calc": "12 / 6000 * 1000",
+      "why": "Series resistances add to 6 kΩ. I = 12 / 6000 = 2 mA, the same through every part."
+    },
+    {
+      "id": "ts-ser-2", "skill": "ck_series",
+      "ask": "9 V across 2 kΩ and 1 kΩ in series. What is the voltage across the 2 kΩ?",
+      "unit": "V", "choices": [3, 4.5, 6, 9], "answer": 2, "calc": "9 * 2 / 3",
+      "why": "I = 9 / 3000 = 3 mA, so V = 3 mA × 2 kΩ = 6 V. The bigger resistor takes the bigger share."
+    },
+    {
+      "id": "ts-ser-3", "skill": "ck_series",
+      "ask": "Two resistors in series on 12 V. One drops 5 V. What does the other drop?",
+      "unit": "V", "choices": [5, 7, 12, 17], "answer": 1, "calc": "12 - 5",
+      "why": "Around a series loop the drops add up to the supply: 12 − 5 = 7 V."
+    },
+    {
+      "id": "ts-par-1", "skill": "ck_parallel",
+      "ask": "12 V across 3 kΩ and 6 kΩ in parallel. What is the total current?",
+      "unit": "mA", "choices": [6, 1.3, 4, 2], "answer": 0, "calc": "12 / 3 + 12 / 6",
+      "why": "Each branch has the full 12 V: 4 mA through 3 kΩ and 2 mA through 6 kΩ. Branch currents add to 6 mA."
+    },
+    {
+      "id": "ts-par-2", "skill": "ck_parallel",
+      "ask": "Two 4 kΩ resistors in parallel. What is their combined resistance?",
+      "unit": "kΩ", "choices": [8, 4, 2, 1], "answer": 2, "calc": "1 / (1 / 4 + 1 / 4)",
+      "why": "Two equal branches halve the resistance: 4 kΩ / 2 = 2 kΩ. Adding them is the series rule."
+    },
+    {
+      "id": "ts-par-3", "skill": "ck_parallel",
+      "ask": "9 V across three parallel branches. What is the voltage across the middle branch?",
+      "unit": "V", "choices": [3, 4.5, 9, 0], "answer": 2, "calc": "9",
+      "why": "Every parallel branch sits straight across the supply, so each one sees the full 9 V."
+    },
+    {
+      "id": "ts-open-1", "skill": "ck_open",
+      "ask": "A 9 V series loop of R1 and R2, and R2 has a broken lead. How much current flows?",
+      "unit": "mA", "choices": [9, 4.5, 3, 0], "answer": 3, "calc": "0",
+      "why": "An open leaves no complete path, so the current is 0 everywhere in the loop."
+    },
+    {
+      "id": "ts-open-2", "skill": "ck_open",
+      "ask": "A 9 V series loop of R1 and R2, and R2 is open. What does a meter across R2 read?",
+      "unit": "V", "choices": [0, 4.5, 9, 18], "answer": 2, "calc": "9",
+      "why": "No current means no drop across R1, so all 9 V appears across the gap at R2."
+    },
+    {
+      "id": "ts-open-3", "skill": "ck_open",
+      "ask": "A 6 V series loop of three resistors, and one is open. What does a meter across a good resistor read?",
+      "unit": "V", "choices": [6, 3, 2, 0], "answer": 3, "calc": "0",
+      "why": "With no current, V = I × R = 0 across every good part. Only the open one reads 6 V."
+    },
+    {
+      "id": "ts-short-1", "skill": "ck_short",
+      "ask": "Three 2 kΩ resistors in series on 12 V, and one is shorted. What current flows?",
+      "unit": "mA", "choices": [2, 3, 4, 6], "answer": 1, "calc": "12 / 4000 * 1000",
+      "why": "The short takes one resistor out: 12 / 4 kΩ = 3 mA, up from 2 mA."
+    },
+    {
+      "id": "ts-short-2", "skill": "ck_short",
+      "ask": "Three 2 kΩ resistors in series on 12 V, and the middle one is shorted. What does a meter across it read?",
+      "unit": "V", "choices": [0, 4, 6, 12], "answer": 0, "calc": "0",
+      "why": "A short is a wire across the part, so it drops 0 V."
+    },
+    {
+      "id": "ts-short-3", "skill": "ck_short",
+      "ask": "Three 2 kΩ resistors in series on 12 V, and one is shorted. What does each good resistor read?",
+      "unit": "V", "choices": [3, 4, 6, 12], "answer": 2, "calc": "12 / 2",
+      "why": "12 V now splits over two equal resistors: 6 V each, up from 4 V."
+    },
+    {
+      "id": "ts-val-1", "skill": "ck_value",
+      "ask": "Labelled 1 kΩ, it has 6 V across it with 3 mA through it. What is its real value?",
+      "unit": "kΩ", "choices": [0.5, 1, 2, 18], "answer": 2, "calc": "6 / 0.003 / 1000",
+      "why": "R = V / I = 6 / 0.003 = 2000 Ω = 2 kΩ, double the label."
+    },
+    {
+      "id": "ts-val-2", "skill": "ck_value",
+      "ask": "Labelled 330 Ω, it reads 3.3 V with 1 mA through it. What is its real value?",
+      "unit": "Ω", "choices": [3.3, 33, 330, 3300], "answer": 3, "calc": "3.3 / 0.001",
+      "why": "3.3 / 0.001 = 3300 Ω, ten times the label: a 3.3 kΩ part fitted by mistake."
+    },
+    {
+      "id": "ts-val-3", "skill": "ck_value",
+      "ask": "5 V should push 10 mA through a 500 Ω resistor, but you measure only 5 mA. What is its real value?",
+      "unit": "kΩ", "choices": [0.25, 0.5, 1, 2], "answer": 2, "calc": "5 / 0.005 / 1000",
+      "why": "R = 5 / 0.005 = 1000 Ω = 1 kΩ, twice what was planned, so only half the current flows."
+    }
+  ]
+}

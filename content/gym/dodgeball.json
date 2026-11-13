@@ -1,0 +1,295 @@
+{
+  "game": "dodgeball",
+  "about": "Bug or clean? Each ball carries a short function (or a circuit step) and what it should do. Dodge the bugs, catch the clean ones. Python items carry a `check` that tests/test_gym_games.py runs: it passes for clean items and fails for buggy ones. Circuit items carry the claimed and the true value.",
+  "items": [
+    {
+      "id": "dg-cond-1", "skill": "py_conditionals", "kind": "code",
+      "goal": "Riders 120 cm and taller may ride.",
+      "lines": ["def can_ride(height):", "    return height > 120"],
+      "answer": "bug",
+      "why": "height > 120 turns away a rider who is exactly 120 cm. \"120 and taller\" needs >=.",
+      "check": "assert can_ride(120) and can_ride(150) and not can_ride(119)"
+    },
+    {
+      "id": "dg-cond-2", "skill": "py_conditionals", "kind": "code",
+      "goal": "Under 12 is child, 12 to 64 is adult, 65 and over is senior.",
+      "lines": ["def ticket(age):", "    if age < 12:", "        return \"child\"", "    elif age < 65:", "        return \"adult\"", "    return \"senior\""],
+      "answer": "clean",
+      "why": "elif only runs when age < 12 was False, so that branch really means 12 to 64. Every boundary lands in the right place.",
+      "check": "assert ticket(11) == 'child' and ticket(12) == 'adult' and ticket(64) == 'adult' and ticket(65) == 'senior'"
+    },
+    {
+      "id": "dg-cond-3", "skill": "py_conditionals", "kind": "code",
+      "goal": "True on Saturday and Sunday only.",
+      "lines": ["def is_weekend(day):", "    return day == \"Sat\" or \"Sun\""],
+      "answer": "bug",
+      "why": "\"Sun\" on its own is a non-empty string, which is always truthy, so every day counts as the weekend. Write day == \"Sat\" or day == \"Sun\".",
+      "check": "assert is_weekend('Sat') and is_weekend('Sun') and not is_weekend('Mon')"
+    },
+    {
+      "id": "dg-loop-1", "skill": "py_loops", "kind": "code",
+      "goal": "Add the numbers up to (not including) the first negative one.",
+      "lines": ["def total_until_negative(nums):", "    total = 0", "    for n in nums:", "        if n < 0:", "            continue", "        total += n", "    return total"],
+      "answer": "bug",
+      "why": "continue skips the negative but keeps looping, so numbers after it are still added. Stopping at the first negative needs break.",
+      "check": "assert total_until_negative([2, 3, -1, 5]) == 5"
+    },
+    {
+      "id": "dg-loop-2", "skill": "py_loops", "kind": "code",
+      "goal": "Count how many halvings take n down to 1.",
+      "lines": ["def halvings(n):", "    steps = 0", "    while n > 1:", "        n = n // 2", "        steps += 1", "    return steps"],
+      "answer": "clean",
+      "why": "n shrinks on every pass, so the test n > 1 is bound to turn False. 8, 4, 2, 1 is three steps.",
+      "check": "assert halvings(8) == 3 and halvings(1) == 0 and halvings(9) == 3"
+    },
+    {
+      "id": "dg-loop-3", "skill": "py_loops", "kind": "code",
+      "goal": "The index of the first even number, or len(nums) if there is none.",
+      "lines": ["def first_even(nums):", "    i = 0", "    while nums[i] % 2 == 1 and i < len(nums):", "        i += 1", "    return i"],
+      "answer": "bug",
+      "why": "The guard runs too late: nums[i] is read before i < len(nums) is checked, so a list with no even number crashes. Put the length check first.",
+      "check": "assert first_even([1, 3, 4]) == 2 and first_even([1, 3]) == 2"
+    },
+    {
+      "id": "dg-obo-1", "skill": "py_off_by_one", "kind": "code",
+      "goal": "The last three items of a list.",
+      "lines": ["def last_three(items):", "    return items[-3:-1]"],
+      "answer": "bug",
+      "why": "A slice stops before its end index, so -1 drops the very last item. items[-3:] keeps all three.",
+      "check": "assert last_three([1, 2, 3, 4, 5]) == [3, 4, 5]"
+    },
+    {
+      "id": "dg-obo-2", "skill": "py_off_by_one", "kind": "code",
+      "goal": "Every even number from 0 up to and including n.",
+      "lines": ["def evens_up_to(n):", "    return list(range(0, n + 1, 2))"],
+      "answer": "clean",
+      "why": "range stops before its end, so the + 1 lets n itself in when it is even.",
+      "check": "assert evens_up_to(6) == [0, 2, 4, 6] and evens_up_to(5) == [0, 2, 4]"
+    },
+    {
+      "id": "dg-obo-3", "skill": "py_off_by_one", "kind": "code",
+      "goal": "The middle item of a list with an odd length.",
+      "lines": ["def middle(items):", "    return items[len(items) // 2 + 1]"],
+      "answer": "bug",
+      "why": "For 3 items, len // 2 is already 1, the middle index. Adding 1 points one past it.",
+      "check": "assert middle([1, 2, 3]) == 2 and middle([1, 2, 3, 4, 5]) == 3"
+    },
+    {
+      "id": "dg-ret-1", "skill": "py_returns", "kind": "code",
+      "goal": "area(3, 4) gives 12.",
+      "lines": ["def area(w, h):", "    result = w * h"],
+      "answer": "bug",
+      "why": "Without a return statement a function hands back None, so area(3, 4) is None. Add return result.",
+      "check": "assert area(3, 4) == 12"
+    },
+    {
+      "id": "dg-ret-2", "skill": "py_returns", "kind": "code",
+      "goal": "True if any number in the list is negative.",
+      "lines": ["def has_negative(nums):", "    for n in nums:", "        if n < 0:", "            return True", "        return False"],
+      "answer": "bug",
+      "why": "return False sits inside the loop, so the function gives up after checking only the first number. It belongs after the loop.",
+      "check": "assert has_negative([1, -2]) and not has_negative([1, 2])"
+    },
+    {
+      "id": "dg-ret-3", "skill": "py_returns", "kind": "code",
+      "goal": "A sorted copy, leaving the original list alone.",
+      "lines": ["def sorted_copy(nums):", "    return sorted(nums)"],
+      "answer": "clean",
+      "why": "sorted() builds and returns a new list. (nums.sort() would sort in place and return None.)",
+      "check": "a = [3, 1, 2]\nassert sorted_copy(a) == [1, 2, 3] and a == [3, 1, 2]"
+    },
+    {
+      "id": "dg-scope-1", "skill": "py_scope", "kind": "code",
+      "goal": "Each call adds one to the global count and returns it.",
+      "lines": ["count = 0", "", "def tick():", "    count += 1", "    return count"],
+      "answer": "bug",
+      "why": "Assigning to count inside tick makes count local, so count += 1 reads a local with no value yet: UnboundLocalError. Add global count.",
+      "check": "assert tick() == 1"
+    },
+    {
+      "id": "dg-scope-2", "skill": "py_scope", "kind": "code",
+      "goal": "Each call to step() counts up by one: 1, 2, 3 ...",
+      "lines": ["def make_counter():", "    n = 0", "    def step():", "        nonlocal n", "        n += 1", "        return n", "    return step"],
+      "answer": "clean",
+      "why": "nonlocal n lets step update the n that belongs to make_counter, so the count survives between calls.",
+      "check": "s = make_counter()\ns()\nassert s() == 2"
+    },
+    {
+      "id": "dg-scope-3", "skill": "py_scope", "kind": "code",
+      "goal": "With no list given, return a new list holding just the tag.",
+      "lines": ["def add_tag(tag, tags=[]):", "    tags.append(tag)", "    return tags"],
+      "answer": "bug",
+      "why": "The default list is made once, when def runs, and every call shares it, so tags pile up. Use tags=None and make a new list inside.",
+      "check": "add_tag('a')\nassert add_tag('b') == ['b']"
+    },
+    {
+      "id": "dg-type-1", "skill": "py_types", "kind": "code",
+      "goal": "age_text comes from input(), like \"14\". Return next year's age, 15.",
+      "lines": ["def next_year(age_text):", "    return age_text + 1"],
+      "answer": "bug",
+      "why": "Text from input() is a str, and str + int raises TypeError. Convert first: int(age_text) + 1.",
+      "check": "assert next_year('14') == 15"
+    },
+    {
+      "id": "dg-type-2", "skill": "py_types", "kind": "code",
+      "goal": "The mean of a list, or 0 for an empty list.",
+      "lines": ["def average(nums):", "    if not nums:", "        return 0", "    return sum(nums) / len(nums)"],
+      "answer": "clean",
+      "why": "The empty-list guard comes before the division, so len(nums) is never 0 when it divides.",
+      "check": "assert average([2, 4]) == 3 and average([]) == 0"
+    },
+    {
+      "id": "dg-type-3", "skill": "py_types", "kind": "code",
+      "goal": "label(\"Ana\", 9) gives \"Ana scored 9\".",
+      "lines": ["def label(name, score):", "    return name + \" scored \" + score"],
+      "answer": "bug",
+      "why": "score is an int, and joining it to strings with + raises TypeError. Use str(score) or an f-string.",
+      "check": "assert label('Ana', 9) == 'Ana scored 9'"
+    },
+
+    {
+      "id": "dg-ohm-1", "skill": "ck_ohms", "kind": "claim",
+      "goal": "A 9 V battery drives a 3 kΩ resistor. Find the current.",
+      "lines": ["I = V / R", "I = 9 / 3 = 3 A"],
+      "answer": "bug",
+      "why": "3 kΩ is 3000 Ω. I = 9 / 3000 = 0.003 A, which is 3 mA, not 3 A.",
+      "claimed": 3, "actual": "9 / 3000"
+    },
+    {
+      "id": "dg-ohm-2", "skill": "ck_ohms", "kind": "claim",
+      "goal": "20 mA flows through a 250 Ω resistor. Find the voltage.",
+      "lines": ["I = 20 mA = 0.02 A", "V = 0.02 × 250 = 5 V"],
+      "answer": "clean",
+      "why": "Convert mA to A first, then V = I × R = 0.02 × 250 = 5 V.",
+      "claimed": 5, "actual": "0.02 * 250"
+    },
+    {
+      "id": "dg-ohm-3", "skill": "ck_ohms", "kind": "claim",
+      "goal": "12 V across a resistor drives 4 mA. Find its resistance.",
+      "lines": ["R = V / I", "R = 12 / 4 = 3 Ω"],
+      "answer": "bug",
+      "why": "4 mA is 0.004 A, so R = 12 / 0.004 = 3000 Ω, which is 3 kΩ.",
+      "claimed": 3, "actual": "12 / 0.004"
+    },
+    {
+      "id": "dg-ser-1", "skill": "ck_series", "kind": "claim",
+      "goal": "1 kΩ and 2 kΩ in series on 9 V. Find the current, in mA.",
+      "lines": ["R = 1 k + 2 k = 3 kΩ", "I = 9 / 3000 = 3 mA"],
+      "answer": "clean",
+      "why": "Series resistances add to 3 kΩ, and the same 3 mA flows through both parts.",
+      "claimed": 3, "actual": "9 / 3000 * 1000"
+    },
+    {
+      "id": "dg-ser-2", "skill": "ck_series", "kind": "claim",
+      "goal": "12 V across 1 kΩ and 3 kΩ in series. Voltage across the 3 kΩ?",
+      "lines": ["Two resistors share the 12 V", "V across 3 kΩ = 12 / 2 = 6 V"],
+      "answer": "bug",
+      "why": "Voltage divides in proportion to resistance, not evenly: 3 mA × 3 kΩ = 9 V across the bigger resistor.",
+      "claimed": 6, "actual": "12 * 3 / (1 + 3)"
+    },
+    {
+      "id": "dg-ser-3", "skill": "ck_series", "kind": "claim",
+      "goal": "Two resistors in series; 4 mA flows through the first. Current in the second, in mA?",
+      "lines": ["The current splits between the two", "Current in the second = 2 mA"],
+      "answer": "bug",
+      "why": "A series loop has only one path, so the same 4 mA flows through every part.",
+      "claimed": 2, "actual": "4"
+    },
+    {
+      "id": "dg-par-1", "skill": "ck_parallel", "kind": "claim",
+      "goal": "9 V across 1 kΩ and 3 kΩ in parallel. Voltage across each branch?",
+      "lines": ["Two branches share the 9 V", "Each branch sees 4.5 V"],
+      "answer": "bug",
+      "why": "Each parallel branch is connected straight across the battery, so each one sees the full 9 V.",
+      "claimed": 4.5, "actual": "9"
+    },
+    {
+      "id": "dg-par-2", "skill": "ck_parallel", "kind": "claim",
+      "goal": "6 V across parallel 2 kΩ and 3 kΩ. Total current, in mA?",
+      "lines": ["6 / 2 k = 3 mA,  6 / 3 k = 2 mA", "Total = 3 + 2 = 5 mA"],
+      "answer": "clean",
+      "why": "Each branch has the full 6 V across it, and branch currents add: 5 mA.",
+      "claimed": 5, "actual": "6 / 2 + 6 / 3"
+    },
+    {
+      "id": "dg-par-3", "skill": "ck_parallel", "kind": "claim",
+      "goal": "Two 2 kΩ resistors in parallel. Combined resistance, in kΩ?",
+      "lines": ["Resistances add", "R = 2 k + 2 k = 4 kΩ"],
+      "answer": "bug",
+      "why": "Adding is for series. Two equal parallel branches give current two paths, halving the resistance to 1 kΩ.",
+      "claimed": 4, "actual": "1 / (1 / 2 + 1 / 2)"
+    },
+    {
+      "id": "dg-open-1", "skill": "ck_open", "kind": "claim",
+      "goal": "A 9 V series loop where R2 is open. Current, in mA?",
+      "lines": ["The loop is broken at R2", "Current = 0 mA"],
+      "answer": "clean",
+      "why": "A break leaves no complete path, so no current flows anywhere in the loop.",
+      "claimed": 0, "actual": "0"
+    },
+    {
+      "id": "dg-open-2", "skill": "ck_open", "kind": "claim",
+      "goal": "A 9 V series loop where R2 is open. Meter across R2?",
+      "lines": ["No current flows", "So V across R2 = 0 V"],
+      "answer": "bug",
+      "why": "With no current, the good parts drop 0 V, so the full 9 V shows up across the gap at R2.",
+      "claimed": 0, "actual": "9"
+    },
+    {
+      "id": "dg-open-3", "skill": "ck_open", "kind": "claim",
+      "goal": "A 9 V series loop where R2 is open. Meter across the good R1?",
+      "lines": ["R1 is still in the loop", "V across R1 = 9 V"],
+      "answer": "bug",
+      "why": "No current flows, so V = I × R = 0 across R1. The full 9 V sits across the open part instead.",
+      "claimed": 9, "actual": "0"
+    },
+    {
+      "id": "dg-short-1", "skill": "ck_short", "kind": "claim",
+      "goal": "Three equal resistors in series on 12 V; the middle one is shorted. Meter across it?",
+      "lines": ["A short is a wire across the part", "V across it = 0 V"],
+      "answer": "clean",
+      "why": "A wire has no resistance, so nothing drops across the shorted part: 0 V.",
+      "claimed": 0, "actual": "0"
+    },
+    {
+      "id": "dg-short-2", "skill": "ck_short", "kind": "claim",
+      "goal": "Three equal resistors in series on 12 V; the middle one is shorted. Meter across each good one?",
+      "lines": ["Each resistor took 12 / 3 = 4 V", "The good ones still read 4 V"],
+      "answer": "bug",
+      "why": "The 12 V now splits over two resistors instead of three, so each good one reads 6 V.",
+      "claimed": 4, "actual": "12 / 2"
+    },
+    {
+      "id": "dg-short-3", "skill": "ck_short", "kind": "claim",
+      "goal": "Two 1 kΩ resistors in series on 10 V; one is shorted. Current, in mA?",
+      "lines": ["Before: 10 / 2000 = 5 mA", "The current stays at 5 mA"],
+      "answer": "bug",
+      "why": "Only 1 kΩ is left in the loop, so the current doubles: 10 / 1000 = 10 mA.",
+      "claimed": 5, "actual": "10 / 1000 * 1000"
+    },
+    {
+      "id": "dg-val-1", "skill": "ck_value", "kind": "claim",
+      "goal": "A resistor reads 6 V with 2 mA through it. Its real value, in kΩ?",
+      "lines": ["R = V / I = 6 / 0.002", "R = 3000 Ω = 3 kΩ"],
+      "answer": "clean",
+      "why": "Convert 2 mA to 0.002 A, then R = V / I = 3000 Ω.",
+      "claimed": 3, "actual": "6 / 0.002 / 1000"
+    },
+    {
+      "id": "dg-val-2", "skill": "ck_value", "kind": "claim",
+      "goal": "Labelled 1 kΩ: 5 V across it with 2.5 mA flowing. Its real value, in kΩ?",
+      "lines": ["R = 5 / 0.0025", "R = 1 kΩ, the right part"],
+      "answer": "bug",
+      "why": "5 / 0.0025 = 2000 Ω = 2 kΩ, double the label, so it is the wrong part.",
+      "claimed": 1, "actual": "5 / 0.0025 / 1000"
+    },
+    {
+      "id": "dg-val-3", "skill": "ck_value", "kind": "claim",
+      "goal": "Labelled 470 Ω: it reads 4.7 V at 1 mA. Its real value, in Ω?",
+      "lines": ["R = 4.7 / 0.001", "R = 470 Ω, matches the label"],
+      "answer": "bug",
+      "why": "4.7 / 0.001 = 4700 Ω, ten times the label: a 4.7 kΩ part fitted by mistake.",
+      "claimed": 470, "actual": "4.7 / 0.001"
+    }
+  ]
+}

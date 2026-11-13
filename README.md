@@ -37,7 +37,7 @@ The home screen is a cutaway school with four rooms. It doubles as the dashboard
 |---|---|---|
 | Classroom (LEARN) | Learn a skill the first time: chalkboard (code traced step by step with global and local memory, the error step marked), textbook (two-page spread with a nested-box diagram and key term), listening desk (the browser reads the transcript aloud when speech is available). Also the starting diagnostic. The engine sends a learner here for a new skill, after two misses in a row, and after a missed transfer check | "1 worked example waiting" |
 | Library (REVIEW MISTAKES) | Mistakes index, flashcards, reading desk, card catalog, history | "3 mistakes due" |
-| Gym (TRANSFER CHECK) | Bug Hoops (below) | "Ready: loop conditions" |
+| Gym (WARM UP, TRANSFER CHECK) | Four stations on one court: three warm-up games open at any mastery, and Bug Hoops (below) | "Ready: loop conditions" / "3 warm-up games open" |
 | Lunchroom (BREAK) | A 5-minute break timer, suggested when the engine flags hint dependency (hints on more than half of the last 5 scenarios). Breaks never change mastery; while the flag is on the engine prefers more scaffolded scenarios | "Hints on 3 of last 5. Take 5." |
 
 ### Bug Hoops (the Gym)
@@ -47,6 +47,22 @@ Three rounds. Each round is a transfer scenario the learner has never seen, with
 The game is one engine episode: 2 of 3 with no hints solves it, with `attempts = misses + 1`, so the outcome formula applies as usual. Because its rounds are never-seen scenarios in new surface forms, a solved game is the transfer item the mastery rule needs. A missed game sends the skill back to practice with a worked example. Replaying problems already seen is allowed but does not count as a fresh transfer check.
 
 There are 3 transfer scenarios per skill (36) in `content/transfer/`. Practice never uses them.
+
+### The gym's warm-up games
+
+The gym opens on a station picker; the camera flies to whichever station is picked. All four stations are always open. Bug Hoops runs the real transfer check for a skill at mastery 0.80; before then its hoop runs the **Shootaround**: the same click-the-bug-line game on 24 practice problems (`content/gym/shootaround.json`), never the transfer scenarios, so the real check stays fresh.
+
+| Game | Skills | A round | What moves |
+|---|---|---|---|
+| Dodgeball | all 12 | A short function or circuit step and what it should do: call it bug or clean (keys B / C) | The launcher fires the ball at you: dodge it (the camera sidesteps), catch it, or take the hit (the screen shakes) |
+| Loop Laps | Python | Predict a loop's lap count or final value (keys 1-4) | The runner runs one lap per pass of the loop while the lap board and a trace table fill in |
+| Ohm Toss | circuits | Work out a current, voltage or resistance (keys 1-4 or A-D) | A beanbag arcs onto the ring you picked; the right ring glows |
+
+- **Learning first.** Every answer, right or wrong, shows the rule behind it; the end screen lists every rule from the game, a tally per skill, and a link to the worked example for the skill missed most.
+- **Aimed at the learner.** Rounds go round-robin over the three weakest skills the game covers (or one skill the learner picks), least-practised items first, so replays rotate to new items.
+- **Graded on the server.** The browser gets the items without their answers; `skillbridge/gym_games.py` grades each answer against the key.
+- **Never change mastery.** Warm-ups are practice, like a break. Each start, answer and finish is logged to `actions` (`drill_start`, `drill_answer`, `drill_finish`), so they show in the exports and keep the study streak.
+- **Content is data, and proved.** `content/gym/{dodgeball,laps,toss}.json` (36 + 12 + 18 items). `tests/test_gym_games.py` runs every Python item (clean ones pass their check, buggy ones fail it), traces every Loop Laps snippet to confirm each lap and answer, and recomputes every circuit value.
 
 ### Lessons are data
 
