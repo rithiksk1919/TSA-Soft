@@ -273,3 +273,24 @@ main, main:focus, main:focus-visible { outline: none; }
 /* ---- the zoom from the hub into a room (app.js zoomInto) ---- */
 .zoom-veil { position: fixed; inset: 0; z-index: 60; background: #2E241C; opacity: 0; pointer-events: none; }
 .zoom-pic { position: fixed !important; z-index: 61; margin: 0; transform-origin: 0 0; pointer-events: none; will-change: transform; box-shadow: 0 0 0 6px var(--wood-dark); }
+
+/* ---- the Listener (extension/listener) ---- */
+.listener-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px solid #D8C9AC; background: var(--cream); color: var(--muted); font: 500 14px var(--sans); cursor: pointer; }
+.listener-pill b { font-weight: 600; color: var(--ink); }
+.listener-pill[data-state="true"] { background: var(--good-tint); border-color: var(--good); }
+.listener-pill[data-state="true"] b { color: var(--good); }
+.listener-pill[data-state="false"] { background: var(--bad-tint); border-color: var(--bad); }
+.listener-pill[data-state="false"] b { color: var(--bad); }
+.listener-panel { width: min(560px, 96vw); }
+.listener-panel h2 { margin-bottom: 14px; }
+.listener-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.listener-verdict { display: flex; align-items: baseline; gap: 12px; padding: 14px 16px; border-radius: 10px; background: var(--wall); margin: 0 0 12px; }
+.listener-verdict b { font-size: 28px; }
+.listener-verdict[data-v="true"] { background: var(--good-tint); color: var(--good); }
+.listener-verdict[data-v="false"], .listener-verdict[data-v="off"] { background: var(--bad-tint); color: var(--bad); }
+.listener-reasons { padding-left: 20px; margin: 0 0 12px; }
+.listener-reasons li { margin: 4px 0; }
+.listener-panel .muted { color: var(--muted); font-size: 14px; }
+.listener-counts { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; margin: 0 0 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.listener-counts dt { color: var(--muted); }
+.listener-counts dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }

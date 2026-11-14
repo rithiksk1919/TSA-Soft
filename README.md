@@ -68,6 +68,19 @@ The gym opens on a station picker; the camera flies to whichever station is pick
 
 `content/lessons/<skill_id>.json` holds each lesson (chalkboard code and steps with memory, textbook pages, transcript). The six Python skills have hand-written lessons. A skill without a file gets a lesson built from its worked example in `content/skills.json`, so adding a skill adds its lesson.
 
+## The Listener
+
+Answers one question: **can it see every action taken in Chrome? `true` or `false`.** No extension. Click the **Listener** pill in the hub's top bar and press **Turn on**.
+
+The server (`skillbridge/listener.py`, standard library only) opens Chrome with its DevTools Protocol port on (127.0.0.1:9333), attaches to every tab and cross-site frame, and puts a small counter in each page. New tabs are held paused until the counter is in them, so no first action is missed. Every 2 seconds it asks each tab whether its counter is live and re-installs it if not.
+
+- Chrome refuses remote debugging on your regular profile (Chrome 136+), so the Listener's Chrome uses its own profile in `data/listener-chrome`. Browse in that window.
+- It says `true` only when it is connected, every tab is reporting, and no other Chrome is running. If your regular Chrome is open it says `false`, because nothing can see into it.
+- Chrome's address bar and menus are not visible to it, only what they cause (a page loads, a tab opens).
+- It counts kinds of action (click, keydown, scroll, input, paste, ...), tabs opened and closed, and page loads. It never records which key, any text or page content, and nothing leaves the computer.
+- Anything on this computer can drive that Chrome window through port 9333 while it is open; close the window when you're done.
+- `SKILLBRIDGE_CHROME` sets the path to Chrome if it isn't found; `SKILLBRIDGE_LISTENER_PORT` changes the port.
+
 ## The library
 
 The library (`/library/`) is the original 3D room, reading desk, card catalog and mistakes index, unchanged except: its back button now says "Back to hub", its data files are generated live from SQLite (Python and circuits content), and the card catalog labels are larger. See `skillbridge/library.py`.
@@ -141,7 +154,6 @@ skillbridge/
 content/               skills, diagnostics, scenarios, transfer scenarios, lessons, library mistakes
 static/hub/            the school: hub, classroom, gym, lunchroom, classic view (no build step)
 static/library/        the library
-web/                   the practice screens (code editor, circuit bench), served at /practice/
 tests/                 Python tests; tests/unit has the library's Node tests
 ```
 

@@ -23,11 +23,11 @@ from .gym_games import GymGames
 from .hub import Hub
 from .lessons import load_lesson
 from .library import Library
+from .listener import Listener
 from .content import ROOT, public_diagnostic
 from .evaluators import python_runner
 from .service import Service, ServiceError
 
-WEB_DIR = ROOT / "web"             # practice screens, served at /practice/
 STATIC_DIR = ROOT / "static"       # hub/ (the school) and library/
 PLOTS_DIR = ROOT / "sim" / "output"
 log = logging.getLogger("skillbridge.server")
@@ -48,6 +48,7 @@ class App:
         self.gym = Gym(svc)
         self.games = GymGames(svc)
         self.hub = Hub(svc, self.lib, self.gym)
+        self.listener = Listener()
 
 
 # ---- API ------------------------------------------------------------------------------
@@ -221,6 +222,16 @@ def card_box(app, req, m):
     return app.lib.set_box(int(m[1]), m[2], req.body.get("box", 1))
 
 
+@route("GET", r"/api/listener")
+def listener_status(app, req, m):
+    return app.listener.status()
+
+
+@route("POST", r"/api/listener")
+def listener_set(app, req, m):
+    return app.listener.set_enabled(req.body.get("enabled") is True, req.body.get("open"))
+
+
 @route("POST", r"/api/demo/reset")
 def demo_reset(app, req, m):
     return demo.reset_demo(app.svc)
@@ -389,9 +400,12 @@ def make_handler(app: App):
                     if data is not None:
                         return self._json(200, data)
                 return self._serve_file(STATIC_DIR / "library" / rel, STATIC_DIR / "library")
-            if path.startswith("/practice"):
-                rel = path[len("/practice"):].lstrip("/") or "index.html"
-                return self._serve_file(WEB_DIR / rel, WEB_DIR, WEB_DIR / "index.html")
+            if path == "/practice" or path.startswith("/practice/"):
+                # The old practice screens are gone; old links land on the school hub.
+                self.send_response(302)
+                self.send_header("Location", "/")
+                self.end_headers()
+                return
             rel = path.lstrip("/")
             if rel.startswith("hub/"):
                 rel = rel[len("hub/"):]

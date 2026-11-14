@@ -1,7 +1,7 @@
 // The classroom: learn a skill the first time, in a 3D room (classroom3d.js). Three stations:
 // the chalkboard (step through the code with memory beside it), the textbook (a two-page spread
 // with a page turn) and the listening desk (the lesson read aloud by ElevenLabs, or the browser's
-// own voice). Plus the starting diagnostic and "I am ready to practice".
+// own voice). Plus the starting diagnostic.
 //
 // Everything shown comes from the lesson file (content/lessons/<skill>.json); its optional "look"
 // sets the subject's name and colour, so a new subject needs only a new file.
@@ -78,7 +78,6 @@ export async function showClassroom(summary) {
   if (needsDiagnostic(summary, lesson.domain)) {
     html += '<button type="button" class="station" data-station="diagnostic" aria-pressed="false"><b>Start here</b>The diagnostic</button>';
   }
-  html += '<button type="button" class="btn btn-light" id="ready">I am ready to practice</button>';
   html += "</nav></div>";
   main.innerHTML = html;
 
@@ -103,17 +102,6 @@ export async function showClassroom(summary) {
       openStation(button.dataset.station, summary, look);
     });
   }
-  const readyButton = document.getElementById("ready");
-  readyButton.addEventListener("click", async function () {
-    readyButton.disabled = true;
-    try {
-      const episode = await api("/api/profiles/" + pid + "/lesson/" + skill + "/practice", {});
-      location.href = "/practice/#/lessons/" + episode.id;
-    } catch (error) {
-      toast(error.message);
-      readyButton.disabled = false;
-    }
-  });
 
   if (query().diagnostic) {
     openStation("diagnostic", summary, look);

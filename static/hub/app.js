@@ -1,5 +1,5 @@
 // The school: hub (home), classic view and lunchroom. Classroom and gym live in their own files.
-import { api, esc, fixed, main, getProfileId, setProfileId, renderTopBar, openPanel, toast, startPractice } from "./common.js";
+import { api, esc, fixed, main, getProfileId, setProfileId, renderTopBar, openPanel, toast } from "./common.js";
 import { buildLunchroom } from "./lunch3d.js";
 import { mountRooms } from "./rooms3d.js";
 import { showClassroom } from "./classroom.js";
@@ -292,23 +292,8 @@ function showHub(summary) {
 
   if (nextUp) {
     const goButton = document.getElementById("go-next");
-    goButton.addEventListener("click", async function () {
-      if (nextUp.active_episode) {
-        location.href = "/practice/#/lessons/" + nextUp.active_episode;
-        return;
-      }
-      const href = roomHref(nextUp.room, nextUp);
-      if (href) {
-        location.hash = href;
-        return;
-      }
-      goButton.disabled = true;
-      try {
-        await startPractice({ domain: nextUp.domain });
-      } catch (error) {
-        toast(error.message);
-        goButton.disabled = false;
-      }
+    goButton.addEventListener("click", function () {
+      location.hash = roomHref(nextUp.room, nextUp) || "#/classroom?skill=" + nextUp.skill;
     });
     document.getElementById("why-this").addEventListener("click", function () {
       showWhy(nextUp);
@@ -534,7 +519,7 @@ async function boot() {
     return;
   }
   if (profiles.length === 0) {
-    main.innerHTML = '<div class="empty-msg">No learners yet. Run <code>python3 run.py demo</code> or create one on the practice screens.</div>';
+    main.innerHTML = '<div class="empty-msg">No learners yet. Run <code>python3 run.py demo</code> to add some.</div>';
     return;
   }
   let current = getProfileId();

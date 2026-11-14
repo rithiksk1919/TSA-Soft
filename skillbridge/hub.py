@@ -189,11 +189,7 @@ class Hub:
                 "scenario": recommendation["scenario"], "mode": recommendation["mode"], "decision": decision,
                 "reasons": recommendation["reasons"], "active_episode": domain["active_episode"]}
 
-        if domain["active_episode"]:
-            step.update(room="practice", action="finish what you started", button="Resume",
-                        headline=name + ": finish what you started",
-                        reason="You left " + domain["active_title"] + " part way through.")
-        elif not domain["diagnostic"] and domain["attempted"] == 0:
+        if not domain["diagnostic"] and domain["attempted"] == 0:
             step.update(room="classroom", action="take the starting diagnostic", button="Go to the classroom",
                         headline=domain["name"] + ": take the starting diagnostic",
                         reason="One question per skill sets your starting point, so the engine does not begin from a guess.")
@@ -221,8 +217,8 @@ class Hub:
                 reason = "Highest priority (" + format(decision["priority"], ".2f") + "): mastery " + format(decision["mastery"], ".2f") + "."
             if recommendation["mode"] == "scaffolded":
                 reason = reason + " Hints on " + str(decision["hinted"]) + " of your last " + str(decision["window"]) + " scenarios, so this one is more guided."
-            step.update(room="practice", action="practice", button="Start practice",
-                        headline=name + ": practice " + recommendation["scenario"]["title"], reason=reason)
+            step.update(room="classroom", action="practice", button="Go to the classroom",
+                        headline=name + ": practice in the classroom", reason=reason)
         step["decision"]["log"].append(["action", step["action"]])
         return step
 

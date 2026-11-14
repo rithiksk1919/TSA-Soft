@@ -164,7 +164,7 @@
         '<h2 class="scenario" id="next-title">' + esc(n.title) + "</h2>" +
         '<ul class="chips"><li class="chip chip--skill">' + esc(n.skill) + '</li><li class="chip">' + esc(n.type) + "</li></ul>" +
         '<p class="difficulty">Difficulty <b>' + num.format(n.difficulty) + "</b>, a slight stretch above your current <b>" + num.format(n.mastery) + "</b></p>" +
-        '<a class="start" href="/practice?scenario=' + encodeURIComponent(n.id) + '">Start practice' +
+        '<a class="start" href="/">Practice at school' +
           '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>' +
       "</div>" +
       '<div class="why"><h3 class="subhead">Why this next?</h3><p>' + esc(n.why) + '</p><dl class="log" aria-label="Decision log">' + log + "</dl></div>" +

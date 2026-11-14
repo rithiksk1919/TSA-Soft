@@ -1,4 +1,5 @@
 // Shared helpers for the school screens: API calls, the chosen learner, the top bar and panels.
+import { listenerPillHtml, wireListenerPill } from "./listener.js";
 
 export const main = document.getElementById("main");
 const PROFILE_KEY = "skillbridge.profile";
@@ -95,6 +96,7 @@ export function renderTopBar(view, summary, rightText) {
   html += '<a class="logo" href="#/">SkillBridge</a>';
   html += '<span class="crumb">' + esc(name) + " / " + crumb + "</span>";
   html += '<span class="grow"></span>';
+  html += listenerPillHtml();
   if (view === "hub" || view === "classic") {
     html += '<div class="toggle" role="group" aria-label="Home view">';
     html += '<button type="button" id="view-school" aria-pressed="' + (view === "hub") + '">School</button>';
@@ -105,6 +107,7 @@ export function renderTopBar(view, summary, rightText) {
     html += '<span class="bar-note">' + esc(rightText) + "</span>";
   }
   bar.innerHTML = html;
+  wireListenerPill();
 
   if (view === "hub" || view === "classic") {
     document.getElementById("view-school").addEventListener("click", function () {
@@ -216,9 +219,4 @@ export function query() {
     out[pair[0]] = pair[1];
   }
   return out;
-}
-
-export async function startPractice(body) {
-  const episode = await api("/api/profiles/" + getProfileId() + "/episodes", body);
-  location.href = "/practice/#/lessons/" + episode.id;
 }
