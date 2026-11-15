@@ -210,6 +210,12 @@
   // book is a spine painted on one flat panel at the books' front. A box per book was a hundred-odd
   // 3D groups for the compositor to sort on every frame the camera moved, and cost half the frame
   // rate. The panel keeps the same books, colours, bands, leans and flat stacks.
+  // Your books (mine.js) stand on the middle shelf with the app's own, right after Circuits: a
+  // stretch of that shelf is kept free when the room is built, and placeMine() fills it with your
+  // books followed by the "Add subjects" placard, so every book you can open is on one row.
+  var MINE_W = 270;
+  var SPOT_W = 46;
+  var mineShelf = null;
   function fillShelf(g, xa, xb, yBase, z, space, shelfIndex) {
     var x = xa;
     var spines = "";
@@ -252,6 +258,11 @@
         minNext = Math.ceil(bh * Math.cos(lean * Math.PI / 180)) + 2;
       } else x += bw + (rnd() < 0.08 ? 7 : 1);
       placed++;
+      if (shelfIndex === 2 && sp && !special.length && !mineShelf) {
+        mineShelf = { g: g, xa: x, xb: x + MINE_W - 6, yBase: yBase, z: z, space: space };
+        x += MINE_W;
+        continue;
+      }
       if (!lean && rnd() < 0.07 && x < xb - 80) {   // a book or two lying flat
         var n = rnd() < 0.4 ? 2 : 1;
         for (var k = 0; k < n; k++) {
@@ -693,8 +704,58 @@
   $$(".rbooks__btn", room).forEach(function (b) { b.addEventListener("click", function () { openRoomBook(b.dataset.book); }); });
   world.addEventListener("click", function (e) {
     var book = e.target.closest("[data-book]");
-    if (book && state === "learn") { e.stopPropagation(); openRoomBook(book.dataset.book); }
+    if (book && state === "learn") { e.stopPropagation(); openRoomBook(book.dataset.book); return; }
+    var add = e.target.closest('[data-action="add-subjects"]');
+    if (add && state === "learn" && !busy() && SB.mine) { e.stopPropagation(); SB.mine.openUploads(); }
   }, true);
+
+  // Your books, stood in your section of the bookcase (as many as fit; all of them are on the
+  // flat shelf and in the upload window), each with a matching button for keyboard and screen readers.
+  var rbooksNav = $(".rbooks", room);
+  function esc(t) {
+    return String(t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
+  }
+  function placeMine(list) {
+    if (!mineShelf) return;
+    $$(".book3--mine, .addspot", mineShelf.g).forEach(function (n) { n.remove(); });
+    $$(".rbooks__btn--mine, .rbooks__btn--add", rbooksNav).forEach(function (n) { n.remove(); });
+    var x = mineShelf.xa + 1;
+    var heights = [0.88, 0.82, 0.9, 0.85, 0.8, 0.87];
+    list.forEach(function (s, i) {
+      var bw = 32;   // the same build as the Python and Circuits books, so they pull out the same way
+      if (x + bw + 2 + SPOT_W > mineShelf.xb) return;
+      var bh = Math.round(mineShelf.space * heights[i % heights.length]);
+      var short = s.name.length > 12 ? s.name.slice(0, 11) + "…" : s.name;
+      var b = box(mineShelf.g, { cls: "book3 book3--subject book3--mine", x: x + bw / 2, y: mineShelf.yBase, z: mineShelf.z, w: bw, h: bh, d: 92, faces: "front right top",
+        html: { front: '<span class="book3__band"></span><span class="book3__t">' + esc(short) + "</span>" } });
+      b.style.setProperty("--c", s.accent);
+      b.setAttribute("data-book", s.id);
+      b.dataset.base = b.style.transform;
+      delete pulls[s.id];
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "rbooks__btn rbooks__btn--mine";
+      btn.dataset.book = s.id;
+      btn.style.setProperty("--c", s.accent);
+      btn.textContent = "Open the " + s.name + " book";
+      btn.addEventListener("click", function () { openRoomBook(s.id); });
+      rbooksNav.appendChild(btn);
+      x += bw + 1;
+    });
+    var spot = box(mineShelf.g, { cls: "addspot", x: x + 4 + SPOT_W / 2, y: mineShelf.yBase, z: mineShelf.z + 4, w: SPOT_W, h: Math.round(mineShelf.space * 0.7), d: 70, faces: "front right top",
+      html: { front: '<span class="addspot__t"><b aria-hidden="true">+</b>Add<br>subjects</span>' } });
+    spot.setAttribute("data-action", "add-subjects");
+    var add = document.createElement("button");
+    add.type = "button";
+    add.className = "rbooks__btn rbooks__btn--add";
+    add.textContent = "Add subjects";
+    add.addEventListener("click", function () { if (SB.mine) SB.mine.openUploads(); });
+    rbooksNav.appendChild(add);
+  }
+  if (SB.mine) {
+    SB.mine.ready.then(placeMine);
+    SB.mine.onChange(placeMine);
+  }
 
   // The wall clock keeps real time. It skips work while nobody can see it (room hidden, tab in the
   // background); the next tick after it shows again puts the hands right.
@@ -807,7 +868,7 @@
   // room and fly into that station, so the flat scenes behind the room are never shown on their own.
   // #test-shelf and #test-practice skip the room to those flat scenes; they exist for the test suite only.
   var hash = location.hash.slice(1);
-  var bookId = /^book-(python|circuits)$/.test(hash) ? hash.slice(5) : null;
+  var bookId = /^book-(python|circuits|my-[a-z0-9-]+)$/.test(hash) ? hash.slice(5) : null;
   var station = hash === "shelf" || bookId ? "learn" : hash === "practice" ? "practice" : null;
   if (hash === "test-shelf" || hash === "test-practice") {
     room.hidden = true;
@@ -815,11 +876,12 @@
     lastStation = hash === "test-practice" ? "practice" : "learn";
     link.hidden = false;
     if (hash === "test-practice") SB.store.ready.then(function () { SB.jumpScene(1); });
-  } else if (hash === "desk") {
+  } else if (hash === "desk" || /^desk-[\w-]+$/.test(hash)) {
+    // #desk-<exercise> sits down at one exercise (a mistake you added, from your book)
     room.hidden = true;
     state = "away";
     lastStation = "apply";
-    SB.desk.open({ instant: true });
+    SB.desk.open({ instant: true, scenario: hash.length > 5 ? hash.slice(5) : null });
   } else {
     room.hidden = false;
     release = ui.isolate([room]);
@@ -827,6 +889,8 @@
     if (station) {
       history.replaceState(null, "", location.pathname);
       SB.store.ready.then(function () { return enter(station); }).then(function () {
+        return SB.mine ? SB.mine.ready : null;
+      }).then(function () {
         if (bookId && state === "learn") openRoomBook(bookId);
       });
     }

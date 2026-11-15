@@ -16,9 +16,11 @@ from pathlib import Path
 from .db import now
 from .engine import skill_statuses
 from .service import _j
+from . import my_subjects
 
 LEARNED = 3
 CONTENT_FILE = Path(__file__).resolve().parent.parent / "content" / "library" / "mistakes.json"
+STATIC_DESK = Path(__file__).resolve().parents[1] / "static" / "library" / "data" / "desk.json"
 CALL_PREFIX = {"python": "PY", "circuits": "CK"}
 SUBJECT_STYLE = {
     "python": {"accent": "#2D4A6E", "logo": "flask"},
@@ -82,7 +84,7 @@ class Library:
             for card in mistake["cards"]:
                 if card["id"] == card_id:
                     known = True
-        if not known:
+        if not known and not (card_id.startswith("u-") and my_subjects.card_known(card_id)):
             raise ValueError("Unknown card.")
         box = max(1, min(LEARNED, int(box)))
         self.svc.db.run("INSERT INTO card_boxes(profile_id, card_id, box, updated_at) VALUES (?,?,?,?) "
@@ -129,7 +131,9 @@ class Library:
             skill = self.svc.cat.skill(mistake["skill"])
             out.append({"id": mistake["id"], "subject": skill["domain"], "call": mistake["call"],
                         "title": mistake["title"], "skill": skill["name"], "cards": mistake["cards"]})
-        return {"subjects": self.subjects(), "mistakes": out}
+        # the mistakes you added in your own subject books (my_subjects.py), each with its cards
+        mine_subjects, mine, _ = my_subjects.card_entries()
+        return {"subjects": self.subjects() + mine_subjects, "mistakes": out + mine}
 
     def mistakes_json(self, pid):
         stats = {}
@@ -145,6 +149,7 @@ class Library:
             out[mistake["id"]] = {"callNumber": mistake["call"], "timesMade": count, "lastSeenDays": last_seen,
                                   "explanation": mistake["explanation"], "wrongExample": mistake["wrongExample"],
                                   "rightExample": mistake["rightExample"]}
+        out.update(my_subjects.card_entries()[2])
         return {"mistakes": out}
 
     def worked_json(self):
@@ -362,6 +367,11 @@ class Library:
             return self.history_json(pid)
         if name == "subjects.json":
             return self.subjects_json(pid, hub)
+        if name == "desk.json":
+            # the reading desk's three scenarios, then one for each mistake you added (my_subjects.py)
+            desk = json.loads((STATIC_DESK).read_text(encoding="utf-8"))
+            desk["scenarios"] = my_subjects.desk_entries() + desk["scenarios"]   # yours first
+            return desk
         if name == "review.json":
             return self.review_json(pid)
         if name == "dashboard.mock.json":

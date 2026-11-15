@@ -42,16 +42,46 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .mono { font-family: var(--mono); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ---- buttons ---- */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1.5px solid var(--dark); background: var(--dark); color: var(--cream); font-weight: 600; font-size: 15px; text-decoration: none; }
-.btn:hover { background: #523C2D; }
-.btn-light { background: var(--cream); color: var(--ink); border-color: #D8C9AC; }
-.btn-light:hover { background: #F5EDDC; }
-.btn-brass { background: var(--brass); color: var(--dark); border-color: var(--brass); }
-.btn-brass:hover { background: #F0D592; }
-.btn-ghost { background: transparent; color: var(--cream); border-color: rgba(251, 248, 241, .6); }
-.btn-ghost:hover { background: rgba(251, 248, 241, .12); }
-.btn[disabled] { opacity: .5; cursor: not-allowed; }
+/* ---- buttons: school hardware ----
+   A button is a small plate with a lit top edge and a darker lip underneath. It lifts a pixel
+   when the pointer is over it and presses down into its lip when clicked.
+   walnut (.btn), brass (.btn-brass, the main action), card stock (.btn-light), chalk line (.btn-ghost). */
+.btn {
+  --face: var(--dark);
+  --text: var(--cream);
+  --lip: #22170F;
+  --shine: rgba(255, 240, 214, .14);
+  --lift: 0px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 18px; border: 1px solid var(--lip); border-radius: 10px;
+  background-color: var(--face);
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 60%);
+  color: var(--text); font-weight: 600; font-size: 15px; line-height: 1.2; text-decoration: none; white-space: nowrap;
+  box-shadow: inset 0 1px 0 var(--shine), 0 2px 0 var(--lip), 0 4px 10px -4px rgba(34, 23, 15, .35);
+  transform: translateY(var(--lift));
+  transition: transform .14s cubic-bezier(.3, .7, .4, 1), box-shadow .14s cubic-bezier(.3, .7, .4, 1), background-color .15s ease, border-color .15s ease, color .15s ease;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; cursor: pointer;
+}
+.btn:hover { --face: #4B3727; --lift: -1px; box-shadow: inset 0 1px 0 var(--shine), 0 3px 0 var(--lip), 0 8px 16px -6px rgba(34, 23, 15, .4); }
+.btn:active { --lift: 2px; box-shadow: inset 0 1px 0 var(--shine), 0 0 0 var(--lip), 0 1px 2px rgba(34, 23, 15, .25); transition-duration: .05s; }
+.btn:focus-visible { outline: 3px solid var(--brass); outline-offset: 3px; }
+.btn-brass { --face: #E8C77A; --text: #2E2117; --lip: #A07C35; --shine: rgba(255, 250, 230, .75); background-image: linear-gradient(to bottom, rgba(255, 252, 238, .35), rgba(255, 252, 238, 0) 55%); }
+.btn-brass:hover { --face: #F0D38D; }
+.btn-light { --face: var(--cream); --text: var(--ink); --lip: #CDB993; --shine: #fff; }
+.btn-light:hover { --face: #FFFDF8; border-color: #B99F72; }
+.btn-light:focus-visible { outline-color: var(--dark); }
+.btn-ghost { --face: transparent; --text: var(--cream); background-image: none; border: 1.5px solid rgba(251, 248, 241, .55); box-shadow: none; }
+.btn-ghost:hover { --face: rgba(251, 248, 241, .1); border-color: var(--cream); box-shadow: none; }
+.btn-ghost:active { --face: rgba(251, 248, 241, .16); --lift: 1px; box-shadow: none; }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; --lift: 0px; box-shadow: inset 0 1px 0 var(--shine), 0 2px 0 var(--lip); }
+/* the learner switch: who is learning, then the action */
+.btn-switch { gap: 0; padding: 0; overflow: hidden; }
+.btn-switch .who { padding: 0 14px; align-self: stretch; display: flex; align-items: center; gap: 5px; font-weight: 500; color: var(--muted); border-right: 1px solid #E2D3B5; background: rgba(243, 236, 221, .6); }
+.btn-switch .who b { font-weight: 600; color: var(--ink); }
+.btn-switch .act { padding: 0 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: background-color .15s ease, border-color .15s ease; --lift: 0px !important; }
+}
 .link { background: none; border: 0; color: var(--ink); text-decoration: underline; min-height: 44px; padding: 0 8px; font-weight: 500; }
 
 /* ---- top bar ---- */
@@ -59,17 +89,56 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .logo { font-family: var(--serif); font-weight: 600; font-size: 22px; color: var(--ink); text-decoration: none; }
 .crumb { color: var(--muted); font-size: 14px; }
 .bar-note { font-family: var(--mono); font-size: 13px; color: var(--muted); }
-.toggle { display: flex; padding: 4px; gap: 4px; background: var(--cream); border: 1.5px solid #D8C9AC; border-radius: 10px; }
-.toggle button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 7px; background: transparent; font-weight: 600; font-size: 14px; }
-.toggle button[aria-pressed="true"] { background: var(--dark); color: var(--cream); }
+/* Toggles are a recessed track with a walnut thumb that slides to the chosen option
+   (slideThumb in common.js sets --tx and --tw; without script the pressed option is filled). */
+.toggle, .seg { position: relative; display: flex; padding: 4px; gap: 4px; background: #EADFC9; border: 1px solid #D6C5A4; border-radius: 12px; box-shadow: inset 0 1px 2px rgba(58, 42, 31, .16); }
+.toggle button, .seg button { position: relative; z-index: 1; min-height: 38px; padding: 0 16px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px; white-space: nowrap; touch-action: manipulation; transition: color .2s ease; }
+.toggle button:hover, .seg button:hover { color: var(--ink); }
+.toggle button[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--dark); color: var(--cream); }
+.toggle button:focus-visible, .seg button:focus-visible { outline: 3px solid var(--brass); outline-offset: 1px; }
+.toggle.has-thumb button[aria-pressed="true"], .seg.has-thumb button[aria-pressed="true"] { background: transparent; }
+.toggle.has-thumb::before, .seg.has-thumb::before {
+  content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: var(--tw, 0px); border-radius: 8px;
+  background: var(--dark); box-shadow: inset 0 1px 0 rgba(255, 240, 214, .14), 0 1px 0 #22170F, 0 2px 6px rgba(34, 23, 15, .3);
+  transform: translateX(var(--tx, 0px));
+  transition: transform .38s cubic-bezier(.3, 1.3, .5, 1), width .38s cubic-bezier(.3, 1.3, .5, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .toggle.has-thumb::before, .seg.has-thumb::before { transition: none; }
+}
 
 main, main:focus, main:focus-visible { outline: none; }
 
 /* ---- hub layout ---- */
-.hub { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 14px 20px 28px; }
+/* the school on the left, a column on the right: your mistakes first, then mastery and the engine's pick */
+.hub { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); gap: 18px; padding: 14px 20px 20px; align-items: start; }
 /* the banner and the school fill the window below the top bar */
-.hub-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; height: calc(100svh - 92px); min-height: 620px; }
-.hub-right { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.hub-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; height: calc(100svh - 106px); min-height: 600px; }
+.hub-right { display: flex; flex-direction: column; gap: 14px; min-width: 0; height: calc(100svh - 106px); min-height: 600px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding-right: 2px; }
+.hub-right > .card { flex: none; }
+
+/* Your mistakes */
+.mistakes { border-color: #E2CFA8; }
+.mistakes .card-head { align-items: center; margin-bottom: 4px; }
+.seg { padding: 3px; gap: 2px; border-radius: 10px; }
+.seg button { min-height: 32px; padding: 0 12px; font-size: 13px; border-radius: 7px; }
+.seg.has-thumb::before { top: 3px; bottom: 3px; border-radius: 7px; }
+.mk-note { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.mk-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.mk { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #FFFDF8; }
+.mk-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.mk-kind { padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; }
+.mk-kind--wrong { background: var(--bad-tint); color: #8A2E1C; }
+.mk-kind--hint { background: #EFE5CF; color: #6B5428; }
+.mk-top time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mk-q { margin: 0; font-family: var(--serif); font-size: 17px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.mk-a { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+.mk-you { color: #A33A26; font-family: var(--mono); font-weight: 500; }
+.mk-right { color: #2F6B43; font-family: var(--mono); font-weight: 500; }
+.mk-sep { color: var(--muted); }
+.mk-src { margin: 4px 0 0; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+}
 
 .banner { display: flex; align-items: center; gap: 20px; background: var(--dark); color: var(--cream); border-radius: 12px; padding: 18px 24px; flex-wrap: wrap; }
 .banner .text { flex: 1; min-width: 300px; }
@@ -96,7 +165,24 @@ main, main:focus, main:focus-visible { outline: none; }
 .chip strong { font-family: var(--serif); font-size: 21px; font-weight: 600; display: block; line-height: 1.2; }
 .pill { position: absolute; left: 12px; bottom: 12px; background: var(--dark); color: var(--cream); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 600; max-width: calc(100% - 24px); }
 .pill.quiet { background: rgba(58, 42, 31, .78); font-weight: 500; }
-.room.next-step { box-shadow: 0 0 0 4px var(--brass); }
+.room.next-step { box-shadow: 0 0 0 3px var(--brass); }
+
+/* The glide: a brass frame that swooshes from the room you were on to the one under the pointer
+   (or keyboard focus), with a softer echo trailing behind it. Rooms are all one size, so only
+   transform moves; it fades out when the pointer leaves the school. */
+.building { position: relative; }
+.glide { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; border-radius: 4px; opacity: 0;
+  box-shadow: 0 0 0 3px #F2D58E, 0 0 0 6px rgba(232, 199, 122, .28), 0 0 34px 8px rgba(255, 214, 140, .38);
+  transition: transform .44s cubic-bezier(.22, 1.18, .36, 1), opacity .22s ease; }
+.glide--echo { box-shadow: 0 0 0 2px rgba(242, 213, 142, .55), 0 0 26px 10px rgba(255, 214, 140, .28); filter: blur(1.5px);
+  transition: transform .78s cubic-bezier(.2, .75, .2, 1), opacity .4s ease; }
+.building.is-gliding .glide { opacity: 1; }
+.building.is-gliding .glide--echo { opacity: .65; }
+.building.is-gliding .room.next-step { box-shadow: 0 0 0 3px rgba(232, 199, 122, .45); }
+@media (prefers-reduced-motion: reduce) {
+  .glide { transition: opacity .15s ease; }
+  .glide--echo { display: none; }
+}
 .next-tag { position: absolute; right: 12px; top: 12px; background: var(--brass); color: var(--dark); font-size: 12px; font-weight: 700; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; }
 
 /* right column cards */
@@ -251,7 +337,8 @@ main, main:focus, main:focus-visible { outline: none; }
 .empty-msg { padding: 40px; text-align: center; }
 
 @media (max-width: 1100px) {
-  .hub-right { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .hub { grid-template-columns: minmax(0, 1fr); }
+  .hub-right { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); height: auto; min-height: 0; overflow: visible; align-items: start; }
   .chalk-grid, .spread { grid-template-columns: 1fr; }
   .hud { left: 28px; top: 96px; }
   .board { top: 150px; }

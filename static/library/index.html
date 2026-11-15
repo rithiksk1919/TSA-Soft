@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="drawers.css">
 <link rel="stylesheet" href="room.css">
 <link rel="stylesheet" href="desk.css">
+<link rel="stylesheet" href="mine.css">
 </head>
 <body>
 <div class="library" id="library">
@@ -189,7 +190,7 @@
 
 <!-- The reading desk (Apply): a 3D tabletop where a classmate's solution is checked step by step,
      with a tutor beside it. The tutor is scripted for now (data/desk.json); no AI is connected. -->
-<section class="desk" id="desk" aria-labelledby="desk-title" hidden>
+<section class="desk" id="desk" aria-labelledby="desk-title" data-action-log-ignore hidden>
   <header class="desk__bar">
     <button class="desk__back" id="desk-close" type="button"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to the Library</button>
     <div class="desk__heading">
@@ -272,7 +273,7 @@
 </section>
 
 <!-- Flashcard review: shared by the 3D fan and the sheet -->
-<div class="review" id="review" role="dialog" aria-modal="true" aria-labelledby="review-title" hidden>
+<div class="review" id="review" role="dialog" aria-modal="true" aria-labelledby="review-title" data-action-log-ignore hidden>
   <div class="review__scrim"></div>
   <div class="review__body">
     <p class="review__progress" id="review-title"></p>
@@ -294,6 +295,7 @@
 <script src="spring.js"></script>
 <script src="ui.js"></script>
 <script src="state.js"></script>
+<script src="mine.js"></script>
 <script src="library.js"></script>
 <script src="review.js"></script>
 <script src="panel.js"></script>

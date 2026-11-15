@@ -99,18 +99,20 @@
       '<span class="cover__logo">' + logo(s.logo) + "</span>" +
       '<span class="cover__title" data-text="' + esc(s.name) + '"></span>' +
       '<span class="cover__rule"></span>' +
-      '<span class="cover__meta" data-text="SkillBridge"></span>';
+      '<span class="cover__meta" data-text="' + (s.kind === "uploaded" ? "Your subject" : "SkillBridge") + '"></span>';
   }
 
   /* ---------- Shelf ---------- */
 
   function bookMarkup(s) {
     var w = s.book.width, h = s.book.height, d = depthOf(s);
+    var mineBook = s.kind === "uploaded";
+    var score = mineBook ? s.files + (s.files === 1 ? " file" : " files") : num.format(average(s));
     return '<li class="slot" data-id="' + esc(s.id) + '" style="--w:' + w + "px;--h:" + h + "px;--d:" + d + "px;--accent:" + esc(s.accent) + '">' +
       '<span class="contact" aria-hidden="true"></span>' +
       '<div class="mover"><div class="carry">' +
         '<button class="book" type="button" data-id="' + esc(s.id) + '" aria-label="Open the ' + esc(s.name) + ' book" aria-describedby="desc-' + esc(s.id) + '" aria-expanded="false" aria-controls="reader">' +
-          '<span class="visually-hidden" id="desc-' + esc(s.id) + '">Average mastery ' + num.format(average(s)) + '</span>' +
+          '<span class="visually-hidden" id="desc-' + esc(s.id) + '">' + (mineBook ? "Your subject, " + esc(score) : "Average mastery " + num.format(average(s))) + '</span>' +
           '<span class="face face--back"></span>' +
           '<span class="face face--fore"></span>' +
           '<span class="face face--top"></span>' +
@@ -121,7 +123,7 @@
             '<span class="spine__rule"></span>' +
             '<span class="spine__title" data-text="' + esc(s.name) + '"></span>' +
             '<span class="spine__rule"></span>' +
-            '<span class="spine__score" data-text="' + num.format(average(s)) + '"></span>' +
+            '<span class="spine__score" data-text="' + esc(score) + '"></span>' +
           "</span></span>" +
         "</button>" +
       "</div></div></li>";
@@ -129,13 +131,23 @@
 
   function renderShelf() {
     el.row.innerHTML = subjects.map(bookMarkup).join("") +
-      '<li class="slot slot--empty"><span>More subjects</span></li>';
+      '<li class="slot slot--empty slot--add"><button type="button" class="add-subjects" aria-label="Add your own subjects: upload folders of files">' +
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
+        "<span>Add subjects</span></button></li>";
   }
+  el.row.addEventListener("click", function (e) {
+    if (e.target.closest(".add-subjects") && window.SkillBridge.mine) window.SkillBridge.mine.openUploads();
+  });
 
   /* ---------- Open book pages ---------- */
 
   function renderReader(s) {
     el.reader.style.setProperty("--accent", s.accent);
+    if (s.kind === "uploaded") {
+      window.SkillBridge.mine.renderReader(s, el);
+      el.leafCover.innerHTML = coverInner(s);
+      return;
+    }
     var avg = average(s);
 
     var rows = s.skills.map(function (k) {
@@ -157,6 +169,19 @@
       '<ul class="skills">' + rows + "</ul>";
 
     var n = s.next;
+    if (!n) {
+      // no learner chosen yet, or nothing left to practise: say so instead of failing
+      el.right.innerHTML =
+        "<div>" +
+          '<p class="kicker">Next practice</p>' +
+          '<h2 class="scenario" id="next-title">Nothing picked yet</h2>' +
+          '<p class="difficulty">Choose a learner at school and the engine picks your next problem here.</p>' +
+          '<a class="start" href="/">Go to school' +
+            '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>' +
+        "</div>";
+      el.leafCover.innerHTML = coverInner(s);
+      return;
+    }
     var log = n.log.map(function (p) { return "<dt>" + esc(p[0]) + "</dt><dd>" + esc(p[1]) + "</dd>"; }).join("");
     el.right.innerHTML =
       "<div>" +
@@ -598,7 +623,27 @@
   // Shared with the store (state.js), which loads the same file: one request, one parse.
   window.SkillBridge.store.getJSON("data/subjects.json")
     .then(function (data) {
-      subjects = data.subjects || [];
+      var base = data.subjects || [];
+      subjects = base;
+      var mine = window.SkillBridge.mine;
+      if (mine) {
+        var withMine = function (list) {
+          if (current || busy) return;   // never redraw the shelf under an open book
+          subjects = base.concat(list);
+          renderShelf();
+        };
+        mine.ready.then(withMine);
+        mine.onChange(function (list) {
+          if (current || busy) {
+            // redraw once the open book has closed, and refresh the open one's pages now
+            var s = list.find(function (x) { return current && x.id === current.id; });
+            if (s) { current = s; renderReader(s); }
+            subjects = base.concat(list);
+            return;
+          }
+          withMine(list);
+        });
+      }
       if (data.learner) {
         el.learner.innerHTML = '<span class="learner__initials" aria-hidden="true">' + esc(data.learner.initials) +
           '</span><span><span class="learner__name">' + esc(data.learner.name) + "</span> · Saved on this device</span>";

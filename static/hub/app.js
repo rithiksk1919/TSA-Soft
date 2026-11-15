@@ -1,5 +1,5 @@
 // The school: hub (home), classic view and lunchroom. Classroom and gym live in their own files.
-import { api, esc, fixed, main, getProfileId, setProfileId, renderTopBar, openPanel, toast } from "./common.js";
+import { api, esc, fixed, main, getProfileId, setProfileId, renderTopBar, openPanel, toast, slideThumb } from "./common.js";
 import { buildLunchroom } from "./lunch3d.js";
 import { mountRooms } from "./rooms3d.js";
 import { showClassroom } from "./classroom.js";
@@ -76,6 +76,188 @@ function roomCard(id, label, name, href, badge, isNext) {
   html += '<span class="' + pillClass + '">' + esc(badge.label) + "</span>";
   html += "</a>";
   return html;
+}
+
+// ---- Your mistakes: what the Action Log extension saw go wrong (GET /api/mistakes) ----
+let mistakesScope = "today";
+let mistakesTimer = null;
+
+function mistakesCard() {
+  // data-action-log-ignore: the Action Log extension must not record this panel, which shows its own log
+  let html = '<section class="card mistakes" aria-labelledby="mistakes-title" data-action-log-ignore>';
+  html += '<div class="card-head"><h2 id="mistakes-title">Your mistakes</h2>';
+  html += '<div class="seg" role="group" aria-label="Which mistakes">';
+  html += '<button type="button" data-scope="today" aria-pressed="' + (mistakesScope === "today") + '">Today</button>';
+  html += '<button type="button" data-scope="all" aria-pressed="' + (mistakesScope === "all") + '">All</button></div></div>';
+  html += '<p class="mk-note" id="mistakes-note" aria-live="polite">Loading…</p>';
+  html += '<ol class="mk-list" id="mistakes-list"></ol>';
+  html += "</section>";
+  return html;
+}
+
+function mistakeTime(when) {
+  const d = new Date(String(when).replace(" ", "T"));
+  if (isNaN(d)) {
+    return "";
+  }
+  const sameDay = d.toDateString() === new Date().toDateString();
+  const opts = sameDay ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" };
+  return new Intl.DateTimeFormat(undefined, opts).format(d);
+}
+
+function mistakeItem(m) {
+  const kinds = { "wrong answer": ["Wrong answer", "wrong"], "told wrong": ["Marked wrong", "wrong"], "hint": ["Took a hint", "hint"], "gave up": ["Gave up", "hint"] };
+  const kind = kinds[m.kind] || [m.kind, "hint"];
+  let question = m.what || "";
+  const asked = /^Asked “(.*)”$/.exec(question);
+  if (asked) {
+    question = asked[1];
+  } else if (/ marked .* = false$/.test(question)) {
+    question = m.page || "An answer was marked wrong";
+  } else if (/^(Assistant said|Message|Alert|Dialog): /.test(question)) {
+    question = question.replace(/^(Assistant said|Message|Alert|Dialog): /, "");
+  }
+  let html = '<li class="mk"><div class="mk-top"><span class="mk-kind mk-kind--' + kind[1] + '">' + esc(kind[0]) + "</span>";
+  html += '<time datetime="' + esc(String(m.when).replace(" ", "T")) + '">' + esc(mistakeTime(m.when)) + "</time></div>";
+  html += '<p class="mk-q">' + esc(question) + "</p>";
+  if (m.answered || m.detail) {
+    html += '<p class="mk-a">';
+    if (m.answered) {
+      html += 'You: <b class="mk-you">' + esc(m.answered) + "</b>";
+    }
+    if (m.answered && m.detail) {
+      html += '<span class="mk-sep" aria-hidden="true"> · </span>';
+    }
+    if (m.detail) {
+      html += (asked ? 'Answer: <b class="mk-right">' : "<span>") + esc(m.detail) + (asked ? "</b>" : "</span>");
+    }
+    html += "</p>";
+  }
+  if (m.page && question !== m.page) {
+    html += '<p class="mk-src">' + esc(m.page) + "</p>";
+  }
+  return html + "</li>";
+}
+
+function loadMistakes() {
+  const list = document.getElementById("mistakes-list");
+  const note = document.getElementById("mistakes-note");
+  if (!list) {
+    clearInterval(mistakesTimer);
+    mistakesTimer = null;
+    return;
+  }
+  api("/api/mistakes?since=" + mistakesScope).then(function (data) {
+    if (!list.isConnected) {
+      return;
+    }
+    const items = data.mistakes || [];
+    const html = items.map(mistakeItem).join("");
+    if (list.dataset.html !== html) {
+      list.innerHTML = html;
+      list.dataset.html = html;
+    }
+    if (!data.has_log) {
+      note.textContent = "No saved actions yet. Turn on the Action Log extension (the extension folder) and keep this app running: mistakes you make on school pages show up here.";
+    } else if (!items.length) {
+      note.textContent = mistakesScope === "today" ? "No mistakes today across " + data.actions + " school actions." : "No mistakes found in " + data.actions + " school actions.";
+    } else {
+      const total = data.total || items.length;
+      note.textContent = total + (total === 1 ? " mistake" : " mistakes") + (mistakesScope === "today" ? " today" : "") + ", newest first. From the Action Log extension.";
+    }
+  }).catch(function () {
+    if (note.isConnected) {
+      note.textContent = "Mistakes could not be loaded. Is the app still running?";
+    }
+  });
+}
+
+function mountMistakes(root) {
+  const seg = root.querySelector(".mistakes .seg");
+  slideThumb(seg, "mistakes");
+  for (const b of root.querySelectorAll(".mistakes .seg button")) {
+    b.addEventListener("click", function () {
+      mistakesScope = b.dataset.scope;
+      for (const o of root.querySelectorAll(".mistakes .seg button")) {
+        o.setAttribute("aria-pressed", String(o === b));
+      }
+      slideThumb(seg, "mistakes");
+      loadMistakes();
+    });
+  }
+  loadMistakes();
+  clearInterval(mistakesTimer);
+  // new mistakes arrive as the extension saves them (every few seconds)
+  mistakesTimer = setInterval(loadMistakes, 10000);
+}
+
+// The glide: a brass frame that swooshes from the last room under the pointer (or focus) to the
+// next one, with an echo trailing behind. Decorative only (aria-hidden).
+function mountGlide(root) {
+  const building = root.querySelector(".school .building");
+  if (!building) {
+    return;
+  }
+  const echo = document.createElement("span");
+  echo.className = "glide glide--echo";
+  echo.setAttribute("aria-hidden", "true");
+  const ring = document.createElement("span");
+  ring.className = "glide";
+  ring.setAttribute("aria-hidden", "true");
+  building.append(echo, ring);
+  let current = null;
+  function place(link, instant) {
+    const x = link.offsetLeft;
+    const y = link.offsetTop;
+    for (const el of [echo, ring]) {
+      if (instant) {
+        el.style.transition = "none";
+      }
+      el.style.width = link.offsetWidth + "px";
+      el.style.height = link.offsetHeight + "px";
+      el.style.transform = "translate(" + x + "px, " + y + "px)";
+      if (instant) {
+        el.getBoundingClientRect();
+        el.style.transition = "";
+      }
+    }
+  }
+  function show(link) {
+    // the first room after the pointer comes in: appear there; after that: swoosh across
+    place(link, !building.classList.contains("is-gliding"));
+    building.classList.add("is-gliding");
+    current = link;
+  }
+  function hide() {
+    building.classList.remove("is-gliding");
+  }
+  for (const link of building.querySelectorAll(".room")) {
+    link.addEventListener("pointerenter", function (ev) {
+      if (ev.pointerType === "mouse" || ev.pointerType === "pen") {
+        show(link);
+      }
+    });
+    link.addEventListener("focus", function () {
+      show(link);
+    });
+  }
+  building.addEventListener("pointerleave", function () {
+    if (!building.contains(document.activeElement)) {
+      hide();
+    }
+  });
+  building.addEventListener("focusout", function (ev) {
+    if (!building.contains(ev.relatedTarget) && !building.matches(":hover")) {
+      hide();
+    }
+  });
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (current && building.isConnected) {
+        place(current, true);
+      }
+    }).observe(building);
+  }
 }
 
 function masteryCard(summary) {
@@ -278,8 +460,10 @@ function showHub(summary) {
   small += "</strong></div></section>";
 
   main.innerHTML = '<div class="hub"><div class="hub-left">' + banner + building + '</div><aside class="hub-right">' +
-    masteryCard(summary) + whyCard(nextUp) + small + "</aside></div>";
+    mistakesCard() + masteryCard(summary) + whyCard(nextUp) + small + "</aside></div>";
   mountRooms(main);
+  mountGlide(main);
+  mountMistakes(main);
   for (const link of main.querySelectorAll(".school .room")) {
     link.addEventListener("click", function (event) {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {

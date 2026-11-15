@@ -1,0 +1,31 @@
+// Adding your own mistake in a subject book; Gemini explains it; it shows on the hub; then it is deleted.
+// usage: node qa/extension/add-mistake.mjs <subject id, e.g. chem>
+import { chromium } from "playwright";
+const sid = process.argv[2] || "chem";
+const B = "http://127.0.0.1:8000";
+const b = await chromium.launch({ headless: true });
+const p = await b.newPage({ viewport: { width: 1600, height: 900 } });
+const errs = [];
+p.on("pageerror", (e) => errs.push(e.message));
+await p.goto(B + "/library/#book-my-" + sid);
+await p.waitForSelector(".org-title, .toc", { timeout: 20000 });
+await p.waitForTimeout(1200);
+await p.click('[data-open="mistakes"]');
+await p.click('[data-mk="new"]');
+await p.fill('textarea[name="question"]', "How many valence electrons does oxygen have?");
+await p.fill('input[name="your_answer"]', "8");
+await p.fill('input[name="note"]', "I counted all the electrons");
+await p.screenshot({ path: "qa/extension/mk-1-form.png" });
+await p.click('.mk-form [type="submit"]');
+await p.waitForSelector(".mm--mine", { timeout: 10000 });
+await p.screenshot({ path: "qa/extension/mk-2-saved.png" });
+await p.waitForFunction(() => document.querySelector(".mm--mine .mm__why"), null, { timeout: 60000 }).catch(() => errs.push("no explanation within 60 s"));
+await p.waitForTimeout(300);
+await p.screenshot({ path: "qa/extension/mk-3-explained.png" });
+const hub = await (await fetch(B + "/api/mistakes?since=today")).json();
+console.log("on the hub panel:", hub.mistakes.some((m) => m.manual && /oxygen/.test(m.what)), "| toc says:", await p.textContent('[data-open="mistakes"] .toc__s'));
+await p.click('.mm--mine [data-mk="delete"]');
+await p.click('.mm--mine [data-mk="really"]');
+await p.waitForTimeout(800);
+console.log("left after delete:", await p.locator(".mm--mine").count(), "|", errs.join("; ") || "no page errors");
+await b.close();

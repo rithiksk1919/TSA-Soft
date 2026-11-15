@@ -259,7 +259,7 @@
       '<h2 class="dk-paper__title">' + esc(sc.title) + "</h2>" +
       '<p class="dk-paper__kind">Find the wrong step</p>' +
       '<p class="dk-paper__problem">' + esc(sc.problem) + "</p>" +
-      '<figure class="dk-fig">' + FIGS[sc.figure]() + "</figure>" +
+      (sc.figure && FIGS[sc.figure] ? '<figure class="dk-fig">' + FIGS[sc.figure]() + "</figure>" : "") +
       '<dl class="dk-ans">' +
       '<div class="dk-ans__row dk-ans__row--theirs"><dt>Classmate’s answer</dt><dd>' + esc(sc.theirs) + "</dd></div>" +
       '<div class="dk-ans__row"><dt>Answer key</dt><dd>' + esc(sc.key) + "</dd></div></dl>";
@@ -269,8 +269,13 @@
     var cur = run && run.sc.id;
     tabs.innerHTML = data.scenarios.map(function (sc) {
       var subj = subjectOf(sc), done = !!saved.done[sc.id];
-      return '<button class="chip-btn" type="button" data-id="' + sc.id + '" style="--sub:' + subj.accent + '" aria-pressed="' + (sc.id === cur) + '">' +
-        esc(subj.name) + (done ? ICON.check + '<span class="visually-hidden"> (done)</span>' : "") + "</button>";
+      // your own exercises (mistakes you added, ids "u-...") are named by their title, so several
+      // from one subject can be told apart
+      var mineEx = sc.id.indexOf("u-") === 0;
+      var label = mineEx ? (sc.title.length > 26 ? sc.title.slice(0, 25) + "…" : sc.title) : subj.name;
+      return '<button class="chip-btn" type="button" data-id="' + sc.id + '" style="--sub:' + subj.accent + '" aria-pressed="' + (sc.id === cur) + '"' +
+        (mineEx ? ' title="' + esc(subj.name + ": " + sc.title) + '"' : "") + ">" +
+        esc(label) + (done ? ICON.check + '<span class="visually-hidden"> (done)</span>' : "") + "</button>";
     }).join("");
   }
 
@@ -683,7 +688,8 @@
       release = ui.isolate([el]);
       history.replaceState(null, "", "#desk");
       fit();
-      if (!run) start(firstOpen());
+      if (opts.scenario && data.scenarios.some(function (x) { return x.id === opts.scenario; })) start(opts.scenario);
+      else if (!run) start(firstOpen());
       title.focus({ preventScroll: true });
       ui.announce("The reading desk. Find the wrong step in a classmate’s solution, with the tutor.");
       // Resolves once the desk is showing; the camera keeps sitting down after that.
@@ -726,6 +732,8 @@
   });
 
   SB.desk = {
+    // New exercises from the mistakes you add (mine.js): fetch desk.json again next time it opens.
+    reload: function () { if (!isOpen) { data = null; loading = null; } },
     open: open,
     close: close,
     isOpen: function () { return isOpen; },

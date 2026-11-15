@@ -11,13 +11,14 @@ import logging
 import mimetypes
 import os
 import re
+import time
 import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlparse
 
-from . import demo, tts
+from . import action_mistakes, demo, my_subjects, organizer, tts
 from .gym import Gym
 from .gym_games import GymGames
 from .hub import Hub
@@ -55,6 +56,122 @@ class App:
 @route("GET", r"/api/health")
 def health(app, req, m):
     return {"ok": True, "sandbox": python_runner.sandbox_kind()}
+
+
+# The Action Log browser extension (extension/) saves the school-related actions it records here,
+# one JSON object per line, one file per day: data/action-log/YYYY-MM-DD.jsonl. Local only (the
+# server listens on 127.0.0.1); scripts/mistakes.py reads these files.
+ACTION_LOG_DIR = ROOT / "data" / "action-log"
+
+
+@route("GET", r"/api/mistakes")
+def mistakes(app, req, m):
+    since = req.query.get("since", "today")
+    if since not in ("today", "all") and not re.fullmatch(r"\d+[mhd]|\d{4}-\d{2}-\d{2}", since):
+        raise ServiceError("since must be today, all, a span like 2h or a date")
+    out = action_mistakes.summary(None if since == "all" else since)
+    subs = my_subjects.subjects(with_mistakes=False)["subjects"]
+    for item in out["mistakes"]:
+        home = my_subjects.file_mistake(item, subs)
+        item["subject"] = home["name"] if home else None
+    added = my_subjects.all_manual(0 if since == "all" else action_mistakes.parse_since(since))
+    if added:
+        out["has_log"] = True
+        out["mistakes"] = sorted(out["mistakes"] + added, key=lambda m: m.get("when", ""), reverse=True)[:60]
+        out["total"] = out.get("total", 0) + len(added)
+    return out
+
+
+# ---- Your subjects: folders of files uploaded in the library (my_subjects.py) ----
+@route("GET", r"/api/my-subjects")
+def my_subjects_list(app, req, m):
+    return my_subjects.subjects()
+
+
+@route("POST", r"/api/my-subjects")
+def my_subjects_create(app, req, m):
+    return my_subjects.create(req.body.get("name", ""))
+
+
+@route("POST", r"/api/my-subjects/([a-z0-9-]+)/rename")
+def my_subjects_rename(app, req, m):
+    return my_subjects.rename(m[1], req.body.get("name", ""))
+
+
+@route("POST", r"/api/my-subjects/([a-z0-9-]+)/organize")
+def my_subjects_organize(app, req, m):
+    return organizer.start(m[1])
+
+
+@route("GET", r"/api/my-subjects/([a-z0-9-]+)/book")
+def my_subjects_book(app, req, m):
+    return organizer.book(m[1])
+
+
+@route("POST", r"/api/my-subjects/([a-z0-9-]+)/mistakes")
+def my_subjects_add_mistake(app, req, m):
+    return my_subjects.add_mistake(m[1], req.body)
+
+
+@route("POST", r"/api/my-subjects/([a-z0-9-]+)/mistakes/([a-f0-9]+)/explain")
+def my_subjects_explain_mistake(app, req, m):
+    if not organizer.available():
+        raise ServiceError("No Gemini API key is set up.")
+    item = next((it for it in my_subjects.manual_mistakes(m[1]) if it["id"] == m[2]), None)
+    if not item:
+        raise ServiceError("No such mistake.")
+    name = json.loads((my_subjects.subject_dir(m[1]) / my_subjects.META).read_text(encoding="utf-8")).get("name", m[1])
+    return my_subjects.update_mistake(m[1], m[2], organizer.explain(name, item))
+
+
+@route("POST", r"/api/my-subjects/([a-z0-9-]+)/mistakes/([a-f0-9]+)/desk")
+def my_subjects_desk_mistake(app, req, m):
+    if not organizer.available():
+        raise ServiceError("No Gemini API key is set up.")
+    item = next((it for it in my_subjects.manual_mistakes(m[1]) if it["id"] == m[2]), None)
+    if not item:
+        raise ServiceError("No such mistake.")
+    name = json.loads((my_subjects.subject_dir(m[1]) / my_subjects.META).read_text(encoding="utf-8")).get("name", m[1])
+    # Gemini sometimes returns an exercise that doesn't hold together: ask again, up to 3 times
+    problem = None
+    for _ in range(3):
+        try:
+            return my_subjects.set_desk(m[1], m[2], organizer.desk_exercise(name, item))
+        except my_subjects.SubjectError as exc:
+            problem = exc
+            if "didn't hold together" not in str(exc):
+                raise
+    raise problem
+
+
+@route("DELETE", r"/api/my-subjects/([a-z0-9-]+)/mistakes/([a-f0-9]+)")
+def my_subjects_delete_mistake(app, req, m):
+    return my_subjects.delete_mistake(m[1], m[2])
+
+
+@route("DELETE", r"/api/my-subjects/([a-z0-9-]+)")
+def my_subjects_delete(app, req, m):
+    return my_subjects.remove(m[1])
+
+
+@route("POST", r"/api/action-log")
+def action_log(app, req, m):
+    events = req.body.get("events")
+    if not isinstance(events, list) or len(events) > 500:
+        raise ServiceError("events must be a list of at most 500 actions")
+    ACTION_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    saved = 0
+    by_day: dict[str, list[str]] = {}
+    for ev in events:
+        if not isinstance(ev, dict) or not isinstance(ev.get("t"), (int, float)):
+            continue
+        day = time.strftime("%Y-%m-%d", time.localtime(ev["t"] / 1000))
+        by_day.setdefault(day, []).append(json.dumps(ev, ensure_ascii=False))
+        saved += 1
+    for day, lines in by_day.items():
+        with open(ACTION_LOG_DIR / (day + ".jsonl"), "a", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+    return {"saved": saved}
 
 
 @route("GET", r"/api/profiles")
@@ -291,6 +408,8 @@ def make_handler(app: App):
         def _dispatch(self, method: str):
             url = urlparse(self.path)
             path = url.path
+            if path.startswith("/api/my-files/"):
+                return self._my_file(method, path)
             if path.startswith("/api/"):
                 return self._api(method, url)
             if method != "GET":
@@ -322,6 +441,36 @@ def make_handler(app: App):
                         log.error("unhandled error\n%s", traceback.format_exc())
                         return self._json(500, {"error": "internal error"})
             return self._json(404, {"error": "not found"})
+
+        def _my_file(self, method, path):
+            # /api/my-files/<subject>/<path inside it>: GET opens or downloads, PUT uploads, DELETE removes
+            m = re.match(r"^/api/my-files/([a-z0-9-]+)/(.+)$", path)
+            if not m:
+                return self._json(404, {"error": "not found"})
+            sid, rel = m[1], unquote(m[2])
+            try:
+                if method == "PUT":
+                    length = int(self.headers.get("Content-Length") or 0)
+                    return self._json(200, my_subjects.save(sid, rel, self.rfile, length))
+                if method == "DELETE":
+                    return self._json(200, my_subjects.delete_file(sid, rel))
+                if method != "GET":
+                    return self._json(405, {"error": "method not allowed"})
+                p = my_subjects.file_path(sid, rel)
+                if not p.is_file():
+                    return self._json(404, {"error": "not found"})
+                ctype = my_subjects.mime(p)
+                disposition = "inline" if ctype != "application/octet-stream" else "attachment"
+                name = quote(p.name)
+                extra = {"Content-Disposition": f"{disposition}; filename*=UTF-8''{name}"}
+                if ctype.startswith("text/"):
+                    extra["Content-Security-Policy"] = "sandbox; default-src 'none'"
+                return self._send(200, p.read_bytes(), ctype, extra)
+            except my_subjects.SubjectError as exc:
+                return self._json(400, {"error": str(exc)})
+            except OSError as exc:
+                log.error("file error: %s", exc)
+                return self._json(500, {"error": "Could not read or write that file."})
 
         def _export(self, pid: int, table: str | None):
             try:
@@ -419,6 +568,9 @@ def make_handler(app: App):
 
         def do_POST(self):
             self._dispatch("POST")
+
+        def do_PUT(self):
+            self._dispatch("PUT")
 
         def do_DELETE(self):
             self._dispatch("DELETE")

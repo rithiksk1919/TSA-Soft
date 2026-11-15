@@ -17,3 +17,12 @@ __pycache__/
 data/
 .env
 sim/output/summary.json
+
+# The Action Log extension's saved actions (private, local only)
+data/action-log/
+
+# Subjects and files uploaded in the library (private, local only)
+data/uploads/
+
+# API keys (never commit)
+data/secrets/

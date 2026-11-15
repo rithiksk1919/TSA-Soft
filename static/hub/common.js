@@ -75,6 +75,38 @@ export function firstName(name) {
 
 // ---- top bar ----
 // view: "hub" | "classroom" | "gym" | "lunch" | "classic"
+// Slides a toggle's thumb under its pressed button. `key` remembers where the thumb was, so a
+// toggle that is drawn again (the top bar on every route) slides from the old option to the new.
+const thumbs = {};
+export function slideThumb(group, key) {
+  if (!group) {
+    return;
+  }
+  const on = group.querySelector('button[aria-pressed="true"]');
+  if (!on) {
+    return;
+  }
+  const to = { x: on.offsetLeft, w: on.offsetWidth };
+  const from = key ? thumbs[key] : null;
+  group.classList.add("has-thumb");
+  const set = function (p) {
+    group.style.setProperty("--tx", p.x + "px");
+    group.style.setProperty("--tw", p.w + "px");
+  };
+  if (from && (from.x !== to.x || from.w !== to.w)) {
+    set(from);
+    group.getBoundingClientRect();
+    requestAnimationFrame(function () {
+      set(to);
+    });
+  } else {
+    set(to);
+  }
+  if (key) {
+    thumbs[key] = to;
+  }
+}
+
 export function renderTopBar(view, summary, rightText) {
   const bar = document.getElementById("topbar");
   const name = summary.profile.name;
@@ -108,6 +140,7 @@ export function renderTopBar(view, summary, rightText) {
   }
   bar.innerHTML = html;
   wireListenerPill();
+  slideThumb(bar.querySelector(".toggle"), "home-view");
 
   if (view === "hub" || view === "classic") {
     document.getElementById("view-school").addEventListener("click", function () {
@@ -135,8 +168,10 @@ function switchButtonHtml(summary) {
   if (summary.profile.is_demo) {
     current = "Demo learner: " + firstName(summary.profile.name);
   }
-  return '<button type="button" class="btn btn-light" id="switch-learner" data-to="' + target.id + '">' +
-    esc(current) + ". Switch to " + esc(target.first) + "</button>";
+  const label = current.split(": ");
+  return '<button type="button" class="btn btn-light btn-switch" id="switch-learner" data-to="' + target.id + '" aria-label="' +
+    esc(current) + ". Switch to " + esc(target.first) + '"><span class="who">' + esc(label[0]) + ": <b>" + esc(label[1]) + "</b></span>" +
+    '<span class="act">Switch to ' + esc(target.first) + "</span></button>";
 }
 
 // ---- a large panel over a dimmed scene, with focus kept inside and Esc to close ----

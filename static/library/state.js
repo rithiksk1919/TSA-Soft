@@ -179,6 +179,20 @@
     if (next && next.v === 1) { store.review = next; emit("cards"); }
   });
 
+  // Mistakes you add in your own subject books (mine.js) become cards: fetch the card files again.
+  store.reloadCards = function () {
+    delete jsonCache["data/cards.json"];
+    delete jsonCache["data/mistakes.json"];
+    return store.ready.then(function () {
+      return Promise.all([getJSON("data/cards.json"), getJSON("data/mistakes.json")]);
+    }).then(function (r) {
+      store.data.cards = r[0];
+      store.data.mistakes = r[1];
+      emit("cards");
+      return store;
+    });
+  };
+
   store.getJSON = getJSON;
   SB.store = store;
 })();
